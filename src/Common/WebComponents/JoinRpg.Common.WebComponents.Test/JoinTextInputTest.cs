@@ -70,4 +70,29 @@ public class JoinTextInputTest
 
         captured.ShouldBe("  Тест  ");
     }
+
+    [Fact]
+    public void Variants_RendersDatalistAndListAttribute()
+    {
+        using var ctx = new BunitContext();
+        var cut = ctx.Render<JoinTextInput>(p => p
+            .Add(x => x.Value, "")
+            .Add(x => x.Variants, ["300", "500", "800"]));
+
+        var listId = cut.Find("input").GetAttribute("list");
+        listId.ShouldNotBeNullOrEmpty();
+
+        var options = cut.FindAll($"datalist#{listId} option");
+        options.Select(o => o.GetAttribute("value")).ShouldBe(["300", "500", "800"]);
+    }
+
+    [Fact]
+    public void NoVariants_NoDatalistAndNoListAttribute()
+    {
+        using var ctx = new BunitContext();
+        var cut = ctx.Render<JoinTextInput>(p => p.Add(x => x.Value, ""));
+
+        cut.Find("input").HasAttribute("list").ShouldBeFalse();
+        cut.FindAll("datalist").ShouldBeEmpty();
+    }
 }

@@ -1,0 +1,109 @@
+@* Ручное назначение размера базового взноса заявки. *@
+@using JoinRpg.Common.WebComponents.Dialog
+@using System.ComponentModel.DataAnnotations
+@inject IChangeFeeClient Client
+@inject NavigationManager NavigationManager
+@inject ILogger<ChangeFeeButton> Logger
+
+<JoinButton Label="Изменить вручную…"
+            Size="@Size"
+            AutoProgress="false"
+            OnClick="OpenDialog" />
+
+@* Стандартные кнопки диалога закрывают окно сразу, а при невалидном вводе или отказе сервера окно переоткрывается —
+   введённое значение остаётся в форме *@
+<JoinDialog @ref="dialog" Caption="Изменение суммы взноса" Width="600px" MaxWidth="95%" Buttons="buttons">
+    <ChildContent>
+        <JoinAlert Variation="VariationStyleEnum.Info">
+            <p>Размер взноса для этой заявки будет назначен вручную.</p>
+            <p>После этого взнос не будет больше зависеть от времени сдачи и будет зафиксирован.</p>
+        </JoinAlert>
+
+        @if (View.HasFieldsWithFee)
+        {
+            <JoinAlert Variation="VariationStyleEnum.Warning">
+                Эта настройка меняет только базовое значение взноса. Итоговая сумма взноса складывается из установленного вручную взноса и суммы модификаторов от полей.
+            </JoinAlert>
+        }
+
+        @if (errorMessage is not null)
+        {
+            <JoinAlert Variation="VariationStyleEnum.Danger">@errorMessage</JoinAlert>
+        }
+
+        <EditForm Model="@form">
+            <FormHorizontal>
+                <FormRowFor For="() => form.Fee">
+                    <JoinTextInput @bind-Value="form.Fee" Variants="@feeVariants" />
+                </FormRowFor>
+            </FormHorizontal>
+        </EditForm>
+    </ChildContent>
+</JoinDialog>
+
+@code {
+    [Parameter, EditorRequired]
+    public ChangeFeeView View { get; set; } = null!;
+
+    /// <summary>В плотных финансовых таблицах — XS, как соседние.</summary>
+    [Parameter]
+    public SizeStyleEnum Size { get; set; } = SizeStyleEnum.ExtraSmall;
+
+    private JoinDialog dialog = default!;
+    private readonly FormModel form = new();
+    private string? errorMessage;
+    private IReadOnlyCollection<string> feeVariants = [];
+
+    private static readonly IReadOnlyCollection<DialogButton> buttons =
+    [
+        new(ButtonPreset.Save, label: "Изменить", icon: JoinIconType.Ok, style: VariationStyleEnum.Info),
+        new(ButtonPreset.Cancel, label: "Отмена", cancel: true),
+    ];
+
+    private sealed class FormModel
+    {
+        [Display(Name = "Новый размер взноса")]
+        public string Fee { get; set; } = "";
+    }
+
+    protected override void OnParametersSet()
+    {
+        feeVariants = [.. View.FeeVariants.Select(v => v.ToString())];
+    }
+
+    private async Task OpenDialog()
+    {
+        errorMessage = null;
+        form.Fee = View.BaseFee.ToString();
+        if (!await dialog.ShowBoolModalAsync())
+        {
+            return;
+        }
+
+        if (!int.TryParse(form.Fee, out var fee) || fee < 0)
+        {
+            errorMessage = "Введите корректную сумму взноса (целое число не меньше нуля).";
+            dialog.ShowModal();
+            return;
+        }
+
+        try
+        {
+            await Client.ChangeFee(View.ClaimId, new ChangeFeeRequest(fee));
+            // Взнос влияет на баланс и статус заявки на странице, поэтому перезагружаем её целиком
+            NavigationManager.Refresh(forceReload: true);
+        }
+        catch (ServerProblemException exception)
+        {
+            // Ожидаемый отказ сервера (нет прав) — текст предназначен мастеру
+            errorMessage = exception.Message;
+            dialog.ShowModal();
+        }
+        catch (Exception exception)
+        {
+            Logger.LogError(exception, "Не удалось сохранить новый размер взноса для заявки {ClaimId}", View.ClaimId);
+            errorMessage = "Не удалось сохранить. Обновите страницу и попробуйте ещё раз.";
+            dialog.ShowModal();
+        }
+    }
+}

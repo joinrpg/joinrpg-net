@@ -563,28 +563,6 @@ public class ClaimController(
         }
     }
 
-
-    [MasterAuthorize(Permission.CanManageMoney), HttpPost, ValidateAntiForgeryToken]
-    public async Task<ActionResult> ChangeFee(int claimid, int projectid, int feeValue)
-    {
-        try
-        {
-            if (!ModelState.IsValid)
-            {
-                return await Edit(projectid, claimid);
-            }
-
-            await
-              financeService.ChangeFee(new ClaimIdentification(projectid, claimid), feeValue);
-
-            return RedirectToAction("Edit", "Claim", new { claimid, projectid });
-        }
-        catch
-        {
-            return await Edit(projectid, claimid);
-        }
-    }
-
     private ActionResult? WithClaim(Claim claim)
     {
         if (!claim.HasAccess(currentUserAccessor.UserId, Permission.None, ExtraAccessReason.Player))

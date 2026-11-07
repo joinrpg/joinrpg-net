@@ -4,6 +4,15 @@
 
 ## Не выпущено
 
+### Добавлено
+- `JoinTextInput`: параметр `Variants` — варианты значений для подсказки ввода (datalist). ([#6156](https://github.com/joinrpg/joinrpg-net/pull/6156))
+
+### Изменено
+- `JoinDialog`: контент компенсирует отрицательные margin'ы Bootstrap-строк (`.form-horizontal .form-group`, `.row`) — формы в диалоге больше не дают горизонтальную прокрутку окна, локальные обёртки `overflow-x: hidden` у форм в диалогах больше не нужны. ([#6156](https://github.com/joinrpg/joinrpg-net/pull/6156))
+
+### Исправлено
+- `JoinDialog`: `ShowModal()` из продолжения после `ShowModalAsync`/`ShowBoolModalAsync` снова открывает окно — раньше без SynchronizationContext (например, в тестах) срабатывал встроенный guard и окно не открывалось. В продакшен-приложениях Blazor поведение не меняется. ([#6156](https://github.com/joinrpg/joinrpg-net/pull/6156))
+
 ## 2026.9.651 — 2026-11-07
 
 ### Ломающие изменения

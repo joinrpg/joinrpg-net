@@ -265,9 +265,12 @@
             Logger.LogError(ex, "Error while handling dialog close event");
         }
 
+        // Задачу-результат обнуляем до SetResult: продолжение await'а может выполниться инлайн
+        // (без SynchronizationContext, как в тестах), и тогда вызов ShowModal из него увидит ещё не обнулённую задачу
         Debug.Assert(_resultTaskSource is not null);
-        _resultTaskSource.SetResult(_closingButton?.Name ?? nameof(ButtonPreset.Cancel));
+        var resultTaskSource = _resultTaskSource;
         _resultTaskSource = null;
+        resultTaskSource.SetResult(_closingButton?.Name ?? nameof(ButtonPreset.Cancel));
     }
 
     /// <summary>

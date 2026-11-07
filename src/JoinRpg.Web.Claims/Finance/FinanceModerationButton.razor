@@ -34,8 +34,6 @@
             <JoinAlert Variation="VariationStyleEnum.Danger">@errorMessage</JoinAlert>
         }
 
-        @* У .form-group в .form-horizontal (Bootstrap 3) поля -15px: без обрезки окно получает горизонтальную прокрутку *@
-        <div style="overflow-x: hidden;">
         <EditForm Model="@form">
             <FormHorizontal>
                 <FormRow Label="Действие">
@@ -54,7 +52,6 @@
                 }
             </FormHorizontal>
         </EditForm>
-        </div>
     </ChildContent>
     <FooterContent>
         @* Стили футера JoinDialog — scoped и на эту разметку не действуют; перенос нужен на узком экране *@

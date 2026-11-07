@@ -164,58 +164,6 @@
     </table>
 </div>
 
-<div class="modal fade" id="changeFeeModal" tabindex="-1" role="dialog">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            @using (Html.BeginForm("ChangeFee", "Claim", new { Model.ClaimId, Model.ProjectId }, FormMethod.Post))
-            {
-                @Html.AntiForgeryToken()
-                <div class="modal-header">
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Закрыть"><join-icon icon="Close" /></button>
-                    <h4 class="modal-title">Изменение суммы взноса</h4>
-                </div>
-
-                <div class="modal-body">
-                    <div class="join alert alert-info">
-                        <join-icon icon="Info" />
-                        <div>
-                            <p>Размер взноса для этой заявки будет назначен вручную.</p>
-                            <p>После этого взнос не будет больше зависеть от времени сдачи и&nbsp;будет зафиксирован.</p>
-                        </div>
-                    </div>
-                    @if (Model.HasFieldsWithFee)
-                    {
-                        <div class="join alert alert-warning">
-                            <join-icon icon="Warning" />
-                            Эта настройка меняет только базовое значение взноса. Итоговая сумма взноса складывается
-                            из установленного вручную взноса и суммы модификаторов от полей.
-                        </div>
-                    }
-                    <div class="form-horizontal">
-                        <div class="form-group">
-                            <div class="col-md-6 control-label"><label for="feeSpecialValue">Новый размер взноса:</label></div>
-                            <div class="col-md-3">
-                                <input type="text" class="form-control" id="feeSpecialValue" name="feeValue" list="feeVariants" value="@Model.BaseFee" />
-                            </div>
-                            <datalist id="feeVariants">
-                                @foreach (var feeVariant in Model.FeeVariants)
-                                {
-                                    <option value="@feeVariant"></option>
-                                }
-                            </datalist>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-default" data-dismiss="modal">Отмена</button>
-                    <button type="submit" class="btn btn-info">Изменить</button>
-                </div>
-            }
-        </div>
-    </div>
-</div>
-
 <div class="modal fade" id="markAsPreferential" tabindex="-1" role="dialog">
     <div class="modal-dialog">
         <div class="modal-content">

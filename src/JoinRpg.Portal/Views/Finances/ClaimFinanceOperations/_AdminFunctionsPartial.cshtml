@@ -1,7 +1,12 @@
-﻿@model JoinRpg.Web.Models.FinanceOperationAdminFunctionsViewModel
+@model JoinRpg.Web.Models.FinanceOperationAdminFunctionsViewModel
 @if (Model.Allowed)
 {
-    <button type="button" class="btn btn-default btn-xs" data-toggle="modal" data-target="#changeFeeModal">Изменить вручную&hellip;</button>
+    @if (Model.ChangeFee is not null)
+    {
+        <component type="typeof(JoinRpg.Web.Claims.Finance.ChangeFeeButton)"
+                   render-mode="WebAssemblyPrerendered"
+                   param-View="Model.ChangeFee" />
+    }
     if (Model.PreferentialFeeEnabled)
     {
         <button type="button" class="btn btn-default btn-xs" data-toggle="modal" data-target="#markAsPreferential">@(Model.PreferentialFeeUser ? "Снять пометку льготника" : "Сделать льготником")&hellip;</button>
