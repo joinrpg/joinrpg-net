@@ -231,7 +231,7 @@ document.addEventListener('click', event => {
     const button = event.target instanceof Element ? event.target.closest('[data-join-collapse-close]') : null;
     // details первым: если голый <details> когда-нибудь окажется в теле панели, закроется ближайший блок.
     const toggle = button?.closest('details')
-        ?? button?.closest('.join-collapse-panel')?.querySelector(':scope > .panel-heading > .join-collapse-panel__toggle');
+        ?? button?.closest('.join-collapse-panel')?.querySelector(':scope > .join-collapse-panel__heading > .join-collapse-panel__toggle');
     if (toggle) {
         toggle.open = false;
         // Кнопка ушла в свёрнутое тело — возвращаем фокус на заголовок панели, а не на body.

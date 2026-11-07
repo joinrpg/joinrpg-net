@@ -37,7 +37,7 @@ public class FinanceFeeSettingsPanelTest : BunitContext
     {
         var cut = RenderPanel();
 
-        cut.Find(".panel-heading").TextContent.ShouldContain("Взнос не настроен");
+        cut.Find(".join-collapse-panel__heading").TextContent.ShouldContain("Взнос не настроен");
         cut.FindAll("table").ShouldBeEmpty();
     }
 
@@ -55,7 +55,7 @@ public class FinanceFeeSettingsPanelTest : BunitContext
         created.Fee.ShouldBe(1500);
         created.StartDate.ShouldBe(DateOnly.FromDateTime(DateTime.Today));
         cut.WaitForAssertion(() => cut.Find("table").TextContent.ShouldContain("1500"));
-        cut.Find(".panel-heading").TextContent.ShouldNotContain("Взнос не настроен");
+        cut.Find(".join-collapse-panel__heading").TextContent.ShouldNotContain("Взнос не настроен");
     }
 
     [Fact]

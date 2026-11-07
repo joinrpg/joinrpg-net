@@ -8,14 +8,14 @@
     скринридера это одна кнопка, а клик по ним не должен сворачивать панель. Они живут в HeaderExtra
     рядом с summary, а тело — соседний блок, который CSS показывает по атрибуту open у <details>.
 *@
-<div class="@PanelClass join-collapse-panel">
-    <div class="panel-heading">
+<div class="join-collapse-panel @VariationModifier">
+    <div class="join-collapse-panel__heading">
         <details class="join-collapse-panel__toggle" id="@Id" name="@(Group ?? ParentGroup?.EffectiveName)" open="@Open">
             <summary class="join-collapse-panel__summary" aria-controls="@bodyId">@Header</summary>
         </details>
         @HeaderExtra
     </div>
-    <div class="panel-body join-collapse-panel__body" id="@bodyId">@ChildContent</div>
+    <div class="join-collapse-panel__body" id="@bodyId">@ChildContent</div>
 </div>
 
 @code {
@@ -44,7 +44,16 @@
 
     [CascadingParameter] private JoinCollapsePanelGroup? ParentGroup { get; set; }
 
-    private string PanelClass => BootstrapStyle.Build("panel", Variation, null);
+    private string VariationModifier => Variation switch
+    {
+        null or VariationStyleEnum.None => "join-collapse-panel--default",
+        VariationStyleEnum.Primary => "join-collapse-panel--primary",
+        VariationStyleEnum.Success => "join-collapse-panel--success",
+        VariationStyleEnum.Warning => "join-collapse-panel--warning",
+        VariationStyleEnum.Danger => "join-collapse-panel--danger",
+        VariationStyleEnum.Info => "join-collapse-panel--info",
+        _ => throw new ArgumentException("Incorrect variation", nameof(Variation)),
+    };
 
     private readonly string generatedBodyId = $"join-collapse-{Guid.NewGuid():N}";
 

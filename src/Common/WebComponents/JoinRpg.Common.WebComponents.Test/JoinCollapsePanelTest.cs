@@ -30,6 +30,35 @@ public class JoinCollapsePanelTest
         cut.Find("details > summary b").TextContent.ShouldBe("заголовок");
     }
 
+    [Theory]
+    [InlineData(null, "join-collapse-panel join-collapse-panel--default")]
+    [InlineData(VariationStyleEnum.None, "join-collapse-panel join-collapse-panel--default")]
+    [InlineData(VariationStyleEnum.Primary, "join-collapse-panel join-collapse-panel--primary")]
+    [InlineData(VariationStyleEnum.Success, "join-collapse-panel join-collapse-panel--success")]
+    [InlineData(VariationStyleEnum.Warning, "join-collapse-panel join-collapse-panel--warning")]
+    [InlineData(VariationStyleEnum.Danger, "join-collapse-panel join-collapse-panel--danger")]
+    [InlineData(VariationStyleEnum.Info, "join-collapse-panel join-collapse-panel--info")]
+    public void RendersOwnClasses(VariationStyleEnum? variation, string expected)
+    {
+        using var ctx = new BunitContext();
+        var cut = Render(ctx, p => p.Add(x => x.Variation, variation));
+
+        cut.Find(".join-collapse-panel").GetAttribute("class").ShouldBe(expected);
+        cut.Find(".join-collapse-panel__heading").ShouldNotBeNull();
+        cut.Find(".join-collapse-panel__body").ShouldNotBeNull();
+    }
+
+    [Fact]
+    public void Markup_DoesNotUseBootstrap3Classes()
+    {
+        using var ctx = new BunitContext();
+        var cut = Render(ctx);
+
+        cut.Markup.ShouldNotContain("panel-heading");
+        cut.Markup.ShouldNotContain("panel-body");
+        cut.Markup.ShouldNotContain("panel-default");
+    }
+
     [Fact]
     public void HeaderExtra_IsOutsideSummary_SoLinksDoNotToggle()
     {
@@ -37,7 +66,7 @@ public class JoinCollapsePanelTest
         var cut = Render(ctx);
 
         cut.FindAll("summary a").ShouldBeEmpty();
-        cut.Find(".panel-heading > a").TextContent.ShouldBe("ссылка");
+        cut.Find(".join-collapse-panel__heading > a").TextContent.ShouldBe("ссылка");
     }
 
     [Fact]
@@ -102,6 +131,19 @@ public class JoinCollapsePanelTest
                 .Add(x => x.Group, "своя")));
 
         cut.Find("details").GetAttribute("name").ShouldBe("своя");
+    }
+
+    [Fact]
+    public void Group_RendersOwnClass()
+    {
+        using var ctx = new BunitContext();
+        var cut = ctx.Render<JoinCollapsePanelGroup>(p => p
+            .AddChildContent<JoinCollapsePanel>(panel => panel
+                .Add(x => x.Header, "заголовок")
+                .Add(x => x.ChildContent, "содержимое")));
+
+        cut.Find(".join-collapse-panel-group").ShouldNotBeNull();
+        cut.Markup.ShouldNotContain("class=\"panel-group\"");
     }
 
     /// <summary>Две группы по две панели — проверить, что аккордеоны не смешиваются.</summary>
