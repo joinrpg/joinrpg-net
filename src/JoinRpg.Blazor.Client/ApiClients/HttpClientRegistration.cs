@@ -78,6 +78,7 @@ public static class HttpClientRegistration
                 .AddHttpClient<ICommentRestoreClient, CommentRestoreClient>()
                 .AddHttpClient<IFinanceRestoreClient, FinanceRestoreClient>()
                 .AddHttpClient<IMoneyTransferClient, MoneyTransferClient>()
+                .AddHttpClient<IExpensesClient, ExpensesClient>()
                 .AddHttpClient<IFinanceModerationClient, FinanceModerationClient>()
                 .AddHttpClient<IChangeFeeClient, ChangeFeeClient>()
                 .AddHttpClient<JoinRpg.Web.Claims.Comments.IClaimCommentClient, ClaimCommentClient>()

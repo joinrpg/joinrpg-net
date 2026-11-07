@@ -25,3 +25,7 @@
 
 @await Html.PartialAsync("_Operations", Model.Operations.Items)
 
+<component type="typeof(JoinRpg.Blazor.Client.Expenses.MyExpensesPanelLoader)"
+           render-mode="WebAssembly"
+           param-ProjectId="@(new ProjectIdentification(Model.ProjectId))" />
+

@@ -156,6 +156,11 @@
                         <li>@Html.ActionLink("Отметить перевод", "Create", "Transfer", new { Model.ProjectId }, null)</li>
                         <li>@Html.ActionLink("Сводка по деньгам", "MoneySummary", "Finances", new { Model.ProjectId }, null)</li>
                         <li>
+                            <a asp-page="/GamePages/Expenses" asp-route-projectId="@Model.ProjectId">
+                                Расходы
+                            </a>
+                        </li>
+                        <li>
                             <a asp-action="Setup" asp-controller="Finances" asp-route-projectId="@Model.ProjectId">
                                 Настройка финансов
                             </a>

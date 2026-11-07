@@ -20,6 +20,7 @@ public record ExpenseMasterViewModel(
 /// (например «Аренда базы\Жилые корпуса»), строится на стороне, отдающей данные.
 /// </summary>
 /// <param name="Description">Описание (markdown), сырой текст.</param>
+/// <param name="MasterId">Мастер, понёсший расход; страница правит расход по id, а не по имени.</param>
 public record ExpenseViewModel(
     ExpenseIdentification ExpenseId,
     string Name,
@@ -32,7 +33,8 @@ public record ExpenseViewModel(
     ExpenseStateView State,
     string MasterName,
     string CreatedByName,
-    string? Description = null)
+    string? Description = null,
+    UserIdentification? MasterId = null)
 {
     public int PlannedCost => PlannedQuantity * PlannedPrice;
 

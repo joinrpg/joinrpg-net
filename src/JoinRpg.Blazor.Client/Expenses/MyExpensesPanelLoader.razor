@@ -1,0 +1,39 @@
+@using JoinRpg.Blazor.Client.ApiClients
+@using JoinRpg.Web.Finances.Expenses
+@inject IExpensesClient Client
+@inject ILogger<MyExpensesPanelLoader> Logger
+
+@* Панель «Мои расходы» на странице «Мои деньги»: расходы текущего мастера. *@
+@if (error is not null)
+{
+    <JoinAlert Variation="VariationStyleEnum.Danger">@error</JoinAlert>
+}
+else if (expenses is null)
+{
+    <JoinLoadingMessage />
+}
+else
+{
+    <MyExpensesPanel Expenses="expenses" />
+}
+
+@code {
+    [Parameter, EditorRequired]
+    public ProjectIdentification ProjectId { get; set; } = null!;
+
+    private IReadOnlyList<ExpenseViewModel>? expenses;
+    private string? error;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            expenses = await Client.GetMyExpenses(ProjectId);
+        }
+        catch (Exception exception)
+        {
+            Logger.LogError(exception, "Ошибка загрузки моих расходов по проекту {ProjectId}", ProjectId);
+            error = "Не удалось загрузить расходы. Обновите страницу и попробуйте ещё раз.";
+        }
+    }
+}
