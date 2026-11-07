@@ -67,6 +67,10 @@ button.join-dialog-close {
 
 .join-dialog-content {
     width: 100%;
+    /* Строки Bootstrap 3 (.form-horizontal .form-group, .row) имеют margin ±15px:
+       компенсируем их, как .container, иначе формы в диалоге дают горизонтальную прокрутку окна. */
+    margin: 0 -15px;
+    padding: 0 15px;
 }
 
 
