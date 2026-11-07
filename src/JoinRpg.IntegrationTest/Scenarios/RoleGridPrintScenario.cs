@@ -65,9 +65,9 @@ public class RoleGridPrintScenario(JoinApplicationFactory factory) : IClassFixtu
         savedPrint.ShouldNotContain("Настройки сетки");
         savedPrint.ShouldNotContain("Редактировать персонажа");
         savedPrint.ShouldNotContain("Заявиться");
-        // Иконки рендерятся как svg с классом join-icon и без join-icons.css не отображаются.
+        // Иконки рендерятся как svg с классом join-icon и без join-components.css (включает join-icons.css) не отображаются.
         // Имя файла в href отпечатано fingerprint'ом статических ассетов — матчимся на префикс.
-        savedPrint.ShouldContain("/_content/JoinRpg.Common.WebComponents/css/join-icons.");
+        savedPrint.ShouldContain("/_content/JoinRpg.Common.WebComponents/css/join-components.");
 
         var classicPrint = WebUtility.HtmlDecode(await masterClient.GetStringAsync($"{projectId.Value}/roles/print"));
         classicPrint.ShouldContain(firstName);

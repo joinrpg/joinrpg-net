@@ -1,0 +1,9 @@
+/*
+ * Всё статическое CSS пакета одним подключением (scoped-бандл подключается
+ * отдельно, как раньше):
+ *   @import url('./variations.css') — общая палитра вариаций (--join-variation-*);
+ *   @import url('./join-icons.css') — иконки.
+ * Хосту нужна только эта одна ссылка — см. README, раздел «Подключение».
+ */
+@import url('./variations.css');
+@import url('./join-icons.css');

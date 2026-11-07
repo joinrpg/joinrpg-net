@@ -1,0 +1,62 @@
+<h3>JoinBadge</h3>
+
+<h4>Вариации и размеры</h4>
+<table class="table">
+    <thead>
+        <tr>
+            <th>Вариация</th>
+            @foreach (var size in sizes)
+            {
+                <th>@size</th>
+            }
+            <th>Без размера</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var variation in variations)
+        {
+            <tr>
+                <td>@variation</td>
+                @foreach (var size in sizes)
+                {
+                    <td><JoinBadge Text="бейдж" Variation="@variation" Size="@size" Title="Подсказка бейджа" /></td>
+                }
+                <td><JoinBadge Text="бейдж" Variation="@variation" Title="Подсказка бейджа" /></td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<h4>Другое содержимое</h4>
+<p>
+    <JoinBadge Variation="VariationStyleEnum.Success" Title="Подсказка бейджа">
+        контент <b>с разметкой</b>
+    </JoinBadge>
+    <JoinBadge Variation="VariationStyleEnum.Info" Text="подсказка разметкой">
+        <TooltipContent>
+            Подсказка <i>с разметкой</i>
+        </TooltipContent>
+    </JoinBadge>
+    <JoinBadge For="false" Text="не показывается" />
+    <JoinBadge For="true" Variation="VariationStyleEnum.Warning" Text="с условием" Title="Подсказка бейджа" />
+</p>
+
+@code {
+    private static readonly VariationStyleEnum[] variations =
+    [
+        VariationStyleEnum.None,
+        VariationStyleEnum.Primary,
+        VariationStyleEnum.Success,
+        VariationStyleEnum.Info,
+        VariationStyleEnum.Warning,
+        VariationStyleEnum.Danger,
+    ];
+
+    private static readonly SizeStyleEnum[] sizes =
+    [
+        SizeStyleEnum.Large,
+        SizeStyleEnum.Medium,
+        SizeStyleEnum.Small,
+        SizeStyleEnum.ExtraSmall,
+    ];
+}

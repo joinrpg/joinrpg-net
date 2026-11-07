@@ -7,17 +7,18 @@
 /*
  * Кнопка — свои стили (те же значения, что у JoinButton и .btn-default из Bootstrap 3.4.0), чтобы она
  * выглядела кнопкой и без Bootstrap. Варианты и размеры — классы join-btn--*, как у JoinButton:
- * цвета и размеры здесь свои, потому что стили JoinButton scoped и до чужой кнопки не доходят.
+ * цвета и размеры здесь свои, потому что стили JoinButton scoped и до чужой кнопки не доходят;
+ * берутся из общей палитры пакета (css/variations.css) через var(--join-variation-*).
  * Класс join-btn нужен JoinButtonGroup: по нему группа снимает скругления у соседних сегментов.
  */
 .join-dropdown__toggle {
-    --join-btn-color: #333;
-    --join-btn-bg: #fff;
-    --join-btn-border: #ccc;
-    --join-btn-focus-bg: #e6e6e6;
-    --join-btn-focus-border: #8c8c8c;
-    --join-btn-hover-bg: #e6e6e6;
-    --join-btn-hover-border: #adadad;
+    --join-btn-color: var(--join-variation-default-color);
+    --join-btn-bg: var(--join-variation-default-bg);
+    --join-btn-border: var(--join-variation-default-border);
+    --join-btn-focus-bg: var(--join-variation-default-focus-bg);
+    --join-btn-focus-border: var(--join-variation-default-focus-border);
+    --join-btn-hover-bg: var(--join-variation-default-hover-bg);
+    --join-btn-hover-border: var(--join-variation-default-hover-border);
 
     list-style: none;
     box-sizing: border-box;
@@ -50,55 +51,55 @@
         box-shadow: inset 0 3px 5px rgba(0, 0, 0, .125);
     }
 
-/* Варианты — те же цвета, что у JoinButton (Bootstrap 3.4.0) */
+/* Варианты — те же цвета, что у JoinButton (общая палитра пакета) */
     .join-dropdown__toggle.join-btn--primary {
-        --join-btn-color: #fff;
-        --join-btn-bg: #337ab7;
-        --join-btn-border: #2e6da4;
-        --join-btn-focus-bg: #286090;
-        --join-btn-focus-border: #122b40;
-        --join-btn-hover-bg: #286090;
-        --join-btn-hover-border: #204d74;
+        --join-btn-color: var(--join-variation-primary-color);
+        --join-btn-bg: var(--join-variation-primary-bg);
+        --join-btn-border: var(--join-variation-primary-border);
+        --join-btn-focus-bg: var(--join-variation-primary-focus-bg);
+        --join-btn-focus-border: var(--join-variation-primary-focus-border);
+        --join-btn-hover-bg: var(--join-variation-primary-hover-bg);
+        --join-btn-hover-border: var(--join-variation-primary-hover-border);
     }
 
     .join-dropdown__toggle.join-btn--success {
-        --join-btn-color: #fff;
-        --join-btn-bg: #5cb85c;
-        --join-btn-border: #4cae4c;
-        --join-btn-focus-bg: #449d44;
-        --join-btn-focus-border: #255625;
-        --join-btn-hover-bg: #449d44;
-        --join-btn-hover-border: #398439;
+        --join-btn-color: var(--join-variation-success-color);
+        --join-btn-bg: var(--join-variation-success-bg);
+        --join-btn-border: var(--join-variation-success-border);
+        --join-btn-focus-bg: var(--join-variation-success-focus-bg);
+        --join-btn-focus-border: var(--join-variation-success-focus-border);
+        --join-btn-hover-bg: var(--join-variation-success-hover-bg);
+        --join-btn-hover-border: var(--join-variation-success-hover-border);
     }
 
     .join-dropdown__toggle.join-btn--info {
-        --join-btn-color: #fff;
-        --join-btn-bg: #5bc0de;
-        --join-btn-border: #46b8da;
-        --join-btn-focus-bg: #31b0d5;
-        --join-btn-focus-border: #1b6d85;
-        --join-btn-hover-bg: #31b0d5;
-        --join-btn-hover-border: #269abc;
+        --join-btn-color: var(--join-variation-info-color);
+        --join-btn-bg: var(--join-variation-info-bg);
+        --join-btn-border: var(--join-variation-info-border);
+        --join-btn-focus-bg: var(--join-variation-info-focus-bg);
+        --join-btn-focus-border: var(--join-variation-info-focus-border);
+        --join-btn-hover-bg: var(--join-variation-info-hover-bg);
+        --join-btn-hover-border: var(--join-variation-info-hover-border);
     }
 
     .join-dropdown__toggle.join-btn--warning {
-        --join-btn-color: #fff;
-        --join-btn-bg: #f0ad4e;
-        --join-btn-border: #eea236;
-        --join-btn-focus-bg: #ec971f;
-        --join-btn-focus-border: #985f0d;
-        --join-btn-hover-bg: #ec971f;
-        --join-btn-hover-border: #d58512;
+        --join-btn-color: var(--join-variation-warning-color);
+        --join-btn-bg: var(--join-variation-warning-bg);
+        --join-btn-border: var(--join-variation-warning-border);
+        --join-btn-focus-bg: var(--join-variation-warning-focus-bg);
+        --join-btn-focus-border: var(--join-variation-warning-focus-border);
+        --join-btn-hover-bg: var(--join-variation-warning-hover-bg);
+        --join-btn-hover-border: var(--join-variation-warning-hover-border);
     }
 
     .join-dropdown__toggle.join-btn--danger {
-        --join-btn-color: #fff;
-        --join-btn-bg: #d9534f;
-        --join-btn-border: #d43f3a;
-        --join-btn-focus-bg: #c9302c;
-        --join-btn-focus-border: #761c19;
-        --join-btn-hover-bg: #c9302c;
-        --join-btn-hover-border: #ac2925;
+        --join-btn-color: var(--join-variation-danger-color);
+        --join-btn-bg: var(--join-variation-danger-bg);
+        --join-btn-border: var(--join-variation-danger-border);
+        --join-btn-focus-bg: var(--join-variation-danger-focus-bg);
+        --join-btn-focus-border: var(--join-variation-danger-focus-border);
+        --join-btn-hover-bg: var(--join-variation-danger-hover-bg);
+        --join-btn-hover-border: var(--join-variation-danger-hover-border);
     }
 
 /* Размеры — те же значения, что у JoinButton */
