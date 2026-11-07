@@ -42,6 +42,7 @@ internal static class ButtonPresets
         { ButtonPreset.Profile, new("Профиль",null, JoinIconType.User, VariationStyleEnum.Info)},
         { ButtonPreset.Donate, new("Отослать донат",null, JoinIconType.Money, VariationStyleEnum.Success)},
         { ButtonPreset.Sort, new("Переместить", "Перемещаем...", JoinIconType.Sort) },
+        { ButtonPreset.Archive, new("В архив", "Архивируем...", JoinIconType.Archive, VariationStyleEnum.Warning) },
     }.ToFrozenDictionary();
 }
 

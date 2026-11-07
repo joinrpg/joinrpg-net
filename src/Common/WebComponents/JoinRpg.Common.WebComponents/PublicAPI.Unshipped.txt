@@ -17,6 +17,7 @@
 *REMOVED*virtual JoinRpg.Common.WebComponents.ElementMoving.ElementMoveCommandViewModel.EqualityContract.get -> System.Type!
 *REMOVED*virtual JoinRpg.Common.WebComponents.ElementMoving.ElementMoveCommandViewModel.Equals(JoinRpg.Common.WebComponents.ElementMoving.ElementMoveCommandViewModel? other) -> bool
 *REMOVED*virtual JoinRpg.Common.WebComponents.ElementMoving.ElementMoveCommandViewModel.PrintMembers(System.Text.StringBuilder! builder) -> bool
+JoinRpg.Common.WebComponents.ButtonPreset.Archive = 32 -> JoinRpg.Common.WebComponents.ButtonPreset
 JoinRpg.Common.WebComponents.EnumRadioButtonGroup<TValue>.Values.get -> System.Collections.Generic.IReadOnlyCollection<TValue>?
 JoinRpg.Common.WebComponents.EnumRadioButtonGroup<TValue>.Values.set -> void
 JoinRpg.Common.WebComponents.FormRow.Label.get -> string?

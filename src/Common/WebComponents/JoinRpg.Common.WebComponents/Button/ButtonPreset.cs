@@ -46,4 +46,8 @@ public enum ButtonPreset
     Profile,
     Donate,
     Sort,
+    /// <summary>
+    /// Отправить в архив
+    /// </summary>
+    Archive,
 }
