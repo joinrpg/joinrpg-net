@@ -31,3 +31,9 @@ public class ProjectStaleMail : ProjectEmailModelBase
     public required DateOnly LastActiveDate { get; set; }
     public required DateOnly WillCloseDate { get; set; }
 }
+
+/// <summary>
+/// Еженедельное напоминание мастерам заблокированного проекта (ADR023) определиться с его судьбой:
+/// закрыть проект или восстановить данные по инструкции.
+/// </summary>
+public class ProjectBlockedMail : ProjectEmailModelBase;
