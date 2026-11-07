@@ -37,6 +37,8 @@ using JoinRpg.Services.Notifications.Senders;
 using JoinRpg.WebPortal.Managers;
 using JoinRpg.WebPortal.Managers.Drp;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
@@ -154,6 +156,7 @@ public class Startup(WebApplicationBuilder builder)
 
         _ = services.AddProblemDetails();
         _ = services.AddExceptionHandler<WebApiExceptionHandler>();
+        _ = services.AddSingleton<IAuthorizationMiddlewareResultHandler, XApiAuthorizationResultHandler>();
         _ = services.Configure<ApiBehaviorOptions>(WebApiClientErrorTitles.Configure);
 
         _ = services.AddUserServicesOnly();
@@ -206,7 +209,34 @@ public class Startup(WebApplicationBuilder builder)
         _ = app.UseJoinRequestLogging();
 
         _ = app.UseExceptionHandler(PortalExceptionHandling.CreateOptions());
+        // Re-execute должен стоять прямо на app — иначе не сработает повторный route matching страницы /error/{код}.
         _ = app.UseStatusCodePagesWithReExecute(PortalExceptionHandling.ErrorPagePath + "/{0}");
+        // Внешнему API (x-api / x-game-api) вместо re-execute — ProblemDetails: re-execute отключаем
+        // через IStatusCodePagesFeature и пишем тело сами, только если никто его ещё не написал.
+        _ = app.Use(async (context, next) =>
+        {
+            var isExternalApi = context.Request.Path.IsExternalApiPath();
+            if (isExternalApi && context.Features.Get<IStatusCodePagesFeature>() is { } statusCodePages)
+            {
+                statusCodePages.Enabled = false;
+            }
+
+            await next();
+
+            if (isExternalApi
+                && context.Response.StatusCode is >= 400 and < 600
+                && !context.Response.HasStarted
+                && (!context.Response.Body.CanSeek || context.Response.Body.Length == 0))
+            {
+                var status = context.Response.StatusCode;
+                await context.RequestServices.GetRequiredService<IProblemDetailsService>()
+                    .TryWriteAsync(new ProblemDetailsContext
+                    {
+                        HttpContext = context,
+                        ProblemDetails = new ProblemDetails { Status = status, Title = WebApiClientErrorTitles.GetTitle(status) },
+                    });
+            }
+        });
 
         _ = app.MapOpenApi();
         _ = app.MapSwaggerUI("swagger", c =>

@@ -7,15 +7,16 @@ using Microsoft.AspNetCore.Mvc;
 namespace JoinRpg.Portal.Infrastructure;
 
 /// <summary>
-/// Ошибки API островов (<c>/webapi/</c>) отдаёт как <see cref="ProblemDetails"/>, а не HTML-страницей ошибки:
-/// остров показывает <see cref="ProblemDetails.Title"/> пользователю (#4231).
+/// Ошибки API (<c>/webapi/</c> островов и внешнего <c>/x-api</c>//<c>/x-game-api</c>) отдаёт как <see cref="ProblemDetails"/>,
+/// а не HTML-страницей ошибки: остров показывает <see cref="ProblemDetails.Title"/> пользователю (#4231),
+/// клиенты XApi получают машиночитаемый отказ.
 /// Остальные пути не трогает — для них остаётся страница <c>/error</c>.
 /// </summary>
 internal class WebApiExceptionHandler(IProblemDetailsService problemDetailsService) : IExceptionHandler
 {
     public async ValueTask<bool> TryHandleAsync(HttpContext httpContext, Exception exception, CancellationToken cancellationToken)
     {
-        if (!GetOriginalPath(httpContext).IsInternalApiPath())
+        if (!GetOriginalPath(httpContext).IsApiPath())
         {
             return false;
         }

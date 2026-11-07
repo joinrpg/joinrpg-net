@@ -36,4 +36,7 @@ internal static class WebApiClientErrorTitles
             };
         }
     }
+
+    /// <summary>Заголовок ProblemDetails по коду — для ветви <c>UseStatusCodePages</c> внешнего API (см. Startup).</summary>
+    public static string GetTitle(int statusCode) => Titles.TryGetValue(statusCode, out var title) ? title : "Ошибка";
 }

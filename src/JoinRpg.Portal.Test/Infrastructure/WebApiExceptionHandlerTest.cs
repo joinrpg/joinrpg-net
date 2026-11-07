@@ -212,6 +212,42 @@ public class WebApiExceptionHandlerTest
         handled.ShouldBeFalse();
     }
 
+    // Внешнее API (x-api / x-game-api) получает ProblemDetails на тех же условиях, что и /webapi
+    [Fact]
+    public async Task ProjectNotFound_InXApi_ReturnsNotFoundWithReason()
+    {
+        var httpContext = CreateHttpContext("/x-api/users/1/");
+
+        var (handled, problem) = await Handle(httpContext, new ProjectNotFoundException(ProjectId));
+
+        handled.ShouldBeTrue();
+        httpContext.Response.StatusCode.ShouldBe(StatusCodes.Status404NotFound);
+        problem.GetProperty("title").GetString().ShouldBe("Проект не найден");
+    }
+
+    [Fact]
+    public async Task ProjectDeactivated_InXGameApi_ReturnsConflictWithReason()
+    {
+        var httpContext = CreateHttpContext("/x-game-api/1611/characters");
+
+        var (handled, problem) = await Handle(httpContext, new ProjectDeactivatedException(ProjectId));
+
+        handled.ShouldBeTrue();
+        httpContext.Response.StatusCode.ShouldBe(StatusCodes.Status409Conflict);
+        problem.GetProperty("title").GetString().ShouldBe("Проект находится в архиве, изменения в нём невозможны");
+    }
+
+    // «/x-api-fake» — не сегмент «x-api»: обрабатывать нельзя, это обычная страница
+    [Fact]
+    public async Task LookalikePathOutsideApi_NotHandled()
+    {
+        var httpContext = CreateHttpContext("/x-api-fake/something");
+
+        var (handled, _) = await Handle(httpContext, new ProjectNotFoundException(ProjectId));
+
+        handled.ShouldBeFalse();
+    }
+
     [Fact]
     public void UnknownException_IsNotExpectedRefusal()
     {
