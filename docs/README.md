@@ -53,6 +53,7 @@
 - [ADR027: Грид заявок мастера на основе кабинета капитана (UnifiedGrid)](adr027-unified-claim-grid.md)
 - [ADR028: Автоматическое восстановление потерянных платежей ПСКБ](adr028-pscb-lost-payments-restore.md)
 - [ADR029: Вводная «сетка ролей»](adr029-roles-grid-plot-element.md)
+- [ADR030: Расходы проекта](adr030-expenses.md)
 
 ## Быстрые ссылки
 
