@@ -1,6 +1,7 @@
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.DataModel.Finances;
+using JoinRpg.DomainTypes.Finances;
 using JoinRpg.DomainTypes.Users;
 using JoinRpg.Interfaces;
 using JoinRpg.Web.Models;
@@ -15,6 +16,7 @@ namespace JoinRpg.WebPortal.Managers.Finances;
 public class FinanceReportViewService(
     IProjectRepository projectRepository,
     IFinanceReportRepository financeReportRepository,
+    IExpenseRepository expenseRepository,
     IUserRepository userRepository,
     IProjectMetadataRepository projectMetadataRepository,
     ICurrentUserAccessor currentUserAccessor)
@@ -37,6 +39,7 @@ public class FinanceReportViewService(
             context.ProjectInfo,
             context.Transfers,
             context.Operations,
+            context.Expenses,
             payments,
             currentUserAccessor,
             context.Masters);
@@ -52,7 +55,7 @@ public class FinanceReportViewService(
 
         return new MasterBalancesReport(
             context.ProjectInfo.ProjectName,
-            MasterBalanceBuilder.ToMasterBalanceViewModels(context.Masters, context.Operations, context.Transfers, context.ProjectInfo));
+            MasterBalanceBuilder.ToMasterBalanceViewModels(context.Masters, context.Operations, context.Transfers, context.Expenses, context.ProjectInfo));
     }
 
     private async Task<FinanceSummaryContext?> LoadFinanceSummaryContext(ProjectIdentification projectId)
@@ -66,11 +69,12 @@ public class FinanceReportViewService(
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId);
         var transfers = await financeReportRepository.GetAllMoneyTransfers(projectId);
         var operations = project.FinanceOperations.ToArray();
+        var expenses = await expenseRepository.GetExpenses(projectId);
 
-        var masterIds = MasterBalanceBuilder.GetMasterIds(operations, transfers, projectInfo);
+        var masterIds = MasterBalanceBuilder.GetMasterIds(operations, transfers, expenses, projectInfo);
         var masters = await userRepository.GetRequiredUserInfos(masterIds);
 
-        return new FinanceSummaryContext(project, projectInfo, operations, transfers, masters);
+        return new FinanceSummaryContext(project, projectInfo, operations, transfers, expenses, masters);
     }
 
     private sealed record FinanceSummaryContext(
@@ -78,6 +82,7 @@ public class FinanceReportViewService(
         ProjectInfo ProjectInfo,
         IReadOnlyCollection<FinanceOperation> Operations,
         IReadOnlyCollection<MoneyTransfer> Transfers,
+        IReadOnlyCollection<ExpenseInfo> Expenses,
         IReadOnlyCollection<UserInfo> Masters);
 }
 

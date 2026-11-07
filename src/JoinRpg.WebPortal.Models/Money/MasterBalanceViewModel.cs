@@ -1,6 +1,7 @@
 using JoinRpg.DataModel;
 using JoinRpg.DataModel.Finances;
 using JoinRpg.Domain;
+using JoinRpg.DomainTypes.Finances;
 
 namespace JoinRpg.Web.Models;
 
@@ -22,7 +23,9 @@ public class MasterBalanceViewModel
     public int ModerationBalance { get; }
 
     [Display(Name = "Расходы")]
-    public int ExpensesBalance { get; } = 0; //Not used
+    public int ExpensesBalance { get; }
+    [Display(Name = "Запланировано")]
+    public int PlannedExpenses { get; }
 
     public int ProjectId { get; }
 
@@ -30,7 +33,8 @@ public class MasterBalanceViewModel
         UserInfo master,
         ProjectInfo projectInfo,
         IReadOnlyCollection<FinanceOperation> masterOperations,
-        IReadOnlyCollection<MoneyTransfer> masterTransfers)
+        IReadOnlyCollection<MoneyTransfer> masterTransfers,
+        IReadOnlyCollection<ExpenseInfo>? expenses = null)
     {
         ArgumentNullException.ThrowIfNull(master);
         ArgumentNullException.ThrowIfNull(masterOperations);
@@ -50,10 +54,17 @@ public class MasterBalanceViewModel
             .Where(fo => fo.GetPaymentMasterId(projectInfo) == master.UserId)
             .Sum(fo => fo.MoneyAmount);
 
-        Total = FeeBalance + ReceiveBalance + SendBalance;
+        // Эффекты расхода на баланс (в т.ч. правило «Rejected не считается») — в доменном типе ExpenseInfo.
+        var ownExpenses = (expenses ?? [])
+            .Where(e => e.MasterId == master.UserId)
+            .ToArray();
+        ExpensesBalance = ownExpenses.Sum(e => e.ActualBalanceEffect);
+        PlannedExpenses = ownExpenses.Sum(e => e.PlannedBalanceEffect);
+
+        Total = FeeBalance + ReceiveBalance + SendBalance - ExpensesBalance;
     }
 
     public bool AnythingEverHappens() => ReceiveBalance != 0 || FeeBalance != 0 ||
                                          SendBalance != 0 || ModerationBalance != 0 ||
-                                         ExpensesBalance != 0;
+                                         ExpensesBalance != 0 || PlannedExpenses != 0;
 }
