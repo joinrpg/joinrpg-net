@@ -11,6 +11,7 @@ using JoinRpg.Web.Models;
 using JoinRpg.Web.Models.Exporters;
 using JoinRpg.Web.Models.Money;
 using JoinRpg.Web.UserProfile;
+using JoinRpg.WebPortal.Managers.Finances;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -28,7 +29,8 @@ public class FinancesController(
     ICurrentUserAccessor currentUserAccessor,
     IProjectMetadataRepository projectMetadataRepository,
     IClaimsRepository claimsRepository,
-    UserProfileDetailsBuilder cardBuilder
+    UserProfileDetailsBuilder cardBuilder,
+    FinanceReportViewService financeReportViewService
         ) : JoinControllerGameBase
 {
     protected readonly IUserRepository UserRepository = userRepository;
@@ -77,33 +79,9 @@ public class FinancesController(
     [HttpGet]
     public async Task<ActionResult> MoneySummary(ProjectIdentification projectId)
     {
-        var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId);
-        var project = await projectRepository.GetProjectWithFinances(projectId);
-        if (project == null)
-        {
-            return NotFound();
-        }
+        var viewModel = await financeReportViewService.GetMoneySummaryViewModel(projectId);
 
-        var transfers =
-            await financeReportRepository.GetAllMoneyTransfers(projectId);
-
-        var operations = project.FinanceOperations.ToArray();
-
-        var payments = projectInfo.ProjectFinanceSettings.PaymentTypes
-            .Select(pt => new PaymentTypeSummaryViewModel(pt, operations))
-            .Where(m => m.Total != 0).OrderByDescending(m => m.Total).ToArray();
-
-        var masterIds = MasterBalanceBuilder.GetMasterIds(operations, transfers, projectInfo);
-        var masters = await UserRepository.GetRequiredUserInfos(masterIds);
-
-        var viewModel = new MoneyInfoTotalViewModel(projectInfo,
-            transfers,
-            operations,
-            payments,
-            currentUserAccessor,
-            masters);
-
-        return View(viewModel);
+        return viewModel is null ? NotFound() : View(viewModel);
     }
 
     [HttpGet, AllowAnonymous]
@@ -118,24 +96,16 @@ public class FinancesController(
             return Content("Unauthorized");
         }
 
-        var project = await projectRepository.GetProjectWithFinances(projectId.Value);
+        var report = await financeReportViewService.GetMasterBalancesReport(projectId);
+        if (report is null)
+        {
+            return NotFound();
+        }
 
-        var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId);
+        var generator = exportDataService.GetGenerator(ExportType.Csv, report.Balances,
+            new MoneySummaryByMasterExporter(uriService));
 
-        var masterOperations = project.FinanceOperations.ToArray();
-
-        var masterTransfers = await financeReportRepository.GetAllMoneyTransfers(projectId.Value);
-
-        var masterIds = MasterBalanceBuilder.GetMasterIds(masterOperations, masterTransfers, projectInfo);
-        var masters = await UserRepository.GetRequiredUserInfos(masterIds);
-
-        var summary =
-            MasterBalanceBuilder.ToMasterBalanceViewModels(masters, masterOperations, masterTransfers, projectInfo);
-
-        var generator = exportDataService.GetGenerator(ExportType.Csv, summary,
-    new MoneySummaryByMasterExporter(uriService));
-
-        return GeneratorResultHelper.Result(project.ProjectName + ": Финансы", generator);
+        return GeneratorResultHelper.Result(report.ProjectName + ": Финансы", generator);
     }
 
     [MasterAuthorize()]
