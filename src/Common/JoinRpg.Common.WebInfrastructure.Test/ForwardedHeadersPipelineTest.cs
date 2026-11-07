@@ -111,6 +111,20 @@ public class ForwardedHeadersPipelineTest
     }
 
     [Theory]
+    // Traefik шлёт wss/ws для WebSocket-апгрейдов (traefik/traefik#6388); приложению — привычные https/http
+    [InlineData("wss", "https")]
+    [InlineData("WSS", "https")]
+    [InlineData("ws", "http")]
+    public async Task ForwardedWebSocketProtoIsNormalizedToHttpScheme(string forwardedProto, string expectedScheme)
+    {
+        await using var app = await StartApp();
+
+        var context = await Send(app, "/", remoteIp: "10.0.0.5", forwardedFor: "10.0.7.7", forwardedProto: forwardedProto, host: "joinrpg.ru");
+
+        context.Request.Scheme.ShouldBe(expectedScheme);
+    }
+
+    [Theory]
     [InlineData("/health/live")]
     [InlineData("/health/ready")]
     [InlineData("/metrics")]
