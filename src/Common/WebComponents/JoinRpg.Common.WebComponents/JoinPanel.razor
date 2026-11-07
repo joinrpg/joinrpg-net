@@ -1,19 +1,19 @@
-<div class="@style">
+<div class="join-panel @VariationModifier">
     @if (Header is not null)
     {
-        <div class="panel-heading">@Header</div>
+        <div class="join-panel__heading">@Header</div>
     }
     @if (Body is not null)
     {
-       <div class="panel-body">@Body</div>
+       <div class="join-panel__body">@Body</div>
     }
     else if (ChildContent is not null)
     {
-        <div class="panel-body">@ChildContent</div>
+        <div class="join-panel__body">@ChildContent</div>
     }
     @if (Footer is not null)
     {
-        <div class="panel-footer">@Footer</div>
+        <div class="join-panel__footer">@Footer</div>
     }
 </div>
 
@@ -24,5 +24,14 @@
     [Parameter] public RenderFragment? Footer { get; set; }
     [Parameter] public VariationStyleEnum? Variation { get; set; } = null;
 
-    private string style => BootstrapStyle.Build("panel", Variation, null);
+    private string VariationModifier => Variation switch
+    {
+        null or VariationStyleEnum.None => "join-panel--default",
+        VariationStyleEnum.Primary => "join-panel--primary",
+        VariationStyleEnum.Success => "join-panel--success",
+        VariationStyleEnum.Warning => "join-panel--warning",
+        VariationStyleEnum.Danger => "join-panel--danger",
+        VariationStyleEnum.Info => "join-panel--info",
+        _ => throw new ArgumentException("Incorrect variation", nameof(Variation)),
+    };
 }

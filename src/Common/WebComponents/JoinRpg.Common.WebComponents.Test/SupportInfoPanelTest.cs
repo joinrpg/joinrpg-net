@@ -19,7 +19,7 @@ public class SupportInfoPanelTest
             .Add(x => x.Version, "1.2.3")
             .Add(x => x.CommitSha, "abc123"));
 
-        var text = cut.Find("div.panel-body").TextContent;
+        var text = cut.Find("div.join-panel__body").TextContent;
         text.ShouldContain("activity-1");
         text.ShouldContain("joinrpg-portal-7c85f4cb58-b7b74");
         text.ShouldContain("1.2.3 (коммит abc123)");
@@ -40,7 +40,7 @@ public class SupportInfoPanelTest
             .Add(x => x.PodName, "joinrpg-portal-7c85f4cb58-b7b74")
             .Add(x => x.Version, "неизвестна"));
 
-        var text = cut.Find("div.panel-body").TextContent;
+        var text = cut.Find("div.join-panel__body").TextContent;
         text.ShouldNotContain("ActivityId");
         text.ShouldNotContain("Путь");
         text.ShouldNotContain("Referer");

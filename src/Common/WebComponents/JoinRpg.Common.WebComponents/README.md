@@ -19,7 +19,7 @@ dotnet add package JoinRpg.Common.WebComponents
 
 2. Статический CSS пакета — в layout, одной ссылкой (scoped-бандл подключается отдельно,
    как обычно). Включает общую палитру вариаций (`--join-variation-*`, без неё `JoinBadge`,
-   `JoinButton`, `JoinCollapsePanel`, `JoinDropdownButton` теряют фон) и иконки:
+   `JoinButton`, `JoinCollapsePanel`, `JoinDropdownButton`, `JoinPanel` теряют фон) и иконки:
 
    ```html
    <link rel="stylesheet" href="_content/JoinRpg.Common.WebComponents/css/join-components.css" />
@@ -45,10 +45,10 @@ dotnet add package JoinRpg.Common.WebComponents
 
 ## Стили
 
-Bootstrap 3 пакет не приносит. На его CSS рассчитаны `JoinPanel`, `JoinPanelWithList`,
-таблицы, `FormRow` и поля ввода (`panel`, `list-group`, `table`, `form-group`,
+Bootstrap 3 пакет не приносит. На его CSS рассчитаны `JoinPanelWithList`,
+таблицы, `FormRow` и поля ввода (`list-group`, `table`, `form-group`,
 `col-md-*`, `form-control`, `help-block`, `control-label`). Без Bootstrap (и его JS) обходятся
-`JoinButton`, `JoinBadge`, `JoinCollapsePanel`, `JoinAlert` (и рендерящие его `JoinLoadingMessage` и `JoinErrorMessage`),
+`JoinPanel`, `JoinButton`, `JoinBadge`, `JoinCollapsePanel`, `JoinAlert` (и рендерящие его `JoinLoadingMessage` и `JoinErrorMessage`),
 `Tooltip`, `TypedSelector`, `JoinDropdownButton` и его обёртки `JoinDotsMenu` и
 `TypedDropdownButton`, `JoinDialog`.
 
