@@ -22,8 +22,9 @@ public class ClaimPaymentMethodsButtonTest : BunitContext
         joinDialogModule.SetupVoid("closeModal", _ => true);
     }
 
-    private static ClaimPaymentMethodView Method(string name, string? paymentLink = null, string? description = null)
-        => new(name, paymentLink is null ? null : new Uri(paymentLink), PaymentLinkKind.Redirect, description);
+    private static ClaimPaymentMethodView Method(string name, string? paymentLink = null, string? description = null,
+        bool isRecommended = false)
+        => new(name, paymentLink is null ? null : new Uri(paymentLink), PaymentLinkKind.Redirect, description, isRecommended);
 
     private IRenderedComponent<ClaimPaymentMethodsButton> RenderButton(params ClaimPaymentMethodView[] methods)
     {
@@ -59,6 +60,31 @@ public class ClaimPaymentMethodsButtonTest : BunitContext
 
         cut.FindAll("dialog a").ShouldBeEmpty();
         cut.Find("dialog").TextContent.ShouldContain("Отдайте мастеру");
+    }
+
+    [Fact]
+    public void RecommendedMethodGetsBadge()
+    {
+        // #6117: основной метод оплаты отмечаем бейджем «Рекомендуется»
+        var cut = RenderButton(
+            Method("Карта", "https://pay.example.com/1"),
+            Method("СБП", "https://pay.example.com/2", isRecommended: true));
+
+        var badge = cut.FindAll("dialog span.label").ShouldHaveSingleItem();
+        badge.TextContent.ShouldContain("Рекомендуется");
+        // Бейдж стоит у рекомендуемого метода, а не у первого по алфавиту
+        badge.Parent?.TextContent.ShouldContain("СБП");
+    }
+
+    [Fact]
+    public void FooterButtonIsLabeledClose()
+    {
+        // #6117: это просто закрытие модалки — кнопка называется «Закрыть», а не «Отменить»
+        var cut = RenderButton(Method("Карта", "https://pay.example.com/1"));
+
+        // В шапке диалога есть ещё кнопка-крестик — проверяем кнопку футера
+        var closeButton = cut.FindAll(".join-dialog-footer button").ShouldHaveSingleItem();
+        closeButton.TextContent.ShouldContain("Закрыть");
     }
 
     [Fact]

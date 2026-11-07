@@ -253,7 +253,7 @@ internal class ProjectMetadataRepository(MyDbContext ctx) : IProjectMetadataRepo
                 // Ссылки и описания способов оплаты — большие поля, в ProjectInfo их нет (#5993)
                 PaymentTypes = p.PaymentTypes
                     .Where(pt => pt.IsActive)
-                    .Select(pt => new { pt.PaymentTypeId, pt.Name, pt.PaymentLink, pt.LinkKind, pt.Description }),
+                    .Select(pt => new { pt.PaymentTypeId, pt.Name, pt.PaymentLink, pt.LinkKind, pt.Description, pt.TypeKind, pt.IsDefault }),
             })
             .SingleOrDefaultAsync() ?? throw new ProjectNotFoundException(projectId);
 
@@ -273,6 +273,8 @@ internal class ProjectMetadataRepository(MyDbContext ctx) : IProjectMetadataRepo
                 // но правка базы руками не должна ронять страницу заявки
                 Uri.TryCreate(pt.PaymentLink, UriKind.Absolute, out var paymentLink) ? paymentLink : null,
                 pt.LinkKind,
-                pt.Description))]);
+                pt.Description,
+                pt.TypeKind,
+                pt.IsDefault))]);
     }
 }

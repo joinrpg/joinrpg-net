@@ -1,4 +1,4 @@
-﻿@using JoinRpg.Web.Claims.Finance
+@using JoinRpg.Web.Claims.Finance
 @using JoinRpg.Web.Models;
 @using JoinRpg.Helpers
 @using JoinRpg.Web.Models.Money
@@ -27,6 +27,11 @@
     {
         <button type="button" class="btn btn-default btn-xs" data-toggle="modal" data-target="#payRecurrentOnlineDialog">Оформить подписку…</button>
     }
+    @if (Model.ShowPaymentMethodsDialog)
+    {
+        <component type="typeof(ClaimPaymentMethodsButton)" render-mode="WebAssemblyPrerendered"
+                   param-Methods="Model.PlayerPaymentMethods" />
+    }
     @if (Model.HasSubmittablePaymentTypes)
     {
         <button type="button" class="btn btn-default btn-xs" data-toggle="modal" data-target="#submitPaymentDialog">Отметить оплату&hellip;</button>
@@ -34,11 +39,6 @@
     @if (Model.PreferentialFeeRequestEnabled && !Model.HasMasterAccess)
     {
         <button type="button" class="btn btn-default btn-xs" data-toggle="modal" data-target="#requestPreferentialFeeDialog">Запросить льготу&hellip;</button>
-    }
-    @if (Model.ShowPaymentMethodsDialog)
-    {
-        <component type="typeof(ClaimPaymentMethodsButton)" render-mode="WebAssemblyPrerendered"
-                   param-Methods="Model.PlayerPaymentMethods" />
     }
 </div>
 <div id="feeDetails" hidden>
@@ -140,14 +140,14 @@
                     {
                       <button type="button" class="btn btn-default btn-xs" data-toggle="modal" data-target="#payOnlineDialog">Оплатить онлайн&hellip;</button>
                     }
-                    @if (Model.HasSubmittablePaymentTypes)
-                    {
-                      <button type="button" class="btn btn-default btn-xs" data-toggle="modal" data-target="#submitPaymentDialog">Отметить оплату&hellip;</button>
-                    }
                     @if (Model.ShowPaymentMethodsDialog)
                     {
                       <component type="typeof(ClaimPaymentMethodsButton)" render-mode="WebAssemblyPrerendered"
                                  param-Methods="Model.PlayerPaymentMethods" />
+                    }
+                    @if (Model.HasSubmittablePaymentTypes)
+                    {
+                      <button type="button" class="btn btn-default btn-xs" data-toggle="modal" data-target="#submitPaymentDialog">Отметить оплату&hellip;</button>
                     }
                 </th>
                 <th></th>

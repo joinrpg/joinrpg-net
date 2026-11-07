@@ -40,7 +40,9 @@ public sealed class FakeProjectMetadataRepository : IProjectMetadataRepository
                     // Как в настоящем репозитории: строка сущности — в Uri, кривая — в null
                     Uri.TryCreate(pt.PaymentLink, UriKind.Absolute, out var paymentLink) ? paymentLink : null,
                     pt.LinkKind,
-                    pt.Description))]);
+                    pt.Description,
+                    pt.TypeKind,
+                    pt.IsDefault))]);
     }
 
     public FakeProjectMetadataRepository(ProjectInfo projectInfo) => this.projectInfo = () => projectInfo;

@@ -15,6 +15,10 @@
             {
                 <div style="margin-bottom: 1.2em;">
                     <b>@method.Name</b>
+                    @if (method.IsRecommended)
+                    {
+                        <JoinBadge Text="Рекомендуется" Variation="VariationStyleEnum.Success" />@(" ")
+                    }
                     @if (method.Description is not null)
                     {
                         @* Переносы строк описания мастер писал руками — показываем как есть *@
@@ -40,7 +44,8 @@
             }
         </ChildContent>
         <FooterContent>
-            <JoinButton Preset="ButtonPreset.Cancel" AutoProgress="false" OnClick="CloseDialog" />
+            @* Это просто закрытие модалки — никакого действия не отменяем *@
+            <JoinButton Label="Закрыть" AutoProgress="false" OnClick="CloseDialog" />
         </FooterContent>
     </JoinDialog>
 }

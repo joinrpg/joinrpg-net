@@ -9,9 +9,14 @@ namespace JoinRpg.DomainTypes.ProjectMetadata.Payments;
 /// типизированной: запись валидируется в <c>ProjectFinanceSettingsService</c> (абсолютный
 /// http/https), а чтение через <c>Uri.TryCreate</c> переживает правку базы руками.
 /// </param>
+/// <param name="TypeKind">Вид способа оплаты: у наличных <paramref name="Name"/> — техническое,
+/// показывать игроку название по виду («Наличными»).</param>
+/// <param name="IsDefault">Основной способ оплаты проекта — показываем игроку первым.</param>
 public record PaymentTypePlayerInfo(
     PaymentTypeIdentification PaymentTypeId,
     string Name,
     Uri? PaymentLink,
     PaymentLinkKind LinkKind,
-    string? Description);
+    string? Description,
+    PaymentTypeKind TypeKind,
+    bool IsDefault);
