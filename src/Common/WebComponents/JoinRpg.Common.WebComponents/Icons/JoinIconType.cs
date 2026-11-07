@@ -156,4 +156,7 @@ public enum JoinIconType
 
     /// <summary>Открыть во весь экран.</summary>
     FullScreen,
+
+    /// <summary>Отправить в архив.</summary>
+    Archive,
 }

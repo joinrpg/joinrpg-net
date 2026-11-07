@@ -39,6 +39,7 @@ internal static class JoinIconDefinitions
             { JoinIconType.Refresh, "refresh" },
             { JoinIconType.Hide, "circle-x" },
             { JoinIconType.Closed, "circle-x" },
+            { JoinIconType.Archive, "archive" },
             { JoinIconType.Print, "printer" },
             { JoinIconType.Email, "mail" },
             { JoinIconType.Publish, "share" },

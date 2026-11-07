@@ -17,6 +17,8 @@
 *REMOVED*virtual JoinRpg.Common.WebComponents.ElementMoving.ElementMoveCommandViewModel.EqualityContract.get -> System.Type!
 *REMOVED*virtual JoinRpg.Common.WebComponents.ElementMoving.ElementMoveCommandViewModel.Equals(JoinRpg.Common.WebComponents.ElementMoving.ElementMoveCommandViewModel? other) -> bool
 *REMOVED*virtual JoinRpg.Common.WebComponents.ElementMoving.ElementMoveCommandViewModel.PrintMembers(System.Text.StringBuilder! builder) -> bool
+JoinRpg.Common.WebComponents.EnumRadioButtonGroup<TValue>.Values.get -> System.Collections.Generic.IReadOnlyCollection<TValue>?
+JoinRpg.Common.WebComponents.EnumRadioButtonGroup<TValue>.Values.set -> void
 JoinRpg.Common.WebComponents.FormRow.Label.get -> string?
 JoinRpg.Common.WebComponents.JoinBadge.TooltipContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
 JoinRpg.Common.WebComponents.JoinBadge.TooltipContent.set -> void
@@ -28,6 +30,7 @@ JoinRpg.Common.WebComponents.JoinDropdownButton.Style.get -> JoinRpg.Common.WebC
 JoinRpg.Common.WebComponents.JoinDropdownButton.Style.set -> void
 JoinRpg.Common.WebComponents.JoinDropdownButton.ToggleContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
 JoinRpg.Common.WebComponents.JoinDropdownButton.ToggleContent.set -> void
+JoinRpg.Common.WebComponents.JoinIconType.Archive = 70 -> JoinRpg.Common.WebComponents.JoinIconType
 JoinRpg.Common.WebComponents.JoinPager
 JoinRpg.Common.WebComponents.JoinPager.JoinPager() -> void
 JoinRpg.Common.WebComponents.JoinPager.Page.get -> int
@@ -37,5 +40,3 @@ JoinRpg.Common.WebComponents.JoinPager.PageChanged.set -> void
 JoinRpg.Common.WebComponents.JoinPager.TotalPages.get -> int
 JoinRpg.Common.WebComponents.JoinPager.TotalPages.set -> void
 ~override JoinRpg.Common.WebComponents.JoinPager.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
-JoinRpg.Common.WebComponents.EnumRadioButtonGroup<TValue>.Values.get -> System.Collections.Generic.IReadOnlyCollection<TValue>?
-JoinRpg.Common.WebComponents.EnumRadioButtonGroup<TValue>.Values.set -> void
