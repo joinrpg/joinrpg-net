@@ -137,9 +137,10 @@ public class ClaimFeeViewModelTest
         Build(claim, mock.Player).HasModeratableFinanceOperations.ShouldBeFalse();
     }
 
-    private PaymentTypePlayerInfo Method(int id, string name, string? paymentLink = null, string? description = null)
+    private PaymentTypePlayerInfo Method(int id, string name, string? paymentLink = null, string? description = null,
+        PaymentTypeKind typeKind = PaymentTypeKind.Custom, bool isDefault = false)
         => new(new PaymentTypeIdentification(new ProjectIdentification(mock.Project.ProjectId), id), name,
-            paymentLink is null ? null : new Uri(paymentLink), PaymentLinkKind.Redirect, description);
+            paymentLink is null ? null : new Uri(paymentLink), PaymentLinkKind.Redirect, description, typeKind, isDefault);
 
     [Fact]
     public void PaymentMethodsDialog_Shown_WhenSomeMethodHasLinkOrDescription()
@@ -157,6 +158,39 @@ public class ClaimFeeViewModelTest
         model.ShowPaymentMethodsDialog.ShouldBeTrue();
         // Пустой метод скрыт, остальные — по названию
         model.PlayerPaymentMethods.Select(m => m.Name).ShouldBe(["Карта", "Наличными"]);
+    }
+
+    [Fact]
+    public void PaymentMethods_DefaultMethodGoesFirst_ThenByName()
+    {
+        // #6117: основной метод оплаты показываем первым, остальные — по алфавиту
+        var claim = mock.CreateApprovedClaim(mock.CreateCharacter("Платящий"), mock.Player);
+
+        var model = Build(claim, playerPaymentTypes:
+        [
+            Method(1, "Карта", paymentLink: "https://pay.example.com/1"),
+            Method(2, "Банк", paymentLink: "https://pay.example.com/2"),
+            Method(3, "СБП", paymentLink: "https://pay.example.com/3", isDefault: true),
+            // Имя наличных в базе техническое («cash») — сортируются по отображаемому «Наличными»
+            Method(4, "cash", paymentLink: "https://pay.example.com/4", typeKind: PaymentTypeKind.Cash),
+        ]);
+
+        model.PlayerPaymentMethods.Select(m => (m.Name, m.IsRecommended))
+            .ShouldBe([("СБП", true), ("Банк", false), ("Карта", false), ("Наличными", false)]);
+    }
+
+    [Fact]
+    public void PaymentMethods_CashMethodNamedByKind()
+    {
+        // #6117: имя наличных в базе техническое («cash») — игроку показываем «Наличными»
+        var claim = mock.CreateApprovedClaim(mock.CreateCharacter("Платящий"), mock.Player);
+
+        var model = Build(claim, playerPaymentTypes:
+        [
+            Method(1, "cash", description: "Отдайте мастеру", typeKind: PaymentTypeKind.Cash),
+        ]);
+
+        model.PlayerPaymentMethods.Single().Name.ShouldBe("Наличными");
     }
 
     [Fact]

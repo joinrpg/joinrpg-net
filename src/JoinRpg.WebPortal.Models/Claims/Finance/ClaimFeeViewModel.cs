@@ -1,6 +1,7 @@
 using JoinRpg.DataModel;
 using JoinRpg.DomainTypes.Characters.Claims;
 using JoinRpg.DomainTypes.ProjectMetadata.Payments;
+using JoinRpg.Helpers;
 using JoinRpg.Markdown;
 using JoinRpg.Web.Claims.Finance;
 using JoinRpg.Web.Models.Accommodation;
@@ -87,13 +88,22 @@ public class ClaimFeeViewModel
             .GetAvailablePaymentTypesForUser(currentUser, claimData.PlayerId)
             .Select(pt => new PaymentTypeViewModel(pt))];
 
-        // Модалка «Как оплатить…»: методы со ссылкой или описанием, по названию; порядок из БД не гарантирован.
+        // Модалка «Как оплатить…»: методы со ссылкой или описанием. Основной метод оплаты проекта
+        // — первым, остальные по названию; порядок из БД не гарантирован.
         // Материализуем в массив: коллекция уходит параметром в WebAssembly-остров, а collection
         // expression дал бы компиляторный <>z__ReadOnlyList, который Blazor на клиенте не находит.
         PlayerPaymentMethods = (playerPaymentTypes ?? [])
             .Where(pt => pt.PaymentLink is not null || !string.IsNullOrWhiteSpace(pt.Description))
-            .OrderBy(pt => pt.Name, StringComparer.CurrentCultureIgnoreCase)
-            .Select(pt => new ClaimPaymentMethodView(pt.Name, pt.PaymentLink, pt.LinkKind, pt.Description))
+            .Select(pt => new ClaimPaymentMethodView(
+                // Имя наличных в базе техническое («cash» из конструктора PaymentType) — игроку
+                // показываем название по виду, как в остальных местах сайта
+                pt.TypeKind is PaymentTypeKind.Cash ? PaymentTypeKindViewModel.Cash.GetDisplayName() : pt.Name,
+                pt.PaymentLink,
+                pt.LinkKind,
+                pt.Description,
+                pt.IsDefault))
+            .OrderByDescending(m => m.IsRecommended)
+            .ThenBy(m => m.Name, StringComparer.CurrentCultureIgnoreCase)
             .ToArray();
 
         PreferentialFeeEnabled = projectInfo.ProjectFinanceSettings.PreferentialFeeEnabled;
