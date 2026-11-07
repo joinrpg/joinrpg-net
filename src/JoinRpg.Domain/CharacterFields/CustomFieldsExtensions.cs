@@ -49,9 +49,6 @@ public static class CustomFieldsExtensions
             character.DeserializeFieldValues(projectInfo),
             character.ApprovedClaim is { } claim ? claim.DeserializeFieldValues(projectInfo) : null);
 
-    public static Dictionary<ProjectFieldIdentification, FieldWithValue> GetFieldsDict(this Character character, ProjectInfo projectInfo)
-        => character.GetFields(projectInfo).ToDictionary(f => f.Field.Id);
-
     public static IReadOnlyCollection<FieldWithValue> GetFields(this Claim claim, ProjectInfo projectInfo)
     {
         if (claim.IsApproved)

@@ -14,9 +14,6 @@ public static class CharacterParentGroupExtensions
     public static IEnumerable<CharacterGroupInfo> GetParentGroupsToTop(this Character target, ProjectInfo projectInfo)
         => projectInfo.GroupTree.GetParentGroupsIncludingThis(target.GetDirectGroupIds());
 
-    public static IEnumerable<CharacterGroupInfo> GetIntrestingGroupsForDisplayToTop(this Character character, ProjectInfo projectInfo)
-        => character.GetParentGroupsToTop(projectInfo).Where(g => g.IsIntresting);
-
     public static IEnumerable<CharacterGroupIdentification> GetDirectNonSpecialGroupIds(this Character character, ProjectInfo projectInfo)
         => GetDirectGroups(character, projectInfo).Where(g => !g.IsSpecial).Select(g => g.Id);
 
