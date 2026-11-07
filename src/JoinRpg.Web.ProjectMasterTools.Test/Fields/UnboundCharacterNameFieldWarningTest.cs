@@ -45,7 +45,7 @@ public class UnboundCharacterNameFieldWarningTest : BunitContext
 
     /// <summary>Текст предупреждения с пробелами, схлопнутыми как в браузере.</summary>
     private static string Text(IRenderedComponent<UnboundCharacterNameFieldWarning> cut)
-        => string.Join(' ', cut.Find(".alert").TextContent.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries));
+        => string.Join(' ', cut.Find(".join-alert").TextContent.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries));
 
     private class FakeUriLocator : IProjectFieldUriLocator
     {

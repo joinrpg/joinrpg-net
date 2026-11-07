@@ -24,7 +24,7 @@ public class SiteBannerTest
         var cut = ctx.Render<SiteBanner>(p => p.Add(x => x.Text, "<b>Данные</b> восстановлены"));
 
         cut.FindAll("b").ShouldBeEmpty();
-        cut.Find("div.alert").TextContent.Trim().ShouldBe("<b>Данные</b> восстановлены");
+        cut.Find("div.join-alert").TextContent.Trim().ShouldBe("<b>Данные</b> восстановлены");
     }
 
     [Theory]
@@ -36,10 +36,10 @@ public class SiteBannerTest
         using var ctx = new BunitContext();
         var cut = ctx.Render<SiteBanner>(p => p.Add(x => x.Text, text));
 
-        var link = cut.Find("div.alert a");
+        var link = cut.Find("div.join-alert a");
         link.GetAttribute("href").ShouldBe(expectedHref);
         link.TextContent.ShouldBe(expectedHref);
-        cut.Find("div.alert").TextContent.Trim().ShouldBe(text);
+        cut.Find("div.join-alert").TextContent.Trim().ShouldBe(text);
     }
 
     [Fact]
@@ -48,7 +48,7 @@ public class SiteBannerTest
         using var ctx = new BunitContext();
         var cut = ctx.Render<SiteBanner>(p => p.Add(x => x.Text, "См. https://a.joinrpg.ru/x и https://b.joinrpg.ru/y"));
 
-        cut.FindAll("div.alert a").Select(a => a.TextContent).ShouldBe(["https://a.joinrpg.ru/x", "https://b.joinrpg.ru/y"]);
+        cut.FindAll("div.join-alert a").Select(a => a.TextContent).ShouldBe(["https://a.joinrpg.ru/x", "https://b.joinrpg.ru/y"]);
     }
 
     [Theory]
@@ -60,7 +60,7 @@ public class SiteBannerTest
         using var ctx = new BunitContext();
         var cut = ctx.Render<SiteBanner>(p => p.Add(x => x.Text, text));
 
-        cut.FindAll("div.alert a").ShouldBeEmpty();
-        cut.Find("div.alert").TextContent.Trim().ShouldBe(text);
+        cut.FindAll("div.join-alert a").ShouldBeEmpty();
+        cut.Find("div.join-alert").TextContent.Trim().ShouldBe(text);
     }
 }

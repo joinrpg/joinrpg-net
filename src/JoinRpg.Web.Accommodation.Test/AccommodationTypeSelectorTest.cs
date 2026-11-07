@@ -141,7 +141,7 @@ public class AccommodationTypeSelectorTest : BunitContext
     /// </summary>
     private static string VisibleError(IRenderedComponent<AccommodationTypeSelector> cut)
     {
-        var alert = cut.FindAll(".alert-danger").ShouldHaveSingleItem();
+        var alert = cut.FindAll(".join-alert--danger").ShouldHaveSingleItem();
         alert.Closest("dialog").ShouldBeNull();
         return alert.TextContent.Trim();
     }
