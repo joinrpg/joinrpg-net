@@ -30,6 +30,12 @@ public class MyDbContext : DbContext, IUnitOfWork
 
     public DbSet<Claim> ClaimSet => Set<Claim>();
 
+    public DbSet<Expense> ExpensesSet => Set<Expense>();
+
+    public DbSet<ExpenseCategory> ExpenseCategoriesSet => Set<ExpenseCategory>();
+
+    public DbSet<ExpenseApproval> ExpenseApprovalsSet => Set<ExpenseApproval>();
+
     internal ILogger<MyDbContext>? Logger { get; }
 
     public MyDbContext(IJoinDbContextConfiguration configuration, ILogger<MyDbContext>? logger) : base(configuration.ConnectionString)
@@ -247,6 +253,38 @@ public class MyDbContext : DbContext, IUnitOfWork
             .WithMany().HasForeignKey(t => t.CreatedById).WillCascadeOnDelete(false);
         modelBuilder.Entity<ProjectBadgeTemplate>().HasRequired(t => t.UpdatedBy)
             .WithMany().HasForeignKey(t => t.UpdatedById).WillCascadeOnDelete(false);
+
+        // Expense configuration (ADR030)
+        modelBuilder.Entity<Expense>()
+            .HasRequired(e => e.Project)
+            .WithMany(p => p.Expenses)
+            .HasForeignKey(e => e.ProjectId)
+            .WillCascadeOnDelete(true);
+        modelBuilder.Entity<Expense>().HasIndex(e => e.ProjectId);
+        modelBuilder.Entity<Expense>().HasRequired(e => e.Master)
+            .WithMany().HasForeignKey(e => e.MasterId).WillCascadeOnDelete(false);
+        modelBuilder.Entity<Expense>().HasRequired(e => e.Category)
+            .WithMany().HasForeignKey(e => e.CategoryId).WillCascadeOnDelete(false);
+        modelBuilder.Entity<Expense>().HasRequired(e => e.CreatedBy)
+            .WithMany().HasForeignKey(e => e.CreatedById).WillCascadeOnDelete(false);
+        modelBuilder.Entity<Expense>().HasRequired(e => e.UpdatedBy)
+            .WithMany().HasForeignKey(e => e.UpdatedById).WillCascadeOnDelete(false);
+
+        modelBuilder.Entity<ExpenseCategory>()
+            .HasRequired(c => c.Project)
+            .WithMany(p => p.ExpenseCategories)
+            .HasForeignKey(c => c.ProjectId)
+            .WillCascadeOnDelete(true);
+        modelBuilder.Entity<ExpenseCategory>().HasIndex(c => c.ProjectId);
+        modelBuilder.Entity<ExpenseCategory>().HasOptional(c => c.ParentCategory)
+            .WithMany().HasForeignKey(c => c.ParentCategoryId).WillCascadeOnDelete(false);
+
+        modelBuilder.Entity<ExpenseApproval>()
+            .HasRequired(a => a.Expense)
+            .WithMany().HasForeignKey(a => a.ExpenseId)
+            .WillCascadeOnDelete(true);
+        modelBuilder.Entity<ExpenseApproval>().HasRequired(a => a.ApprovedBy)
+            .WithMany().HasForeignKey(a => a.ApprovedById).WillCascadeOnDelete(false);
 
         modelBuilder.Entity<ProjectField>().HasRequired(f => f.CreatedBy)
             .WithMany().HasForeignKey(f => f.CreatedById).WillCascadeOnDelete(false);
