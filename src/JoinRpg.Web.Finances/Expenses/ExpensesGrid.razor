@@ -1,0 +1,62 @@
+@using System.Globalization
+
+<JoinBorderedTable Items="Expenses" Context="expense">
+    <HeadContent>
+        <tr>
+            <th>Категория</th>
+            <th>Название</th>
+            <th>Мастер</th>
+            <th>План</th>
+            <th>Факт</th>
+            <th>Состояние</th>
+            <th>Дата факта</th>
+            @if (RowActions is not null)
+            {
+                <th>Действия</th>
+            }
+        </tr>
+    </HeadContent>
+    <ItemTemplate>
+        <tr>
+            <td>@expense.CategoryPath</td>
+            <td>@expense.Name</td>
+            <td>@expense.MasterName</td>
+            <td>@FormatCost(expense.PlannedQuantity, expense.PlannedPrice, expense.PlannedCost)</td>
+            <td>
+                @if (expense.ActualCost is { } actualCost)
+                {
+                    @FormatCost(expense.ActualQuantity!.Value, expense.ActualPrice!.Value, actualCost)
+                }
+                else
+                {
+                    <text>—</text>
+                }
+            </td>
+            <td><ExpenseStateBadge State="expense.State" /></td>
+            <td>@(expense.SpentAt?.ToString("d", RussianCulture) ?? "—")</td>
+            @if (RowActions is not null)
+            {
+                <td>@RowActions(expense)</td>
+            }
+        </tr>
+    </ItemTemplate>
+    <EmptyContent>
+        <tr>
+            <td colspan="@(RowActions is null ? 7 : 8)">Расходов пока нет</td>
+        </tr>
+    </EmptyContent>
+</JoinBorderedTable>
+
+@code {
+    private static readonly CultureInfo RussianCulture = CultureInfo.GetCultureInfo("ru-RU");
+
+    [Parameter]
+    [EditorRequired]
+    public IReadOnlyList<ExpenseViewModel> Expenses { get; set; } = default!;
+
+    /// <summary>Кнопки действий со строкой; <c>null</c> — колонки «Действия» нет.</summary>
+    [Parameter]
+    public RenderFragment<ExpenseViewModel>? RowActions { get; set; }
+
+    private static string FormatCost(int quantity, int price, int cost) => $"{quantity} × {price} = {cost} ₽";
+}

@@ -1,0 +1,95 @@
+@using JoinRpg.DomainTypes
+<EditForm EditContext="editContext" OnSubmit="HandleSubmit">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+    <FormHorizontal>
+        @if (State is { } state)
+        {
+            <FormRow Label="Состояние">
+                <ExpenseStateBadge State="state" />
+            </FormRow>
+        }
+        <FormRowFor For="@(() => Model.Name)">
+            <JoinTextInput @bind-Value="Model.Name" />
+        </FormRowFor>
+        <FormRowFor For="@(() => Model.CategoryPath)">
+            <JoinTextInput @bind-Value="Model.CategoryPath" />
+        </FormRowFor>
+        <FormRowFor For="@(() => Model.MasterId)">
+            <MasterSelector ProjectId="ProjectId.Value" MasterId="Model.MasterId" MasterIdChanged="OnMasterChanged" />
+        </FormRowFor>
+        <FormRowFor For="@(() => Model.PlannedQuantity)">
+            <JoinInputNumber @bind-Value="Model.PlannedQuantity" />
+        </FormRowFor>
+        <FormRowFor For="@(() => Model.PlannedPrice)">
+            <JoinInputNumber @bind-Value="Model.PlannedPrice" />
+        </FormRowFor>
+        <FormRowFor For="@(() => Model.ActualQuantity)">
+            <JoinInputNumber @bind-Value="Model.ActualQuantity" />
+        </FormRowFor>
+        <FormRowFor For="@(() => Model.ActualPrice)">
+            <JoinInputNumber @bind-Value="Model.ActualPrice" />
+        </FormRowFor>
+        <FormRowFor For="@(() => Model.SpentAt)">
+            <InputDate class="form-control" @bind-Value="Model.SpentAt" />
+        </FormRowFor>
+        <FormRowFor For="@(() => Model.Description)">
+            <JoinMarkdownTextArea @bind-Value="Model.Description" />
+        </FormRowFor>
+    </FormHorizontal>
+    <JoinButton Preset="ButtonPreset.Save" Submit="true" Disabled="@formInvalid" />
+</EditForm>
+
+@code {
+    /// <summary>
+    /// Модель формы; страница создаёт её (для создания — с пустым <see cref="ExpenseEditViewModel.ExpenseId"/>).
+    /// EditContext строится один раз при инициализации: при смене модели страница должна пересоздать компонент, например через <c>@("@key")</c>.
+    /// </summary>
+    [Parameter]
+    [EditorRequired]
+    public ExpenseEditViewModel Model { get; set; } = null!;
+
+    /// <summary>Проект, из которого MasterSelector грузит список мастеров.</summary>
+    [Parameter]
+    [EditorRequired]
+    public ProjectIdentification ProjectId { get; set; }
+
+    /// <summary>Текущее состояние расхода; <c>null</c> при создании — бейдж не показываем.</summary>
+    [Parameter]
+    public ExpenseStateView? State { get; set; }
+
+    /// <summary>Сабмит формы; страница сама отправляет результат на сервер.</summary>
+    [Parameter]
+    public EventCallback<ExpenseEditViewModel> OnSave { get; set; }
+
+    private EditContext editContext = null!;
+    private bool formInvalid = true;
+
+    protected override void OnInitialized()
+    {
+        editContext = new EditContext(Model);
+        editContext.OnFieldChanged += HandleFieldChanged;
+        formInvalid = !editContext.Validate();
+    }
+
+    private void HandleFieldChanged(object? sender, FieldChangedEventArgs e)
+    {
+        formInvalid = !editContext.Validate();
+    }
+
+    private void OnMasterChanged(UserIdentification? masterId)
+    {
+        Model.MasterId = masterId;
+        editContext.NotifyFieldChanged(new FieldIdentifier(Model, nameof(Model.MasterId)));
+    }
+
+    private async Task HandleSubmit()
+    {
+        formInvalid = !editContext.Validate();
+        if (formInvalid)
+        {
+            return;
+        }
+        await OnSave.InvokeAsync(Model);
+    }
+}

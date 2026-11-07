@@ -1,4 +1,4 @@
-﻿@model JoinRpg.Web.Models.MoneyInfoTotalViewModel
+@model JoinRpg.Web.Models.MoneyInfoTotalViewModel
 @using JoinRpg.Common.WebComponents
 
 @{
@@ -14,52 +14,14 @@
 
 @if (Model.ExpenseSummary is { } expenseSummary)
 {
-    <h3>Расходы</h3>
-
-    <table class="table">
-        <tr>
-            <th>Категория</th>
-            <th>План (одобрено)</th>
-            <th>Факт (одобрено)</th>
-            <th>На рассмотрении</th>
-        </tr>
-
-        @foreach (var row in expenseSummary.Rows)
-        {
-            <tr>
-                <td>@row.CategoryPath</td>
-                <td>
-                    @(await Html.RenderComponentAsync<PriceElement>(RenderMode.Static, new { Price = row.ApprovedPlannedCost }))
-                </td>
-                <td>
-                    @(await Html.RenderComponentAsync<PriceElement>(RenderMode.Static, new { Price = row.ApprovedActualCost }))
-                </td>
-                <td>
-                    @(await Html.RenderComponentAsync<PriceElement>(RenderMode.Static, new { Price = row.ProposedCost }))
-                </td>
-            </tr>
-        }
-        <tr>
-            <td>
-                <b>Потрачено (одобрено)</b>:
-            </td>
-            <td></td>
-            <td>
-                <b>-@expenseSummary.TotalSpent&nbsp;&#8381;</b>
-            </td>
-            <td></td>
-        </tr>
-        <tr>
-            <td>
-                <b>Осталось у мастеров</b>:
-            </td>
-            <td></td>
-            <td>
-                <b>@(Model.Balance.Sum(b => b.Total))&nbsp;&#8381;</b>
-            </td>
-            <td></td>
-        </tr>
-    </table>
+    @(await Html.RenderComponentAsync<ExpenseSummaryTable>(RenderMode.Static, new
+    {
+        Rows = expenseSummary.Rows
+            .Select(row => new ExpenseSummaryRowViewModel(row.CategoryPath, row.ApprovedPlannedCost, row.ApprovedActualCost, row.ProposedCost))
+            .ToArray(),
+        TotalSpent = expenseSummary.TotalSpent,
+        MastersTotal = Model.Balance.Sum(balance => balance.Total),
+    }))
 }
 
 <h3>По типам</h3>

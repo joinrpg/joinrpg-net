@@ -46,6 +46,8 @@
     <ProjectReference Include="..\JoinRpg.Services.Interfaces\JoinRpg.Services.Interfaces.csproj" />
     <ProjectReference Include="..\JoinRpg.Services.Notifications\JoinRpg.Services.Notifications.csproj" />
     <ProjectReference Include="..\JoinRpg.Web.AdminTools\JoinRpg.Web.AdminTools.csproj" />
+    <!-- Компоненты расходов подключат razor-страницы (PR5), поэтому TreatAsUsed: иначе ReferenceTrimmer предлагает удалить (RT0002). -->
+    <ProjectReference Include="..\JoinRpg.Web.Finances\JoinRpg.Web.Finances.csproj" TreatAsUsed="true" />
     <ProjectReference Include="..\Joinrpg.Web.Identity\Joinrpg.Web.Identity.csproj" />
     <ProjectReference Include="..\JoinRpg.WebPortal.Managers\JoinRpg.WebPortal.Managers.csproj" />
     <ProjectReference Include="..\JoinRpg.XGameApi.Contract\JoinRpg.XGameApi.Contract.csproj" />

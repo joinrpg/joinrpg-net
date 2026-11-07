@@ -1,0 +1,47 @@
+<h3>Расходы</h3>
+
+<JoinBorderedTable Items="Rows" Context="row">
+    <HeadContent>
+        <tr>
+            <th>Категория</th>
+            <th>План (одобрено)</th>
+            <th>Факт (одобрено)</th>
+            <th>На рассмотрении</th>
+        </tr>
+    </HeadContent>
+    <ItemTemplate>
+        <tr>
+            <td>@row.CategoryPath</td>
+            <td><PriceElement Price="row.ApprovedPlannedCost" /></td>
+            <td><PriceElement Price="row.ApprovedActualCost" /></td>
+            <td><PriceElement Price="row.ProposedCost" /></td>
+        </tr>
+    </ItemTemplate>
+    <EmptyContent>
+        <tr>
+            <td colspan="4">Расходов пока нет</td>
+        </tr>
+    </EmptyContent>
+</JoinBorderedTable>
+
+<p>
+    <b>Потрачено (одобрено)</b>: -@TotalSpent&nbsp;₽
+    <b>Осталось у мастеров</b>: @MastersTotal&nbsp;₽
+</p>
+
+@code {
+    /// <summary>Строки по категориям; пустой список — строка-заглушка, итоги показываем всегда.</summary>
+    [Parameter]
+    [EditorRequired]
+    public IReadOnlyList<ExpenseSummaryRowViewModel> Rows { get; set; } = default!;
+
+    /// <summary>Потрачено (одобрено): сумма фактических списаний со счёта проекта.</summary>
+    [Parameter]
+    [EditorRequired]
+    public int TotalSpent { get; set; }
+
+    /// <summary>Осталось у мастеров: Σ балансов мастеров, считает вызывающая страница.</summary>
+    [Parameter]
+    [EditorRequired]
+    public int MastersTotal { get; set; }
+}

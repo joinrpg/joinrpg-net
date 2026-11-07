@@ -1,0 +1,20 @@
+@using JoinRpg.Helpers
+@switch (State)
+{
+    case ExpenseStateView.Approved:
+        <JoinBadge Variation="VariationStyleEnum.Success" Title="Состояние расхода">@State.GetDisplayName()</JoinBadge>
+        break;
+    case ExpenseStateView.Rejected:
+        <JoinBadge Variation="VariationStyleEnum.Danger" Title="Состояние расхода">@State.GetDisplayName()</JoinBadge>
+        break;
+    default:
+        <JoinBadge Variation="VariationStyleEnum.None" Title="Состояние расхода">@State.GetDisplayName()</JoinBadge>
+        break;
+}
+
+@code {
+    /// <summary>Состояние согласования расхода: цвет бейджа — по тому, решено ли согласование и чем.</summary>
+    [Parameter]
+    [EditorRequired]
+    public ExpenseStateView State { get; set; }
+}
