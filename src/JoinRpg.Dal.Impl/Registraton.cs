@@ -44,6 +44,7 @@ public static class Registraton
             .AddTransient<IForumRepository, ForumRepositoryImpl>()
             .AddTransient<ICommentDiscussionRepository, CommentDiscussionRepository>()
             .AddTransient<IFinanceReportRepository, FinanceReportRepositoryImpl>()
+            .AddTransient<IExpenseRepository, ExpenseRepositoryImpl>()
             .AddTransient<IClaimsRepository, ClaimsRepositoryImpl>()
             .AddTransient<IAccommodationInviteRepository, AccommodationInviteRepositoryImpl>()
             .AddTransient<IAccommodationRepository, AccommodationRepositoryImpl>()

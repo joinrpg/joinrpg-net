@@ -4,6 +4,7 @@ using JoinRpg.Services.Impl.Accommodation;
 using JoinRpg.Services.Impl.Characters;
 using JoinRpg.Services.Impl.Claims;
 using JoinRpg.Services.Impl.Comments;
+using JoinRpg.Services.Impl.Finances;
 using JoinRpg.Services.Impl.Projects;
 using JoinRpg.Services.Impl.Projects.Create;
 using JoinRpg.Services.Impl.Projects.Metadata;
@@ -71,6 +72,8 @@ public static class Services
             .AddTransient<IProjectBadgeTemplateService, ProjectBadgeTemplateService>()
             .AddTransient<IProjectAccessService, ProjectAccessService>()
             .AddTransient<IRespMasterRuleService, RespMasterRuleService>()
+            .AddTransient<ExpenseCategoryResolver>()
+            .AddTransient<IExpenseService, ExpenseService>()
             .AddTransient<IProjectFinanceSettingsService, ProjectFinanceSettingsService>()
             .AddTransient<IAccommodationTypeService, AccommodationTypeService>()
             .AddTransient<IPaymentsService, PaymentsService>()

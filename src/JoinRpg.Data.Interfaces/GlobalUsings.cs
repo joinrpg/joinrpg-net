@@ -1,4 +1,5 @@
 global using JoinRpg.Common.PrimitiveTypes;
 global using JoinRpg.DomainTypes;
 global using JoinRpg.DomainTypes.Advertisement;
+global using JoinRpg.DomainTypes.Finances;
 global using JoinRpg.DomainTypes.ProjectMetadata;

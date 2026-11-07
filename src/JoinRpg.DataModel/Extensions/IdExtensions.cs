@@ -1,4 +1,5 @@
 using JoinRpg.DomainTypes.Characters.Claims.Accommodation;
+using JoinRpg.DomainTypes.Finances;
 using JoinRpg.DomainTypes.Forums;
 using JoinRpg.DomainTypes.Plots;
 using JoinRpg.DomainTypes.ProjectMetadata.Badges;
@@ -74,4 +75,11 @@ public static class IdExtensions
     /// <summary>Идентификатор одобренной заявки персонажа, если она есть.</summary>
     public static ClaimIdentification? GetApprovedClaimIdOrDefault(this Character character)
         => ClaimIdentification.FromOptional(character.ProjectId, character.ApprovedClaimId);
+
+    /// <summary>Идентификатор расхода.</summary>
+    public static ExpenseIdentification GetId(this Expense expense) => new(expense.ProjectId, expense.ExpenseId);
+
+    /// <summary>Идентификатор категории расхода.</summary>
+    public static ExpenseCategoryIdentification GetId(this ExpenseCategory category)
+        => new(category.ProjectId, category.ExpenseCategoryId);
 }
