@@ -29,8 +29,57 @@ internal sealed class FakeDbSet<T>(ICollection<T> data)
 {
     private IQueryable<T> Query => data.AsQueryable();
 
+    /// <summary>
+    /// EF6 раздаёт identity-ключи при SaveChanges, но сервисы вроде ExpenseService строят
+    /// цепочки новых сущностей (путь категорий) и читают id ещё до сохранения — настоящая БД
+    /// в этот момент недоступна, поэтому фейк раздаёт ключи сразу при Add (конвенция
+    /// «Id» / «{ИмяТипа}Id», как у ExpenseId / ExpenseCategoryId).
+    /// </summary>
+    private void AssignIdentity(T entity)
+    {
+        if (FindKeyProperty() is not { } key)
+        {
+            return;
+        }
+        if (key.PropertyType == typeof(int) && (int)key.GetValue(entity)! == 0)
+        {
+            key.SetValue(entity, NextIntKey());
+        }
+        else if (key.PropertyType == typeof(long) && (long)key.GetValue(entity)! == 0)
+        {
+            key.SetValue(entity, (long)NextIntKey());
+        }
+    }
+
+    private int NextIntKey() => data.Count == 0 ? 1 : data.Max(KeyValue) + 1;
+
+    private int KeyValue(T entity) => FindKeyProperty() switch
+    {
+        { PropertyType: { } t } when t == typeof(int) => (int)FindKeyProperty()!.GetValue(entity)!,
+        { PropertyType: { } t } when t == typeof(long) => (int)(long)FindKeyProperty()!.GetValue(entity)!,
+        _ => 0,
+    };
+
+    private static System.Reflection.PropertyInfo? keyProperty;
+
+    private static System.Reflection.PropertyInfo? FindKeyProperty()
+    {
+        if (keyProperty is not null || keyPropertySearched)
+        {
+            return keyProperty;
+        }
+        keyPropertySearched = true;
+        var typeName = typeof(T).Name;
+        var trimmed = typeName.EndsWith("Entity", StringComparison.Ordinal) ? typeName[..^"Entity".Length] : typeName;
+        keyProperty = typeof(T).GetProperty("Id") ?? typeof(T).GetProperty(trimmed + "Id");
+        return keyProperty;
+    }
+
+    private static bool keyPropertySearched;
+
     public override T Add(T entity)
     {
+        AssignIdentity(entity);
         data.Add(entity);
         return entity;
     }
@@ -46,7 +95,7 @@ internal sealed class FakeDbSet<T>(ICollection<T> data)
         var added = entities.ToList();
         foreach (var entity in added)
         {
-            data.Add(entity);
+            Add(entity);
         }
 
         return added;
