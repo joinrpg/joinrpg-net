@@ -1,0 +1,86 @@
+@* Остров группы панелей настроек игры: панели собираются в один аккордеон
+   JoinCollapsePanelGroup — имя группы уходит панелям каскадом, без атрибута у каждой.
+   Панели независимы в загрузке: сбой у одной не роняет остальные (ErrorBoundary вокруг каждой).
+   Кнопки страницы (SettingsButtons) — отдельный статический остров в Edit.cshtml. *@
+<JoinCollapsePanelGroup Name="@Group">
+    @* В архиве эти панели скрываются сами, но только после загрузки — без условия заголовки мелькали бы. *@
+    @if (Active)
+    {
+        <ErrorBoundary>
+            <ChildContent>
+                <ProjectMainSettingsPanel ProjectId="ProjectId" />
+            </ChildContent>
+            <ErrorContent>
+                <JoinAlert Variation="VariationStyleEnum.Danger">Не удалось загрузить панель. Обновите страницу.</JoinAlert>
+            </ErrorContent>
+        </ErrorBoundary>
+
+        <ErrorBoundary>
+            <ChildContent>
+                <ProjectClaimSettingsPanel ProjectId="ProjectId" />
+            </ChildContent>
+            <ErrorContent>
+                <JoinAlert Variation="VariationStyleEnum.Danger">Не удалось загрузить панель. Обновите страницу.</JoinAlert>
+            </ErrorContent>
+        </ErrorBoundary>
+
+        <ErrorBoundary>
+            <ChildContent>
+                <ProjectCheckInSettingsPanel ProjectId="ProjectId" />
+            </ChildContent>
+            <ErrorContent>
+                <JoinAlert Variation="VariationStyleEnum.Danger">Не удалось загрузить панель. Обновите страницу.</JoinAlert>
+            </ErrorContent>
+        </ErrorBoundary>
+
+        <ErrorBoundary>
+            <ChildContent>
+                <JoinRpg.Web.ProjectMasterTools.Fields.ProjectFieldSettingsPanel ProjectId="ProjectId" />
+            </ChildContent>
+            <ErrorContent>
+                <JoinAlert Variation="VariationStyleEnum.Danger">Не удалось загрузить панель. Обновите страницу.</JoinAlert>
+            </ErrorContent>
+        </ErrorBoundary>
+
+        <ErrorBoundary>
+            <ChildContent>
+                <ProjectContactRequirementsPanel ProjectId="ProjectId" />
+            </ChildContent>
+            <ErrorContent>
+                <JoinAlert Variation="VariationStyleEnum.Danger">Не удалось загрузить панель. Обновите страницу.</JoinAlert>
+            </ErrorContent>
+        </ErrorBoundary>
+
+        <ErrorBoundary>
+            <ChildContent>
+                <ProjectTimeZonePanel ProjectId="ProjectId" />
+            </ChildContent>
+            <ErrorContent>
+                <JoinAlert Variation="VariationStyleEnum.Danger">Не удалось загрузить панель. Обновите страницу.</JoinAlert>
+            </ErrorContent>
+        </ErrorBoundary>
+    }
+
+    <ErrorBoundary>
+        <ChildContent>
+            <ProjectPublishSettingsPanel ProjectId="ProjectId" />
+        </ChildContent>
+        <ErrorContent>
+            <JoinAlert Variation="VariationStyleEnum.Danger">Не удалось загрузить панель. Обновите страницу.</JoinAlert>
+        </ErrorContent>
+    </ErrorBoundary>
+</JoinCollapsePanelGroup>
+
+@code {
+    /// <summary>Общее имя аккордеона: открыта не больше одной панели.</summary>
+    public const string Group = "project-settings";
+
+    [Parameter]
+    [EditorRequired]
+    public ProjectIdentification ProjectId { get; set; } = null!;
+
+    /// <summary>Игра не в архиве: без неё показывается только панель публикации.</summary>
+    [Parameter]
+    [EditorRequired]
+    public bool Active { get; set; }
+}
