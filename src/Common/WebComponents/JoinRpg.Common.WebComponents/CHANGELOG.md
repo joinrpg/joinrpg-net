@@ -4,6 +4,8 @@
 
 ## Не выпущено
 
+## 2026.9.651 — 2026-11-07
+
 ### Ломающие изменения
 - Удалён `ElementMoveCommandViewModel` — модель POST-команды для `JoinMoveControlNonInteractive`, вне joinrpg не использовалась. Переход: не требуется. ([#6042](https://github.com/joinrpg/joinrpg-net/pull/6042))
 

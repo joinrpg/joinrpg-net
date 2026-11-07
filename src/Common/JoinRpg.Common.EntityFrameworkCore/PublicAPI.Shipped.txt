@@ -1,4 +1,6 @@
 #nullable enable
+JoinRpg.Common.EntityFrameworkCore.DbContextRegisterHelper
 JoinRpg.Common.EntityFrameworkCore.EntityIdConversionExtensions
+static JoinRpg.Common.EntityFrameworkCore.DbContextRegisterHelper.AddJoinEfCoreDbContext<TContext>(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, Microsoft.Extensions.Configuration.IConfiguration! configuration, Microsoft.Extensions.Hosting.IHostEnvironment! environment, string! connectionStringName, System.Action<Microsoft.EntityFrameworkCore.DbContextOptionsBuilder!>? optionsBuilder = null) -> bool
 static JoinRpg.Common.EntityFrameworkCore.EntityIdConversionExtensions.EntityIdsSetValueGeneratedOnAdd(this Microsoft.EntityFrameworkCore.ModelBuilder! modelBuilder) -> void
 static JoinRpg.Common.EntityFrameworkCore.EntityIdConversionExtensions.HaveEntityIdValueConversion<TId, TValue>(this Microsoft.EntityFrameworkCore.Metadata.Builders.PropertiesConfigurationBuilder<TId!>! builder) -> void
