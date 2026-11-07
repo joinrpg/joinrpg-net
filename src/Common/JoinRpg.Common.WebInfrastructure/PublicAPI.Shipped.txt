@@ -32,24 +32,11 @@ JoinRpg.Common.WebInfrastructure.Cache.SingletonCache<TKey, TValue>.Set(TKey key
 JoinRpg.Common.WebInfrastructure.Cache.SingletonCache<TKey, TValue>.SingletonCache() -> void
 JoinRpg.Common.WebInfrastructure.Cache.SingletonCache<TKey, TValue>.TryGet(TKey key) -> TValue?
 JoinRpg.Common.WebInfrastructure.Cache.SingletonCache<TKey, TValue>.TryUpdate(TKey key, TValue! newValue, TValue! comparisonValue) -> bool
-JoinRpg.Common.WebInfrastructure.DailyJob.IDailyJobRepository
-JoinRpg.Common.WebInfrastructure.DailyJob.IDailyJobRepository.TryInsertJobRecord(JoinRpg.Common.WebInfrastructure.DailyJob.JobId! jobId) -> System.Threading.Tasks.Task<bool>!
-JoinRpg.Common.WebInfrastructure.DailyJob.IDailyJobRepository.TrySetJobCompleted(JoinRpg.Common.WebInfrastructure.DailyJob.JobId! jobId) -> System.Threading.Tasks.Task<bool>!
-JoinRpg.Common.WebInfrastructure.DailyJob.IDailyJobRepository.TrySetJobFailed(JoinRpg.Common.WebInfrastructure.DailyJob.JobId! jobId) -> System.Threading.Tasks.Task<bool>!
-JoinRpg.Common.WebInfrastructure.DailyJob.JobId
-JoinRpg.Common.WebInfrastructure.DailyJob.JobId.DayOfRun.get -> System.DateOnly
-JoinRpg.Common.WebInfrastructure.DailyJob.JobId.DayOfRun.init -> void
-JoinRpg.Common.WebInfrastructure.DailyJob.JobId.Deconstruct(out string! JobName, out System.DateOnly DayOfRun) -> void
-JoinRpg.Common.WebInfrastructure.DailyJob.JobId.JobId(JoinRpg.Common.WebInfrastructure.DailyJob.JobId! original) -> void
-JoinRpg.Common.WebInfrastructure.DailyJob.JobId.JobId(string! JobName, System.DateOnly DayOfRun) -> void
-JoinRpg.Common.WebInfrastructure.DailyJob.JobId.JobName.get -> string!
-JoinRpg.Common.WebInfrastructure.DailyJob.JobId.JobName.init -> void
 JoinRpg.Common.WebInfrastructure.DataProtection.DataProtectionDbContext
 JoinRpg.Common.WebInfrastructure.DataProtection.DataProtectionDbContext.DataProtectionDbContext(Microsoft.EntityFrameworkCore.DbContextOptions<JoinRpg.Common.WebInfrastructure.DataProtection.DataProtectionDbContext!>! options) -> void
 JoinRpg.Common.WebInfrastructure.DataProtection.DataProtectionDbContext.DataProtectionKeys.get -> Microsoft.EntityFrameworkCore.DbSet<Microsoft.AspNetCore.DataProtection.EntityFrameworkCore.DataProtectionKey!>!
 JoinRpg.Common.WebInfrastructure.DataProtection.DataProtectionDbContext.DataProtectionKeys.set -> void
 JoinRpg.Common.WebInfrastructure.DataProtectionRegistration
-JoinRpg.Common.WebInfrastructure.DbContextRegisterHelper
 JoinRpg.Common.WebInfrastructure.EfCoreMigration.EfCoreMigrationExtensions
 JoinRpg.Common.WebInfrastructure.EfCoreMigration.IMigratorService
 JoinRpg.Common.WebInfrastructure.EfCoreMigration.IMigratorService.CheckConnectionAsync(System.Threading.CancellationToken ct) -> System.Threading.Tasks.Task!
@@ -78,6 +65,8 @@ JoinRpg.Common.WebInfrastructure.HealthCheckMetricsPublisher
 JoinRpg.Common.WebInfrastructure.HealthCheckMetricsPublisher.HealthCheckMetricsPublisher() -> void
 JoinRpg.Common.WebInfrastructure.HealthCheckMetricsPublisher.PublishAsync(Microsoft.Extensions.Diagnostics.HealthChecks.HealthReport! report, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task!
 JoinRpg.Common.WebInfrastructure.HostRuntimeStartWaiter
+JoinRpg.Common.WebInfrastructure.Job.BackgroundServiceActivity
+JoinRpg.Common.WebInfrastructure.Job.MidnightJobsRegistration
 JoinRpg.Common.WebInfrastructure.JoinHttpsRedirectionOptions
 JoinRpg.Common.WebInfrastructure.JoinHttpsRedirectionOptions.Enabled.get -> bool
 JoinRpg.Common.WebInfrastructure.JoinHttpsRedirectionOptions.Enabled.set -> void
@@ -118,6 +107,7 @@ JoinRpg.Common.WebInfrastructure.SiteBannerOptions.Text.get -> string?
 JoinRpg.Common.WebInfrastructure.SiteBannerOptions.Text.set -> void
 JoinRpg.Common.WebInfrastructure.WebInfrastructureMetrics
 JoinRpg.Common.WebInfrastructure.WebInfrastructureRegistration
+const JoinRpg.Common.WebInfrastructure.Job.BackgroundServiceActivity.ActivitySourceName = "BackgroundJobService" -> string!
 const JoinRpg.Common.WebInfrastructure.JoinHttpsRedirectionOptions.SectionName = "HttpsRedirection" -> string!
 const JoinRpg.Common.WebInfrastructure.RobotsTxtOptions.SectionName = "RobotsTxt" -> string!
 const JoinRpg.Common.WebInfrastructure.SiteBannerOptions.SectionName = "SiteBanner" -> string!
@@ -125,9 +115,6 @@ const JoinRpg.Common.WebInfrastructure.WebInfrastructureMetrics.MeterName = "Joi
 override JoinRpg.Common.WebInfrastructure.AppVersionInfo.Equals(object? obj) -> bool
 override JoinRpg.Common.WebInfrastructure.AppVersionInfo.GetHashCode() -> int
 override JoinRpg.Common.WebInfrastructure.AppVersionInfo.ToString() -> string!
-override JoinRpg.Common.WebInfrastructure.DailyJob.JobId.Equals(object? obj) -> bool
-override JoinRpg.Common.WebInfrastructure.DailyJob.JobId.GetHashCode() -> int
-override JoinRpg.Common.WebInfrastructure.DailyJob.JobId.ToString() -> string!
 override JoinRpg.Common.WebInfrastructure.ErrorSupportInfo.Equals(object? obj) -> bool
 override JoinRpg.Common.WebInfrastructure.ErrorSupportInfo.GetHashCode() -> int
 override JoinRpg.Common.WebInfrastructure.ErrorSupportInfo.ToString() -> string!
@@ -139,11 +126,8 @@ static JoinRpg.Common.WebInfrastructure.Auth.AuthEndpoints.MapAuthEndpoints(this
 static JoinRpg.Common.WebInfrastructure.Auth.AuthRegistration.AddJoinRpgAuthentication<TContext>(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, Microsoft.Extensions.Configuration.IConfiguration! configuration) -> void
 static JoinRpg.Common.WebInfrastructure.Auth.ClaimsPrincipalExtensions.GetJoinrpgUserId(this System.Security.Claims.ClaimsPrincipal! user) -> JoinRpg.Common.PrimitiveTypes.UserIdentification!
 static JoinRpg.Common.WebInfrastructure.Auth.ClaimsPrincipalExtensions.TryGetJoinrpgUserId(this System.Security.Claims.ClaimsPrincipal! user) -> JoinRpg.Common.PrimitiveTypes.UserIdentification?
-static JoinRpg.Common.WebInfrastructure.DailyJob.JobId.operator !=(JoinRpg.Common.WebInfrastructure.DailyJob.JobId? left, JoinRpg.Common.WebInfrastructure.DailyJob.JobId? right) -> bool
-static JoinRpg.Common.WebInfrastructure.DailyJob.JobId.operator ==(JoinRpg.Common.WebInfrastructure.DailyJob.JobId? left, JoinRpg.Common.WebInfrastructure.DailyJob.JobId? right) -> bool
 static JoinRpg.Common.WebInfrastructure.DataProtectionRegistration.AddJoinDataProtection(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, Microsoft.Extensions.Configuration.IConfiguration! configuration, Microsoft.AspNetCore.Hosting.IWebHostEnvironment! environment, string! appName, string! connectionStringName) -> void
 static JoinRpg.Common.WebInfrastructure.DataProtectionRegistration.AddJoinDataProtection<TContext>(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, string! appName) -> void
-static JoinRpg.Common.WebInfrastructure.DbContextRegisterHelper.AddJoinEfCoreDbContext<TContext>(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, Microsoft.Extensions.Configuration.IConfiguration! configuration, Microsoft.Extensions.Hosting.IHostEnvironment! environment, string! connectionStringName, System.Action<Microsoft.EntityFrameworkCore.DbContextOptionsBuilder!>? optionsBuilder = null) -> bool
 static JoinRpg.Common.WebInfrastructure.EfCoreMigration.EfCoreMigrationExtensions.AddMigrationsLauncher(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
 static JoinRpg.Common.WebInfrastructure.EfCoreMigration.EfCoreMigrationExtensions.RegisterMigrator<TContext>(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, Microsoft.Extensions.Configuration.IConfiguration! configuration, Microsoft.Extensions.Hosting.IHostEnvironment! environment, string! connectionStringName, System.Action<Microsoft.EntityFrameworkCore.DbContextOptionsBuilder!>? optionsBuilder = null) -> void
 static JoinRpg.Common.WebInfrastructure.ErrorPageReExecuteExtensions.UseErrorPageReExecuteAsGet(this Microsoft.AspNetCore.Builder.IApplicationBuilder! app) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
@@ -154,6 +138,7 @@ static JoinRpg.Common.WebInfrastructure.ForwardedHeadersExtensions.ConfigureForw
 static JoinRpg.Common.WebInfrastructure.HealthCheckExtensions.AddJoinHealthChecks(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
 static JoinRpg.Common.WebInfrastructure.HealthCheckExtensions.MapJoinHealthChecks(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder! endpoints) -> void
 static JoinRpg.Common.WebInfrastructure.HostRuntimeStartWaiter.WaitForAppStartup(this Microsoft.Extensions.Hosting.IHostApplicationLifetime! lifetime, System.Threading.CancellationToken stoppingToken) -> System.Threading.Tasks.Task!
+static JoinRpg.Common.WebInfrastructure.Job.MidnightJobsRegistration.AddMidnightJobs(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
 static JoinRpg.Common.WebInfrastructure.LoggingExtensions.UseJoinRequestLogging(this Microsoft.AspNetCore.Builder.IApplicationBuilder! app) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
 static JoinRpg.Common.WebInfrastructure.LoggingExtensions.UseJoinSerilog(this Microsoft.Extensions.Hosting.IHostBuilder! host, string! appname) -> Microsoft.Extensions.Hosting.IHostBuilder!
 static JoinRpg.Common.WebInfrastructure.OpenTelemetryRegistration.AddJoinOpenTelemetry(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, string! serviceName, params System.Collections.Generic.IEnumerable<string!>! sourceNames) -> void
@@ -163,14 +148,11 @@ static JoinRpg.Common.WebInfrastructure.WebInfrastructureRegistration.AddJoinWeb
 static JoinRpg.Common.WebInfrastructure.WebInfrastructureRegistration.AddJoinWebPlatform<TKeysContext>(this Microsoft.AspNetCore.Builder.WebApplicationBuilder! builder, string! appName, System.Collections.Generic.IEnumerable<string!>! telemetryServiceNames) -> void
 static JoinRpg.Common.WebInfrastructure.WebInfrastructureRegistration.AddJoinWebPlatform<TKeysContext>(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, Microsoft.AspNetCore.Hosting.IWebHostEnvironment! environment, string! appName, System.Collections.Generic.IEnumerable<string!>! telemetryServiceNames) -> void
 static readonly JoinRpg.Common.WebInfrastructure.HealthCheckExtensions.DefaultHealthCheckTimeout -> System.TimeSpan
+static readonly JoinRpg.Common.WebInfrastructure.Job.BackgroundServiceActivity.ActivitySource -> System.Diagnostics.ActivitySource!
 virtual JoinRpg.Common.WebInfrastructure.AppVersionInfo.<Clone>$() -> JoinRpg.Common.WebInfrastructure.AppVersionInfo!
 virtual JoinRpg.Common.WebInfrastructure.AppVersionInfo.EqualityContract.get -> System.Type!
 virtual JoinRpg.Common.WebInfrastructure.AppVersionInfo.Equals(JoinRpg.Common.WebInfrastructure.AppVersionInfo? other) -> bool
 virtual JoinRpg.Common.WebInfrastructure.AppVersionInfo.PrintMembers(System.Text.StringBuilder! builder) -> bool
-virtual JoinRpg.Common.WebInfrastructure.DailyJob.JobId.<Clone>$() -> JoinRpg.Common.WebInfrastructure.DailyJob.JobId!
-virtual JoinRpg.Common.WebInfrastructure.DailyJob.JobId.EqualityContract.get -> System.Type!
-virtual JoinRpg.Common.WebInfrastructure.DailyJob.JobId.Equals(JoinRpg.Common.WebInfrastructure.DailyJob.JobId? other) -> bool
-virtual JoinRpg.Common.WebInfrastructure.DailyJob.JobId.PrintMembers(System.Text.StringBuilder! builder) -> bool
 virtual JoinRpg.Common.WebInfrastructure.ErrorSupportInfo.<Clone>$() -> JoinRpg.Common.WebInfrastructure.ErrorSupportInfo!
 virtual JoinRpg.Common.WebInfrastructure.ErrorSupportInfo.EqualityContract.get -> System.Type!
 virtual JoinRpg.Common.WebInfrastructure.ErrorSupportInfo.Equals(JoinRpg.Common.WebInfrastructure.ErrorSupportInfo? other) -> bool

@@ -4,6 +4,8 @@
 
 ## Не выпущено
 
+## 2026.9.651 — 2026-11-07
+
 ### Ломающие изменения
 - Удалены `IDailyJobRepository` и `JobId` из namespace `JoinRpg.Common.WebInfrastructure.DailyJob` (сам namespace исчез). Переход: подключить пакет `JoinRpg.Common.WebInfrastructure.Interfaces` и использовать `IJobRepository` и `JobId` из namespace `JoinRpg.Common.WebInfrastructure.Job`. ([#6020](https://github.com/joinrpg/joinrpg-net/pull/6021))
 - Удалён `DbContextRegisterHelper.AddJoinEfCoreDbContext` из namespace `JoinRpg.Common.WebInfrastructure`. Переход: подключить пакет `JoinRpg.Common.EntityFrameworkCore` и вызывать `AddJoinEfCoreDbContext` из namespace `JoinRpg.Common.EntityFrameworkCore` (сигнатура не менялась). ([#6024](https://github.com/joinrpg/joinrpg-net/pull/6041))
