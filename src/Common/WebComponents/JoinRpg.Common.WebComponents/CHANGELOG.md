@@ -4,6 +4,15 @@
 
 ## Не выпущено
 
+### Добавлено
+- `JoinTextInput`: параметр `Variants` — варианты значений для подсказки ввода (datalist). ([#6156](https://github.com/joinrpg/joinrpg-net/pull/6156))
+
+### Изменено
+- `JoinDialog`: контент компенсирует отрицательные margin'ы Bootstrap-строк (`.form-horizontal .form-group`, `.row`) — формы в диалоге больше не дают горизонтальную прокрутку окна, локальные обёртки `overflow-x: hidden` у форм в диалогах больше не нужны. ([#6156](https://github.com/joinrpg/joinrpg-net/pull/6156))
+
+### Исправлено
+- `JoinDialog`: `ShowModal()` из продолжения после `ShowModalAsync`/`ShowBoolModalAsync` снова открывает окно — раньше без SynchronizationContext (например, в тестах) срабатывал встроенный guard и окно не открывалось. В продакшен-приложениях Blazor поведение не меняется. ([#6156](https://github.com/joinrpg/joinrpg-net/pull/6156))
+
 ## 2026.9.651 — 2026-11-07
 
 ### Ломающие изменения
@@ -11,7 +20,6 @@
 
 ### Добавлено
 - `ButtonPreset.Archive` — кнопка «В архив» (Warning) с новой иконкой `JoinIconType.Archive`. ([#6157](https://github.com/joinrpg/joinrpg-net/pull/6157))
-- `JoinTextInput`: параметр `Variants` — варианты значений для подсказки ввода (datalist). ([#6156](https://github.com/joinrpg/joinrpg-net/pull/6156))
 - `EnumRadioButtonGroup`: параметр `Values` — какие значения enum показывать (по умолчанию все). ([#6068](https://github.com/joinrpg/joinrpg-net/pull/6068))
 - Кнопка с `data-join-collapse-close` сворачивает и ближайший голый `<details>`, не только `JoinCollapsePanel` — для лёгких тогглов вроде формы ответа в обсуждениях. ([#6053](https://github.com/joinrpg/joinrpg-net/pull/6053))
 - `JoinBadge`: параметр `TooltipContent` — подсказка бейджа разметкой, когда простой строки `Title` мало. ([#6059](https://github.com/joinrpg/joinrpg-net/pull/6059))
@@ -24,7 +32,6 @@
 ### Изменено
 - `JoinAlert`: собственные классы `join-alert`/`join-alert--*` и scoped CSS пакета вместо классов Bootstrap (`alert`/`alert-*`) — алерт выглядит как раньше и без подключённого Bootstrap CSS. Вместе с ним без Bootstrap работают рендерящие его `JoinLoadingMessage` и `JoinErrorMessage`. Цвета вариаций берутся из общей палитры пакета (`css/variations.css`), вариация `Primary` получила цвета Bootstrap 5 — при классах Bootstrap 3 класс `alert-primary` был мёртвым и алерт выглядел без цвета. Переход: если стилизовали алерты снаружи по классам Bootstrap — поправьте селекторы на `join-alert`. ([#6151](https://github.com/joinrpg/joinrpg-net/pull/6151))
 - `JoinCollapsePanel`: оформление — свои классы (`join-collapse-panel--*`, `join-collapse-panel__heading`, `join-collapse-panel__body`) и стили пакета вместо классов Bootstrap 3 (`panel panel-*`, `panel-heading`, `panel-body`). Цвета вариаций — из общей палитры пакета `css/variations.css` (фасеты `panel-*`). `JoinCollapsePanelGroup` рендерит `join-collapse-panel-group` вместо `panel-group`. Переход: если стилизовали панель снаружи через `.panel*` — перенесите правила на `join-collapse-panel*`. ([#6127](https://github.com/joinrpg/joinrpg-net/issues/6127))
-- `JoinDialog`: контент компенсирует отрицательные margin'ы Bootstrap-строк (`.form-horizontal .form-group`, `.row`) — формы в диалоге больше не дают горизонтальную прокрутку окна, локальные обёртки `overflow-x: hidden` у форм в диалогах больше не нужны. ([#6156](https://github.com/joinrpg/joinrpg-net/pull/6156))
 - `JoinDotsMenu` и `TypedDropdownButton`: меню открывается нативным `<details>` (как `JoinDropdownButton`), а не JS Bootstrap 3 (`data-toggle="dropdown"`). Без JS Bootstrap меню больше не «молча не открывается». Переход: разметка внутри — `details/summary`, а не `span.dropdown`/`button` — поправьте селекторы, если стилизовали меню снаружи. ([#6018](https://github.com/joinrpg/joinrpg-net/pull/6018))
 - Цвета вариаций (`default`, `primary`, `success`, `info`, `warning`, `danger`) вынесены в общий файл пакета `css/variations.css`: `JoinBadge`, `JoinButton`, `JoinDropdownButton` берут их через CSS-переменные. Хосту нужен один статический CSS пакета — `css/join-components.css` (палитра + иконки), см. README. ([#6150](https://github.com/joinrpg/joinrpg-net/pull/6150))
 
@@ -32,7 +39,6 @@
 - `FormRow` без `Label`: вместо пустого `<label>` — пустая колонка, `Label` теперь `string?`. ([#6010](https://github.com/joinrpg/joinrpg-net/pull/6010))
 - `JoinBadge`: параметр `Size` заработал — классы `label-xs/label-sm/label-lg` определены в пакете (Bootstrap 3 не имеет размеров у `.label`, раньше параметр молча игнорировался). Бейджи с заданным `Size` изменят размер. ([#6085](https://github.com/joinrpg/joinrpg-net/pull/6085))
 - `JoinBadge`: базовое оформление и цвета всех `.label-*` теперь в пакете — без подключённого Bootstrap бейджи больше не бесцветные, внешнему потребителю не нужно определять `.label-*` у себя. ([#6150](https://github.com/joinrpg/joinrpg-net/pull/6150))
-- `JoinDialog`: `ShowModal()` из продолжения после `ShowModalAsync`/`ShowBoolModalAsync` снова открывает окно — раньше без SynchronizationContext (например, в тестах) срабатывал встроенный guard и окно не открывалось. В продакшен-приложениях Blazor поведение не меняется. ([#6156](https://github.com/joinrpg/joinrpg-net/pull/6156))
 
 ## 2026.9.533 — 2026-10-29
 
