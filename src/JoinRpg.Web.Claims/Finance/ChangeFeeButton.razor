@@ -1,5 +1,6 @@
 @* Ручное назначение размера базового взноса заявки. *@
 @using JoinRpg.Common.WebComponents.Dialog
+@using System.ComponentModel.DataAnnotations
 @inject IChangeFeeClient Client
 @inject NavigationManager NavigationManager
 @inject ILogger<ChangeFeeButton> Logger
@@ -9,8 +10,9 @@
             AutoProgress="false"
             OnClick="OpenDialog" />
 
-@* Кнопка своя, а не Buttons диалога: те закрывают окно сразу, а при отказе сервера окно должно остаться с введённым значением *@
-<JoinDialog @ref="dialog" Caption="Изменение суммы взноса" Width="600px" MaxWidth="95%" ShowCloseButton="@(!inProgress)">
+@* Стандартные кнопки диалога закрывают окно сразу, а при невалидном вводе или отказе сервера окно переоткрывается —
+   введённое значение остаётся в форме *@
+<JoinDialog @ref="dialog" Caption="Изменение суммы взноса" Width="600px" MaxWidth="95%" Buttons="buttons">
     <ChildContent>
         <JoinAlert Variation="VariationStyleEnum.Info">
             <p>Размер взноса для этой заявки будет назначен вручную.</p>
@@ -29,25 +31,17 @@
             <JoinAlert Variation="VariationStyleEnum.Danger">@errorMessage</JoinAlert>
         }
 
-        <div class="form-group">
-            <label for="change-fee-value">Новый размер взноса</label>
-            <input id="change-fee-value" type="number" class="form-control" @bind="feeValue" list="change-fee-variants" />
-            <datalist id="change-fee-variants">
-                @foreach (var variant in View.FeeVariants)
-                {
-                    <option value="@variant" />
-                }
-            </datalist>
+        @* У .form-group в .form-horizontal (Bootstrap 3) поля -15px: без обрезки окно получает горизонтальную прокрутку *@
+        <div style="overflow-x: hidden;">
+        <EditForm Model="@form">
+            <FormHorizontal>
+                <FormRowFor For="() => form.Fee">
+                    <JoinTextInput @bind-Value="form.Fee" Variants="@feeVariants" />
+                </FormRowFor>
+            </FormHorizontal>
+        </EditForm>
         </div>
     </ChildContent>
-    <FooterContent>
-        @* Стили футера JoinDialog — scoped и на эту разметку не действуют; перенос нужен на узком экране *@
-        <div style="display: flex; flex-wrap: wrap; gap: 0.5em; justify-content: flex-end; flex: 1 1 auto; min-width: 0;">
-        <JoinButton Preset="ButtonPreset.Cancel" AutoProgress="false" Disabled="@inProgress" OnClick="CloseDialog" />
-        <JoinButton Label="Изменить" Icon="JoinIconType.Ok" Style="VariationStyleEnum.Info" AutoProgress="false"
-                    InProgress="@inProgress" Disabled="@inProgress" OnClick="Submit" />
-        </div>
-    </FooterContent>
 </JoinDialog>
 
 @code {
@@ -59,29 +53,43 @@
     public SizeStyleEnum Size { get; set; } = SizeStyleEnum.ExtraSmall;
 
     private JoinDialog dialog = default!;
-    private string feeValue = "";
+    private readonly FormModel form = new();
     private string? errorMessage;
-    private bool inProgress;
+    private IReadOnlyCollection<string> feeVariants = [];
 
-    private void OpenDialog()
+    private static readonly IReadOnlyCollection<DialogButton> buttons =
+    [
+        new(ButtonPreset.Save, label: "Изменить", icon: JoinIconType.Ok, style: VariationStyleEnum.Info),
+        new(ButtonPreset.Cancel, label: "Отмена", cancel: true),
+    ];
+
+    private sealed class FormModel
     {
-        feeValue = View.BaseFee.ToString();
-        errorMessage = null;
-        dialog.ShowModal();
+        [Display(Name = "Новый размер взноса")]
+        public string Fee { get; set; } = "";
     }
 
-    private void CloseDialog() => dialog.Close();
+    protected override void OnParametersSet()
+    {
+        feeVariants = [.. View.FeeVariants.Select(v => v.ToString())];
+    }
 
-    private async Task Submit()
+    private async Task OpenDialog()
     {
         errorMessage = null;
-        if (!int.TryParse(feeValue, out var fee) || fee < 0)
+        form.Fee = View.BaseFee.ToString();
+        if (!await dialog.ShowBoolModalAsync())
         {
-            errorMessage = "Введите корректную сумму взноса (целое число не меньше нуля).";
             return;
         }
 
-        inProgress = true;
+        if (!int.TryParse(form.Fee, out var fee) || fee < 0)
+        {
+            errorMessage = "Введите корректную сумму взноса (целое число не меньше нуля).";
+            dialog.ShowModal();
+            return;
+        }
+
         try
         {
             await Client.ChangeFee(View.ClaimId, new ChangeFeeRequest(fee));
@@ -92,13 +100,13 @@
         {
             // Ожидаемый отказ сервера (нет прав) — текст предназначен мастеру
             errorMessage = exception.Message;
-            inProgress = false;
+            dialog.ShowModal();
         }
         catch (Exception exception)
         {
             Logger.LogError(exception, "Не удалось сохранить новый размер взноса для заявки {ClaimId}", View.ClaimId);
             errorMessage = "Не удалось сохранить. Обновите страницу и попробуйте ещё раз.";
-            inProgress = false;
+            dialog.ShowModal();
         }
     }
 }

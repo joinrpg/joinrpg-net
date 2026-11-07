@@ -1,1 +1,3 @@
 #nullable enable
+JoinRpg.Common.WebComponents.JoinTextInput.Variants.get -> System.Collections.Generic.IReadOnlyCollection<string!>?
+JoinRpg.Common.WebComponents.JoinTextInput.Variants.set -> void

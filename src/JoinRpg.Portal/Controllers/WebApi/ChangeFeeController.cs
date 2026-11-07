@@ -17,8 +17,7 @@ public class ChangeFeeController(IFinanceService financeService) : ControllerBas
 
     [HttpPost]
     public async Task<ActionResult> Index(
-        ProjectIdentification projectId,
-        int claimId,
+        ClaimIdentification claimId,
         [FromBody] ChangeFeeRequest? request)
     {
         if (request is null)
@@ -26,7 +25,7 @@ public class ChangeFeeController(IFinanceService financeService) : ControllerBas
             return BadRequest(EmptyBody);
         }
 
-        await financeService.ChangeFee(new ClaimIdentification(projectId, claimId), request.FeeValue);
+        await financeService.ChangeFee(claimId, request.FeeValue);
         return Ok();
     }
 }

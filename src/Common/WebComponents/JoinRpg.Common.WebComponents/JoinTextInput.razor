@@ -1,11 +1,20 @@
 @using System.Linq.Expressions
 @if (Immediate)
 {
-    <input type="text" id="@inputId" name="@FieldIdentifier.FieldName" value="@internalValue" @oninput="UpdateValue" @onblur="TrimDisplayedValue" class="form-control" placeholder="@Placeholder" @attributes="AdditionalAttributes" />
+    <input type="text" id="@inputId" name="@FieldIdentifier.FieldName" value="@internalValue" @oninput="UpdateValue" @onblur="TrimDisplayedValue" class="form-control" placeholder="@Placeholder" list="@(Variants is not null ? variantsListId : null)" @attributes="AdditionalAttributes" />
 }
 else
 {
-    <input type="text" id="@inputId" name="@FieldIdentifier.FieldName" value="@internalValue" @onchange="UpdateValue" class="form-control" placeholder="@Placeholder" @attributes="AdditionalAttributes" />
+    <input type="text" id="@inputId" name="@FieldIdentifier.FieldName" value="@internalValue" @onchange="UpdateValue" class="form-control" placeholder="@Placeholder" list="@(Variants is not null ? variantsListId : null)" @attributes="AdditionalAttributes" />
+}
+@if (Variants is not null)
+{
+    <datalist id="@variantsListId">
+        @foreach (var variant in Variants)
+        {
+            <option value="@variant" />
+        }
+    </datalist>
 }
 
 @code {
@@ -40,6 +49,14 @@ else
 
     [Parameter(CaptureUnmatchedValues = true)]
     public Dictionary<string, object>? AdditionalAttributes { get; set; }
+
+    /// <summary>
+    /// Варианты значений для подсказки ввода (рендерится как datalist, input получает атрибут list).
+    /// </summary>
+    [Parameter]
+    public IReadOnlyCollection<string>? Variants { get; set; }
+
+    private readonly string variantsListId = $"join-text-input-variants-{Guid.NewGuid():N}";
 
     [CascadingParameter]
     private FormRowLabelTarget? LabelTarget { get; set; }

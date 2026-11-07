@@ -11,6 +11,7 @@
 
 ### Добавлено
 - `ButtonPreset.Archive` — кнопка «В архив» (Warning) с новой иконкой `JoinIconType.Archive`. ([#6157](https://github.com/joinrpg/joinrpg-net/pull/6157))
+- `JoinTextInput`: параметр `Variants` — варианты значений для подсказки ввода (datalist). ([#6156](https://github.com/joinrpg/joinrpg-net/pull/6156))
 - `EnumRadioButtonGroup`: параметр `Values` — какие значения enum показывать (по умолчанию все). ([#6068](https://github.com/joinrpg/joinrpg-net/pull/6068))
 - Кнопка с `data-join-collapse-close` сворачивает и ближайший голый `<details>`, не только `JoinCollapsePanel` — для лёгких тогглов вроде формы ответа в обсуждениях. ([#6053](https://github.com/joinrpg/joinrpg-net/pull/6053))
 - `JoinBadge`: параметр `TooltipContent` — подсказка бейджа разметкой, когда простой строки `Title` мало. ([#6059](https://github.com/joinrpg/joinrpg-net/pull/6059))
@@ -30,6 +31,7 @@
 - `FormRow` без `Label`: вместо пустого `<label>` — пустая колонка, `Label` теперь `string?`. ([#6010](https://github.com/joinrpg/joinrpg-net/pull/6010))
 - `JoinBadge`: параметр `Size` заработал — классы `label-xs/label-sm/label-lg` определены в пакете (Bootstrap 3 не имеет размеров у `.label`, раньше параметр молча игнорировался). Бейджи с заданным `Size` изменят размер. ([#6085](https://github.com/joinrpg/joinrpg-net/pull/6085))
 - `JoinBadge`: базовое оформление и цвета всех `.label-*` теперь в пакете — без подключённого Bootstrap бейджи больше не бесцветные, внешнему потребителю не нужно определять `.label-*` у себя. ([#6150](https://github.com/joinrpg/joinrpg-net/pull/6150))
+- `JoinDialog`: `ShowModal()` из продолжения после `ShowModalAsync`/`ShowBoolModalAsync` снова открывает окно — раньше без SynchronizationContext (например, в тестах) срабатывал встроенный guard и окно не открывалось. В продакшен-приложениях Blazor поведение не меняется. ([#6156](https://github.com/joinrpg/joinrpg-net/pull/6156))
 
 ## 2026.9.533 — 2026-10-29
 

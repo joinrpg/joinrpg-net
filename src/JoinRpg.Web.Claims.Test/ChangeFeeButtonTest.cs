@@ -14,6 +14,7 @@ public class ChangeFeeButtonTest : BunitContext
     private static readonly ClaimIdentification ClaimId = new(new ProjectIdentification(123), 45);
 
     private readonly FakeChangeFeeClient client = new();
+    private readonly BunitJSModuleInterop joinDialogModule;
 
     public ChangeFeeButtonTest()
     {
@@ -21,7 +22,7 @@ public class ChangeFeeButtonTest : BunitContext
         Services.AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance);
         Services.AddSingleton(typeof(ILogger<>), typeof(NullLogger<>));
 
-        var joinDialogModule = JSInterop.SetupModule("/_content/JoinRpg.Common.WebComponents/component-interop.js");
+        joinDialogModule = JSInterop.SetupModule("/_content/JoinRpg.Common.WebComponents/component-interop.js");
         joinDialogModule.SetupVoid("showModal", _ => true);
         joinDialogModule.SetupVoid("closeModal", _ => true);
     }
@@ -39,12 +40,18 @@ public class ChangeFeeButtonTest : BunitContext
     private static void Type(IRenderedComponent<ChangeFeeButton> cut, string text)
         => cut.Find("dialog input").Change(text);
 
-    /// <summary>Кнопка отправки — последняя в футере.</summary>
-    private static AngleSharp.Dom.IElement SubmitButton(IRenderedComponent<ChangeFeeButton> cut)
-        => cut.Find("dialog .join-dialog-footer").QuerySelectorAll("button").Last();
+    private static AngleSharp.Dom.IElement SaveButton(IRenderedComponent<ChangeFeeButton> cut)
+        => cut.FindAll(".join-dialog-footer button").First(b => b.TextContent.Contains("Изменить"));
 
-    private static Task Submit(IRenderedComponent<ChangeFeeButton> cut)
-        => SubmitButton(cut).ClickAsync(new MouseEventArgs());
+    /// <summary>
+    /// Клик по стандартной кнопке диалога: кнопка закрывает окно (closeModal),
+    /// но событие close у dialog в bUnit не стреляет — дергаем его вручную.
+    /// </summary>
+    private async Task ConfirmAsync(IRenderedComponent<ChangeFeeButton> cut)
+    {
+        await SaveButton(cut).ClickAsync(new MouseEventArgs());
+        await cut.Find("dialog").TriggerEventAsync("onclose", EventArgs.Empty);
+    }
 
     private void ShouldReload()
         => Services.GetRequiredService<BunitNavigationManager>().History.ShouldHaveSingleItem().Options.ForceLoad.ShouldBeTrue();
@@ -59,6 +66,7 @@ public class ChangeFeeButtonTest : BunitContext
         var dialog = cut.Find("dialog");
         dialog.TextContent.ShouldContain("Изменение суммы взноса");
         dialog.TextContent.ShouldContain("будет назначен вручную");
+        dialog.TextContent.ShouldContain("Новый размер взноса");
         cut.Find("dialog input").GetAttribute("value").ShouldBe("500");
     }
 
@@ -85,9 +93,9 @@ public class ChangeFeeButtonTest : BunitContext
         var cut = RenderButton();
         Type(cut, "750");
 
-        await Submit(cut);
+        await ConfirmAsync(cut);
 
-        client.Calls.ShouldBe([750]);
+        cut.WaitForAssertion(() => client.Calls.ShouldBe([750]));
         ShouldReload();
     }
 
@@ -99,32 +107,19 @@ public class ChangeFeeButtonTest : BunitContext
         var cut = RenderButton();
         Type(cut, value);
 
-        await Submit(cut);
+        await ConfirmAsync(cut);
 
         client.Calls.ShouldBeEmpty();
-        cut.Find("dialog").TextContent.ShouldContain("Введите корректную сумму");
+        cut.WaitForAssertion(() =>
+        {
+            cut.Find("dialog").TextContent.ShouldContain("Введите корректную сумму");
+            // Диалог закрыла кнопка и тут же переоткрылся с ошибкой
+            joinDialogModule.Invocations["showModal"].Count.ShouldBe(2);
+        });
         ShouldNotReload();
     }
 
-    /// <summary>Пока запрос в полёте, второй клик не должен отправить значение повторно.</summary>
-    [Fact]
-    public async Task ButtonsAreDisabledWhileRequestIsInFlight()
-    {
-        var pending = new TaskCompletionSource();
-        client.Pending = pending.Task;
-        var cut = RenderButton();
-        Type(cut, "750");
-
-        var submit = Submit(cut);
-
-        cut.WaitForAssertion(() => cut.Find("dialog .join-dialog-footer").QuerySelectorAll("button")
-            .ShouldAllBe(b => b.HasAttribute("disabled")));
-        pending.SetResult();
-        await submit;
-        client.Calls.ShouldBe([750]);
-    }
-
-    /// <summary>Ради этого кнопка диалога своя: при отказе окно не закрывается и введённое значение не теряется.</summary>
+    /// <summary>При отказе сервера диалог переоткрывается: введённое значение не теряется.</summary>
     [Fact]
     public async Task ShouldKeepValueAfterServerRejection()
     {
@@ -132,11 +127,16 @@ public class ChangeFeeButtonTest : BunitContext
         var cut = RenderButton();
         Type(cut, "750");
 
-        await Submit(cut);
+        await ConfirmAsync(cut);
 
-        cut.WaitForAssertion(() => cut.Find("dialog").TextContent.ShouldContain("Недостаточно прав"));
+        cut.WaitForAssertion(() =>
+        {
+            cut.Find("dialog").TextContent.ShouldContain("Недостаточно прав");
+            // Диалог закрыла кнопка и тут же переоткрылся с ошибкой
+            joinDialogModule.Invocations["showModal"].Count.ShouldBe(2);
+        });
         cut.Find("dialog input").GetAttribute("value").ShouldBe("750");
-        SubmitButton(cut).HasAttribute("disabled").ShouldBeFalse();
+        ShouldNotReload();
     }
 
     [Fact]
@@ -145,7 +145,7 @@ public class ChangeFeeButtonTest : BunitContext
         client.FailWith = new HttpRequestException("Response status code does not indicate success: 502 (Bad Gateway).");
         var cut = RenderButton();
 
-        await Submit(cut);
+        await ConfirmAsync(cut);
 
         cut.WaitForAssertion(() => cut.Markup.ShouldContain("Не удалось сохранить"));
         cut.Markup.ShouldNotContain("502");
@@ -164,20 +164,16 @@ public class ChangeFeeButtonTest : BunitContext
     {
         public List<int> Calls { get; } = [];
         public Exception? FailWith { get; set; }
-        public Task? Pending { get; set; }
 
-        public async Task ChangeFee(ClaimIdentification claimId, ChangeFeeRequest request)
+        public Task ChangeFee(ClaimIdentification claimId, ChangeFeeRequest request)
         {
             claimId.ShouldBe(ClaimId);
-            if (Pending is not null)
-            {
-                await Pending;
-            }
             if (FailWith is not null)
             {
                 throw FailWith;
             }
             Calls.Add(request.FeeValue);
+            return Task.CompletedTask;
         }
     }
 }
