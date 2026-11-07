@@ -8,6 +8,7 @@
 - Удалён `ElementMoveCommandViewModel` — модель POST-команды для `JoinMoveControlNonInteractive`, вне joinrpg не использовалась. Переход: не требуется. ([#6042](https://github.com/joinrpg/joinrpg-net/pull/6042))
 
 ### Добавлено
+- `ButtonPreset.Archive` — кнопка «В архив» (Warning) с новой иконкой `JoinIconType.Archive`. ([#6157](https://github.com/joinrpg/joinrpg-net/pull/6157))
 - `EnumRadioButtonGroup`: параметр `Values` — какие значения enum показывать (по умолчанию все). ([#6068](https://github.com/joinrpg/joinrpg-net/pull/6068))
 - Кнопка с `data-join-collapse-close` сворачивает и ближайший голый `<details>`, не только `JoinCollapsePanel` — для лёгких тогглов вроде формы ответа в обсуждениях. ([#6053](https://github.com/joinrpg/joinrpg-net/pull/6053))
 - `JoinBadge`: параметр `TooltipContent` — подсказка бейджа разметкой, когда простой строки `Title` мало. ([#6059](https://github.com/joinrpg/joinrpg-net/pull/6059))
