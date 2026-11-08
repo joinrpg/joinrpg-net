@@ -52,15 +52,17 @@ public class ExpenseServiceTest
         UserIdentification masterId,
         string categoryPath = "Аренда базы\\Жилые корпуса",
         int plannedQuantity = 2,
-        int plannedPrice = 5000)
-        => new(masterId, "Аренда домика", categoryPath, plannedQuantity, plannedPrice, new MarkdownString("Предоплата за август"));
+        int plannedPrice = 5000,
+        DateOnly? spentAt = null)
+        => new(masterId, "Аренда домика", categoryPath, plannedQuantity, plannedPrice, spentAt, new MarkdownString("Предоплата за август"));
 
     private static EditExpenseRequest EditRequest(
         UserIdentification masterId,
         string name = "Аренда домика (уточнено)",
         int plannedQuantity = 3,
-        int plannedPrice = 4500)
-        => new(masterId, name, "Аренда базы\\Жилые корпуса", plannedQuantity, plannedPrice, new MarkdownString("Уточнено"));
+        int plannedPrice = 4500,
+        DateOnly? spentAt = null)
+        => new(masterId, name, "Аренда базы\\Жилые корпуса", plannedQuantity, plannedPrice, spentAt, new MarkdownString("Уточнено"));
 
     /// <summary>Ещё один мастер проекта; метаданные пересобираем, чтобы ACL увидел его.</summary>
     private User CreateMaster(string name = "Master2")
@@ -166,6 +168,7 @@ public class ExpenseServiceTest
                 "Аренда базы\\Жилые корпуса",
                 3,
                 4500,
+                null,
                 null));
 
         var expense = expenses.ShouldHaveSingleItem();
@@ -223,6 +226,70 @@ public class ExpenseServiceTest
 
         var expense = expenses.ShouldHaveSingleItem();
         expense.State.ShouldBe(ExpenseState.Proposed);
+    }
+
+    [Fact]
+    public async Task CreateExpense_WithSpentAt_StoresSpentAt()
+    {
+        var service = CreateService(mock.Master.UserId);
+        var spentAt = new DateOnly(2026, 9, 1);
+
+        await service.CreateExpense(
+            ProjectId,
+            CreateRequest(new UserIdentification(mock.Master.UserId), spentAt: spentAt));
+
+        expenses.ShouldHaveSingleItem().SpentAt.ShouldBe(spentAt.ToDateTime(TimeOnly.MinValue));
+    }
+
+    [Fact]
+    public async Task EditExpense_WithSpentAt_KeepsApprovedWhenPlannedCostNotGrown()
+    {
+        // Правка с датой при нерастущей стоимости: дата сохраняется, одобрение не сбрасывается
+        var service = CreateService(mock.Master.UserId);
+        var expenseId = await CreateExpenseAsMaster();
+        await service.ApproveExpense(expenseId, null);
+        var spentAt = new DateOnly(2026, 9, 2);
+
+        await service.EditExpense(
+            expenseId,
+            EditRequest(new UserIdentification(mock.Master.UserId), plannedQuantity: 2, plannedPrice: 5000, spentAt: spentAt));
+
+        var expense = expenses.ShouldHaveSingleItem();
+        expense.SpentAt.ShouldBe(spentAt.ToDateTime(TimeOnly.MinValue));
+        expense.State.ShouldBe(ExpenseState.Approved);
+    }
+
+    [Fact]
+    public async Task EditExpense_WithSpentAt_ResetsToProposedWhenPlannedCostGrows()
+    {
+        var service = CreateService(mock.Master.UserId);
+        var expenseId = await CreateExpenseAsMaster();
+        await service.ApproveExpense(expenseId, null);
+        var spentAt = new DateOnly(2026, 9, 3);
+
+        // 3×5000=15000 больше прежнего плана 2×5000=10000 — одобрение сбрасывается, дата сохраняется
+        await service.EditExpense(
+            expenseId,
+            EditRequest(new UserIdentification(mock.Master.UserId), plannedQuantity: 3, plannedPrice: 5000, spentAt: spentAt));
+
+        var expense = expenses.ShouldHaveSingleItem();
+        expense.SpentAt.ShouldBe(spentAt.ToDateTime(TimeOnly.MinValue));
+        expense.State.ShouldBe(ExpenseState.Proposed);
+    }
+
+    [Fact]
+    public async Task EditExpense_WithoutSpentAt_ClearsSpentAt()
+    {
+        var service = CreateService(mock.Master.UserId);
+        var expenseId = await CreateExpenseAsMaster();
+        await service.SetExpenseActual(expenseId, new ExpenseActualRequest(2, 5000, new DateOnly(2026, 9, 1)));
+        expenses.ShouldHaveSingleItem().SpentAt.ShouldNotBeNull();
+
+        await service.EditExpense(
+            expenseId,
+            EditRequest(new UserIdentification(mock.Master.UserId), plannedQuantity: 2, plannedPrice: 5000));
+
+        expenses.ShouldHaveSingleItem().SpentAt.ShouldBeNull();
     }
 
     [Fact]
@@ -318,6 +385,7 @@ public class ExpenseServiceTest
                 "Аренда базы\\Жилые корпуса",
                 3,
                 1000,
+                null,
                 null)));
 
         expense.Name.ShouldBe("Аренда домика");

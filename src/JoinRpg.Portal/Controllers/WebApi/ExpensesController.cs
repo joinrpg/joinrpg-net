@@ -54,6 +54,7 @@ public class ExpensesController(
             model.CategoryPath,
             model.PlannedQuantity,
             model.PlannedPrice,
+            model.SpentAt,
             ToMarkdown(model.Description)));
         return Ok(id);
     }
@@ -69,6 +70,7 @@ public class ExpensesController(
             model.CategoryPath,
             model.PlannedQuantity,
             model.PlannedPrice,
+            model.SpentAt,
             ToMarkdown(model.Description)));
         return Ok();
     }

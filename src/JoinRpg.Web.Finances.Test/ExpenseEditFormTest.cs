@@ -111,6 +111,15 @@ public class ExpenseEditFormTest : BunitContext
     }
 
     [Fact]
+    public void SpentAtFieldLabelIsDate()
+    {
+        var cut = RenderForm(new ExpenseEditViewModel());
+
+        cut.Markup.ShouldNotContain("Дата траты");
+        cut.FindAll("label").ShouldContain(label => label.TextContent.Trim() == "Дата");
+    }
+
+    [Fact]
     public void InvalidFormDoesNotSubmit()
     {
         ExpenseEditViewModel? saved = null;

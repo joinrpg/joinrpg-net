@@ -107,10 +107,11 @@ public class ExpenseValidationTest
     }
 
     [Fact]
-    public void SpentAtWithoutActualFails()
+    public void SpentAtWithoutActualPasses()
     {
+        // Дата — единое опциональное поле: может быть указана и у планового расхода (без факта)
         var expense = ValidPlannedExpense();
         expense.SpentAt = new DateTime(2026, 10, 1);
-        Validate(expense).ShouldContain(nameof(Expense.SpentAt));
+        Validate(expense).ShouldBeEmpty();
     }
 }

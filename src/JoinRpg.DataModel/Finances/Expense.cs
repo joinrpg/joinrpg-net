@@ -56,7 +56,7 @@ public class Expense : IProjectEntity, ICreatedUpdatedTrackedForEntity, IValidat
 
     public int? ActualPrice { get; set; }
 
-    /// <summary>Дата (без времени), когда деньги реально потрачены; вводится при заполнении факта.
+    /// <summary>Дата (без времени) расхода; может быть указана и у планового расхода (без факта).
     /// Хранилище — datetime: EF6 не умеет DateOnly, доменный тип — <see cref="DateOnly"/>.</summary>
     public DateTime? SpentAt { get; set; }
 
@@ -100,10 +100,6 @@ public class Expense : IProjectEntity, ICreatedUpdatedTrackedForEntity, IValidat
         if (ActualPrice is <= 0)
         {
             yield return new ValidationResult("Actual price should be positive", [nameof(ActualPrice)]);
-        }
-        if (SpentAt is not null && ActualQuantity is null)
-        {
-            yield return new ValidationResult("Spent date should be set only when actual is filled", [nameof(SpentAt)]);
         }
     }
 
