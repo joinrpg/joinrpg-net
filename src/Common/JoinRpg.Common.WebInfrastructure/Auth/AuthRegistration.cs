@@ -34,6 +34,13 @@ public static class AuthRegistration
 
         services.AddSingleton(oidcOptions);
 
+        services.AddHttpClient<UserInfoClient>((serviceProvider, client) =>
+        {
+            var oidc = serviceProvider.GetRequiredService<JoinRpgOidcOptions>();
+            client.BaseAddress = new Uri(oidc.Issuer, "connect/user_info");
+            client.Timeout = TimeSpan.FromSeconds(5);
+        });
+
         services.AddOpenIddict()
             .AddCore(options =>
             {

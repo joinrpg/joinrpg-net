@@ -1,1 +1,3 @@
 #nullable enable
+JoinRpg.Common.WebInfrastructure.Auth.JoinRpgOidcOptions.FetchUserInfo.get -> bool
+JoinRpg.Common.WebInfrastructure.Auth.JoinRpgOidcOptions.FetchUserInfo.set -> void
