@@ -308,8 +308,8 @@ internal static class ProjectRoleGridViewModelBuilder
             return null;
         }
 
-        // Ссылки на соцсети уже собраны в UserInfo (там же, где их строит UserExtensions.GetUserInfo),
-        // поэтому здесь ничего разбирать не надо.
+        // Ссылки на соцсети уже собраны в UserInfo (там же, где их строит репозиторий,
+        // а в тестах — UserInfoTestExtensions), поэтому здесь ничего разбирать не надо.
         // Email — непубличный контакт, показывается только в режиме All.
         // Нет ни одного контакта — null (см. PlayerCellViewModel.Contacts).
         return UserContacts.CreateIfAny(
