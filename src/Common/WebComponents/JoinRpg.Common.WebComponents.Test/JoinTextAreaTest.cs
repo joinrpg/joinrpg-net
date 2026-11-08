@@ -89,4 +89,18 @@ public class JoinTextAreaTest
 
         cut.Find("textarea").GetAttribute("maxlength").ShouldBeNull();
     }
+
+    [Fact]
+    public void MaxLength_LowercaseAttribute_BindsToParameterInSync()
+    {
+        using var ctx = NewContext();
+        var cut = ctx.Render<JoinTextArea>(p => p
+            .Add(x => x.Value, "")
+            .Add(x => x.MaxLength, 3000)
+            .Add(x => x.ShowCounter, true)
+            .AddUnmatched("maxlength", 5000));
+
+        cut.Find("textarea").GetAttribute("maxlength").ShouldBe("5000");
+        cut.Find(".text-muted").TextContent.ShouldBe("0/5000");
+    }
 }
