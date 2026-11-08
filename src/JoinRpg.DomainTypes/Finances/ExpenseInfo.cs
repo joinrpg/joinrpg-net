@@ -43,9 +43,9 @@ public record ExpenseInfo(
     UserIdentification MasterId,
     UserIdentification CreatedById)
 {
-    public int PlannedCost => PlannedQuantity * PlannedPrice;
+    public int PlannedCost => ExpenseCost.Planned(PlannedQuantity, PlannedPrice);
 
-    public int? ActualCost => ActualQuantity is { } quantity && ActualPrice is { } price ? quantity * price : null;
+    public int? ActualCost => ExpenseCost.Actual(ActualQuantity, ActualPrice);
 
     /// <summary>
     /// Влияние расхода на «Деньги на руках» мастера: фактическая сумма, если расход одобрен,

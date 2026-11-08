@@ -176,6 +176,56 @@ public class ExpenseServiceTest
     }
 
     [Fact]
+    public async Task EditExpense_DecreasesPlannedCost_KeepsApproved()
+    {
+        var service = CreateService(mock.Master.UserId);
+        var expenseId = await CreateExpenseAsMaster();
+        await service.ApproveExpense(expenseId, null);
+
+        // 1×5000=5000 меньше прежнего плана 2×5000=10000 — одобрение сохраняется
+        await service.EditExpense(
+            expenseId,
+            EditRequest(new UserIdentification(mock.Master.UserId), plannedQuantity: 1, plannedPrice: 5000));
+
+        var expense = expenses.ShouldHaveSingleItem();
+        expense.State.ShouldBe(ExpenseState.Approved);
+        expense.PlannedQuantity.ShouldBe(1);
+        expense.PlannedPrice.ShouldBe(5000);
+    }
+
+    [Fact]
+    public async Task EditExpense_SamePlannedCost_KeepsApproved()
+    {
+        var service = CreateService(mock.Master.UserId);
+        var expenseId = await CreateExpenseAsMaster();
+        await service.ApproveExpense(expenseId, null);
+
+        // 2×5000=10000 равно прежнему плану: денежная сторона не изменилась — одобрение сохраняется
+        await service.EditExpense(
+            expenseId,
+            EditRequest(new UserIdentification(mock.Master.UserId), plannedQuantity: 2, plannedPrice: 5000));
+
+        var expense = expenses.ShouldHaveSingleItem();
+        expense.State.ShouldBe(ExpenseState.Approved);
+    }
+
+    [Fact]
+    public async Task EditExpense_RejectedExpense_ResetsToProposed()
+    {
+        var service = CreateService(mock.Master.UserId);
+        var expenseId = await CreateExpenseAsMaster();
+        await service.RejectExpense(expenseId, new MarkdownString("Не по смете"));
+
+        // Отклонённый расход при правке снова уходит на рассмотрение, даже если план уменьшился
+        await service.EditExpense(
+            expenseId,
+            EditRequest(new UserIdentification(mock.Master.UserId), plannedQuantity: 1, plannedPrice: 5000));
+
+        var expense = expenses.ShouldHaveSingleItem();
+        expense.State.ShouldBe(ExpenseState.Proposed);
+    }
+
+    [Fact]
     public async Task SetExpenseActual_ResetsApprovedExpenseToProposedAndStoresActual()
     {
         var service = CreateService(mock.Master.UserId);

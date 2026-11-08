@@ -36,9 +36,9 @@ public record ExpenseViewModel(
     string? Description = null,
     UserIdentification? MasterId = null)
 {
-    public int PlannedCost => PlannedQuantity * PlannedPrice;
+    public int PlannedCost => ExpenseCost.Planned(PlannedQuantity, PlannedPrice);
 
-    public int? ActualCost => ActualQuantity is { } quantity && ActualPrice is { } price ? quantity * price : null;
+    public int? ActualCost => ExpenseCost.Actual(ActualQuantity, ActualPrice);
 }
 
 /// <summary>
