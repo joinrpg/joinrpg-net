@@ -11,8 +11,25 @@
 *REMOVED*JoinRpg.Common.WebComponents.NumberInput.Value.set -> void
 *REMOVED*JoinRpg.Common.WebComponents.NumberInput.ValueChanged.get -> Microsoft.AspNetCore.Components.EventCallback<int?>
 *REMOVED*JoinRpg.Common.WebComponents.NumberInput.ValueChanged.set -> void
+*REMOVED*JoinRpg.Common.WebComponents.StringInput
+*REMOVED*JoinRpg.Common.WebComponents.StringInput.Name.get -> string?
+*REMOVED*JoinRpg.Common.WebComponents.StringInput.Name.set -> void
+*REMOVED*JoinRpg.Common.WebComponents.StringInput.Required.get -> bool
+*REMOVED*JoinRpg.Common.WebComponents.StringInput.Required.set -> void
+*REMOVED*JoinRpg.Common.WebComponents.StringInput.RequiredMessage.get -> string?
+*REMOVED*JoinRpg.Common.WebComponents.StringInput.RequiredMessage.set -> void
+*REMOVED*JoinRpg.Common.WebComponents.StringInput.RequiredMessageValue.get -> string?
+*REMOVED*JoinRpg.Common.WebComponents.StringInput.StringInput() -> void
+*REMOVED*JoinRpg.Common.WebComponents.StringInput.ValidationEnabled.get -> string?
+*REMOVED*JoinRpg.Common.WebComponents.StringInput.Value.get -> string?
+*REMOVED*JoinRpg.Common.WebComponents.StringInput.Value.set -> void
+*REMOVED*JoinRpg.Common.WebComponents.StringInput.ValueChanged.get -> Microsoft.AspNetCore.Components.EventCallback<string?>
+*REMOVED*JoinRpg.Common.WebComponents.StringInput.ValueChanged.set -> void
 *REMOVED*override JoinRpg.Common.WebComponents.NumberInput.OnParametersSet() -> void
+*REMOVED*override JoinRpg.Common.WebComponents.StringInput.OnInitialized() -> void
+*REMOVED*override JoinRpg.Common.WebComponents.StringInput.OnParametersSet() -> void
 *REMOVED*~override JoinRpg.Common.WebComponents.NumberInput.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+*REMOVED*~override JoinRpg.Common.WebComponents.StringInput.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
 JoinRpg.Common.WebComponents.JoinInputNumber<TValue>.AdditionalAttributes.get -> System.Collections.Generic.Dictionary<string!, object!>?
 JoinRpg.Common.WebComponents.JoinInputNumber<TValue>.AdditionalAttributes.set -> void
 JoinRpg.Common.WebComponents.JoinInputNumber<TValue>.Max.get -> TValue?
@@ -29,6 +46,12 @@ JoinRpg.Common.WebComponents.JoinInputNumber<TValue>.ValueChanged.get -> Microso
 JoinRpg.Common.WebComponents.JoinInputNumber<TValue>.ValueChanged.set -> void
 JoinRpg.Common.WebComponents.JoinInputNumber<TValue>.ValueExpression.get -> System.Linq.Expressions.Expression<System.Func<TValue>!>?
 JoinRpg.Common.WebComponents.JoinInputNumber<TValue>.ValueExpression.set -> void
+JoinRpg.Common.WebComponents.JoinTextInput.Name.get -> string?
+JoinRpg.Common.WebComponents.JoinTextInput.Name.set -> void
+JoinRpg.Common.WebComponents.JoinTextInput.Required.get -> bool
+JoinRpg.Common.WebComponents.JoinTextInput.Required.set -> void
+JoinRpg.Common.WebComponents.JoinTextInput.RequiredMessage.get -> string!
+JoinRpg.Common.WebComponents.JoinTextInput.RequiredMessage.set -> void
 JoinRpg.Common.WebComponents.JoinTextInput.Variants.get -> System.Collections.Generic.IReadOnlyCollection<string!>?
 JoinRpg.Common.WebComponents.JoinTextInput.Variants.set -> void
 ~override JoinRpg.Common.WebComponents.JoinInputNumber<TValue>.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void

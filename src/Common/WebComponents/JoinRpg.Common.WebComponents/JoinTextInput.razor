@@ -1,11 +1,18 @@
 @using System.Linq.Expressions
+@{
+    var dataListId = Variants is not null ? variantsListId : null;
+}
 @if (Immediate)
 {
-    <input type="text" id="@inputId" name="@FieldIdentifier.FieldName" value="@internalValue" @oninput="UpdateValue" @onblur="TrimDisplayedValue" class="form-control" placeholder="@Placeholder" list="@(Variants is not null ? variantsListId : null)" @attributes="AdditionalAttributes" />
+    <input type="text" id="@inputId" name="@InputName" value="@internalValue" @oninput="UpdateValue" @onblur="TrimDisplayedValue" placeholder="@Placeholder" list="@dataListId" data-val="@ValidationEnabled" data-val-required="@RequiredMessageValue" @attributes="AdditionalAttributes" />
 }
 else
 {
-    <input type="text" id="@inputId" name="@FieldIdentifier.FieldName" value="@internalValue" @onchange="UpdateValue" class="form-control" placeholder="@Placeholder" list="@(Variants is not null ? variantsListId : null)" @attributes="AdditionalAttributes" />
+    <input type="text" id="@inputId" name="@InputName" value="@internalValue" @onchange="UpdateValue" placeholder="@Placeholder" list="@dataListId" data-val="@ValidationEnabled" data-val-required="@RequiredMessageValue" @attributes="AdditionalAttributes" />
+}
+@if (Required)
+{
+    <span class="field-validation-valid" data-valmsg-for="@(InputName ?? inputId)" data-valmsg-replace="true"></span>
 }
 @if (Variants is not null)
 {
@@ -31,6 +38,13 @@ else
     [Parameter]
     public Expression<Func<string>>? ValueExpression { get; set; }
 
+    /// <summary>
+    /// Имя поля формы. Нужно для постинга поля из MVC-формы; при null берётся имя из
+    /// <see cref="ValueExpression"/>, если оно задано.
+    /// </summary>
+    [Parameter]
+    public string? Name { get; set; }
+
     [Parameter]
     public string? Placeholder { get; set; }
 
@@ -47,6 +61,17 @@ else
     [Parameter]
     public bool Trim { get; set; } = true;
 
+    /// <summary>
+    /// Обязательное поле: рендерит атрибуты <c>data-val-*</c> и span для сообщения —
+    /// клиентскую валидацию jquery.validate.unobtrusive (подключена в Portal).
+    /// </summary>
+    [Parameter]
+    public bool Required { get; set; } = false;
+
+    /// <summary>Сообщение об ошибке обязательности для <c>data-val-required</c>.</summary>
+    [Parameter]
+    public string RequiredMessage { get; set; } = "Это поле обязательно к заполнению";
+
     [Parameter(CaptureUnmatchedValues = true)]
     public Dictionary<string, object>? AdditionalAttributes { get; set; }
 
@@ -57,11 +82,17 @@ else
     public IReadOnlyCollection<string>? Variants { get; set; }
 
     private readonly string variantsListId = $"join-text-input-variants-{Guid.NewGuid():N}";
+    private readonly string fallbackId = $"join-text-input-{Guid.NewGuid():N}";
 
     [CascadingParameter]
     private FormRowLabelTarget? LabelTarget { get; set; }
 
     private FieldIdentifier FieldIdentifier { get; set; }
+
+    private string? ValidationEnabled => Required ? "true" : null;
+    private string? RequiredMessageValue => Required ? RequiredMessage : null;
+
+    private string? InputName => Name ?? FieldIdentifier.FieldName;
 
     private string internalValue = "";
     private string? inputId;
@@ -76,7 +107,10 @@ else
         {
             internalValue = value;
         }
-        inputId = LabelTarget?.Claim(this, FormRowLabelTarget.ExplicitId(AdditionalAttributes));
+        inputId = LabelTarget?.Claim(this, FormRowLabelTarget.ExplicitId(AdditionalAttributes))
+            ?? FormRowLabelTarget.ExplicitId(AdditionalAttributes)
+            ?? Name
+            ?? fallbackId;
         if (ValueExpression is not null)
         {
             FieldIdentifier = FieldIdentifier.Create(ValueExpression);

@@ -37,7 +37,7 @@
     @if (CurrentElementType == PlotElementTypeView.Handout)
     {
         <FormRow Label="Что выдать" Description="Что выдать игроку">
-            <StringInput Name="Content" Value="@Model.Content" />
+            <JoinTextInput Name="Content" Value="@Model.Content" ValueChanged="@(value => Model.Content = value)" />
         </FormRow>
     }
     else if (CurrentElementType == PlotElementTypeView.RoleGrid)

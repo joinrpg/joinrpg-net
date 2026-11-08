@@ -7,11 +7,13 @@
 ### Ломающие изменения
 - Удалён `NumberInput` — заменён на `JoinInputNumber<TValue>`. Переход: использовать `JoinInputNumber<TValue>`. ([#6166](https://github.com/joinrpg/joinrpg-net/pull/6166))
 - `JoinInputNumber<TValue>` переписан — больше не наследует `InputNumber<TValue>`; дефолтное сообщение об ошибке парсинга — русское «Укажите число» (был английский ресурс `InputNumber`); поле больше не получает Bootstrap-класс `form-control` (оформление — собственный scoped CSS, компонент работает без Bootstrap). Переход: не рассчитывать на члены базового `InputNumber<TValue>`; своё сообщение — параметром `ParsingErrorMessage`. ([#6166](https://github.com/joinrpg/joinrpg-net/pull/6166))
+- Удалён `StringInput` — заменён на `JoinTextInput`. Переход: использовать `JoinTextInput` (`Name` вместо lowercase-атрибута `name`, пустой/пробельный ввод уходит наружу как `""`, а не `null` — серверные проверки на пустоту ведут себя как раньше). ([#6169](https://github.com/joinrpg/joinrpg-net/pull/6169))
 
 ### Добавлено
 - `JoinTextInput`: параметр `Variants` — варианты значений для подсказки ввода (datalist). ([#6156](https://github.com/joinrpg/joinrpg-net/pull/6156))
 
 ### Изменено
+- `JoinTextInput`: поле больше не получает Bootstrap-класс `form-control` (оформление — собственный scoped CSS, span обязательности — scoped CSS вместо Bootstrap `text-danger`, компонент работает без Bootstrap); параметры `Name`, `Required`, `RequiredMessage` — перенесены из удалённого `StringInput` (клиентская валидация обязательности через `data-val-*` сохраняется). ([#6169](https://github.com/joinrpg/joinrpg-net/pull/6169))
 - `JoinDialog`: контент компенсирует отрицательные margin'ы Bootstrap-строк (`.form-horizontal .form-group`, `.row`) — формы в диалоге больше не дают горизонтальную прокрутку окна, локальные обёртки `overflow-x: hidden` у форм в диалогах больше не нужны. ([#6156](https://github.com/joinrpg/joinrpg-net/pull/6156))
 
 ### Исправлено

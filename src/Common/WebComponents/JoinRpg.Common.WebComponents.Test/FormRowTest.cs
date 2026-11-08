@@ -63,7 +63,6 @@ public class FormRowTest
     [InlineData(nameof(JoinRpgDatePicker), "INPUT")]
     [InlineData(nameof(JoinRpgTimePicker), "INPUT")]
     [InlineData(nameof(EnumSelector<>), "SELECT")]
-    [InlineData(nameof(StringInput), "INPUT")]
     [InlineData(nameof(TimeZoneSelector), "SUMMARY")] // клик по подписи открывает список скриптом — см. TypedSelector
     public void FormRowFor_LinksLabelToField(string field, string tagName)
     {
@@ -219,9 +218,6 @@ public class FormRowTest
             case nameof(EnumSelector<>):
                 builder.OpenComponent<EnumSelector<DayOfWeek>>(0);
                 builder.AddComponentParameter(1, nameof(EnumSelector<>.Name), "day");
-                break;
-            case nameof(StringInput):
-                builder.OpenComponent<StringInput>(0);
                 break;
             case nameof(TimeZoneSelector):
                 builder.OpenComponent<TimeZoneSelector>(0);
