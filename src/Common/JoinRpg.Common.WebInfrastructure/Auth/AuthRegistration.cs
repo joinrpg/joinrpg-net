@@ -32,6 +32,8 @@ public static class AuthRegistration
         var oidcOptions = configuration.GetSection("JoinRpgOidc").Get<JoinRpgOidcOptions>()
             ?? throw new InvalidOperationException("JoinRpgOidc configuration section is required");
 
+        services.AddSingleton(oidcOptions);
+
         services.AddOpenIddict()
             .AddCore(options =>
             {
