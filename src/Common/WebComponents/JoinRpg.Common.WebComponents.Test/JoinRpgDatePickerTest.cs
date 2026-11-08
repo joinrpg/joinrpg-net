@@ -48,4 +48,19 @@ public class JoinRpgDatePickerTest
 
         captured.ShouldBeNull();
     }
+
+    /// <summary>
+    /// Оформление поля — в scoped CSS компонента, опора на Bootstrap (class="form-control")
+    /// запрещена: без Bootstrap CSS поле должно выглядеть так же.
+    /// </summary>
+    [Fact]
+    public void Input_DoesNotUseBootstrapFormControlClass()
+    {
+        using var ctx = new BunitContext();
+        var cut = ctx.Render<JoinRpgDatePicker>(p => p.Add(x => x.Name, "OperationDate"));
+
+        var input = cut.Find("input");
+        input.HasAttribute("class").ShouldBeFalse();
+        input.HasAttribute("style").ShouldBeFalse();
+    }
 }

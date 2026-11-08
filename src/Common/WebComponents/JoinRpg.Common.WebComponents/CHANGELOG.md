@@ -13,6 +13,7 @@
 - `JoinTextInput`: параметр `Variants` — варианты значений для подсказки ввода (datalist). ([#6156](https://github.com/joinrpg/joinrpg-net/pull/6156))
 
 ### Изменено
+- `JoinRpgDatePicker`: поле больше не получает Bootstrap-класс `form-control` (оформление — собственный scoped CSS, компонент работает без Bootstrap). ([#6140](https://github.com/joinrpg/joinrpg-net/issues/6140))
 - `JoinTextInput`: поле больше не получает Bootstrap-класс `form-control` (оформление — собственный scoped CSS, span обязательности — scoped CSS вместо Bootstrap `text-danger`, компонент работает без Bootstrap); параметры `Name`, `Required`, `RequiredMessage` — перенесены из удалённого `StringInput` (клиентская валидация обязательности через `data-val-*` сохраняется). ([#6169](https://github.com/joinrpg/joinrpg-net/pull/6169))
 - `JoinDialog`: контент компенсирует отрицательные margin'ы Bootstrap-строк (`.form-horizontal .form-group`, `.row`) — формы в диалоге больше не дают горизонтальную прокрутку окна, локальные обёртки `overflow-x: hidden` у форм в диалогах больше не нужны. ([#6156](https://github.com/joinrpg/joinrpg-net/pull/6156))
 
