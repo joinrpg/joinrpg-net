@@ -51,8 +51,11 @@ public class MyDbContext(DbContextOptions options) : DbContext(options)
 `AddJoinEfCoreDbContext` регистрирует DbContext для PostgreSQL: провайдер Npgsql,
 EntityFramework.Exceptions (бизнес-исключения вместо `DbUpdateException`), лог SQL в Debug
 в dev-режиме и health check `{имя строки подключения}-db` (Degraded при недоступности базы).
-Если строки подключения с таким именем нет, ничего не регистрирует и возвращает `false` —
-вызывающий решает, критично ли это.
+Чек по умолчанию помечается тегом `ready` и попадает в readiness-пробу
+(`/health/ready` фильтрует чеки по этому тегу; недоступность базы даёт Degraded, который
+пробу не роняет). Перегрузка с `includeInReadyHealthCheck: false` отключает тег для баз,
+которые не нужны для обработки запросов. Если строки подключения с таким именем нет,
+ничего не регистрирует и возвращает `false` — вызывающий решает, критично ли это.
 
 ```csharp
 using JoinRpg.Common.EntityFrameworkCore;
