@@ -16,14 +16,20 @@ public record ExpenseCategoryBriefInfo(
     string Name);
 
 /// <summary>
-/// Категория расхода проекта (ADR030) — узел дерева. Плоский список с ParentCategoryId
-/// отдаётся UI для автодополнения поля пути и фильтра грида; пути строит клиент.
+/// Категория расхода проекта (ADR030) — узел дерева. Плоский список отдаётся UI для
+/// автодополнения поля пути и фильтра грида; пути строит клиент.
 /// </summary>
+/// <param name="HasActiveDirectExpenses">Есть ли у категории хотя бы один привязанный
+/// расход не в состоянии Rejected — по этому флагу сервис строит подсказки путей.</param>
+/// <param name="FullPath">Полный путь категории от корня через «\» (например
+/// «Аренда базы\Жилые корпуса») — тот же формат, что вводится в поле «Категория».</param>
 public record ExpenseCategoryInfo(
     ExpenseCategoryIdentification CategoryId,
     string Name,
     ExpenseCategoryIdentification? ParentCategoryId,
-    bool IsActive);
+    bool IsActive,
+    bool HasActiveDirectExpenses,
+    string FullPath);
 
 /// <summary>
 /// Расход проекта (ADR030): план (количество × цена) и, позже, факт (количество × цена).

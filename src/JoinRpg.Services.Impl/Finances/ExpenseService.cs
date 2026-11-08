@@ -141,6 +141,31 @@ internal class ExpenseService(
     public async Task RejectExpense(ExpenseIdentification expenseId, MarkdownString? comment)
         => await ChangeState(expenseId, ExpenseState.Rejected, comment);
 
+    public async Task<IReadOnlyCollection<string>> LoadCategoryPathSuggestions(ProjectIdentification projectId)
+    {
+        _ = await RequestMasterAccess(projectId);
+        var allCategories = await expenseRepository.GetCategories(projectId);
+        var categoriesById = allCategories.ToDictionary(c => c.CategoryId.ExpenseCategoryId);
+
+        // Сначала категории с не отклонёнными расходами, потом все их предки; исключаем дубли
+        // по id — категория может попасть и самостоятельно, и как родитель другой попавшей.
+        var suitableCategoryIds = new HashSet<int>();
+        foreach (var category in allCategories.Where(c => c.HasActiveDirectExpenses))
+        {
+            for (ExpenseCategoryInfo? current = category; current is not null;
+                current = current.ParentCategoryId is { } parent ? categoriesById[parent.ExpenseCategoryId] : null)
+            {
+                _ = suitableCategoryIds.Add(current.CategoryId.ExpenseCategoryId);
+            }
+        }
+
+        return suitableCategoryIds
+            .Select(id => categoriesById[id].FullPath)
+            .Distinct(StringComparer.InvariantCultureIgnoreCase)
+            .OrderBy(path => path, StringComparer.InvariantCulture)
+            .ToArray();
+    }
+
     private async Task ChangeState(ExpenseIdentification expenseId, ExpenseState state, MarkdownString? comment)
     {
         _ = await RequestMasterAccess(expenseId.ProjectId, Permission.CanManageMoney);

@@ -89,6 +89,7 @@ public class ExpenseMapperTest
             ProjectId = ProjectId.Value,
             Name = "Аренда базы",
             ParentCategoryId = null,
+            ParentCategoryIds = [],
         };
         var leaf = new ExpenseCategory
         {
@@ -96,11 +97,15 @@ public class ExpenseMapperTest
             ProjectId = ProjectId.Value,
             Name = "Жилые корпуса",
             ParentCategoryId = 1,
+            ParentCategoryIds = [1],
         };
+        var names = new Dictionary<int, string> { [1] = "Аренда базы", [2] = "Жилые корпуса" };
 
-        ExpenseMapper.MapCategory(root).ParentCategoryId.ShouldBeNull();
-        var mappedLeaf = ExpenseMapper.MapCategory(leaf);
+        ExpenseMapper.MapCategory(root, hasActiveDirectExpenses: false, names).ParentCategoryId.ShouldBeNull();
+        var mappedLeaf = ExpenseMapper.MapCategory(leaf, hasActiveDirectExpenses: true, names);
         mappedLeaf.ParentCategoryId.ShouldBe(new ExpenseCategoryIdentification(ProjectId, 1));
         mappedLeaf.IsActive.ShouldBeTrue();
+        mappedLeaf.HasActiveDirectExpenses.ShouldBeTrue();
+        mappedLeaf.FullPath.ShouldBe("Аренда базы\\Жилые корпуса");
     }
 }

@@ -24,12 +24,19 @@ internal static class ExpenseMapper
             new UserIdentification(expense.MasterId),
             new UserIdentification(expense.CreatedById));
 
-    public static ExpenseCategoryInfo MapCategory(ExpenseCategory category)
+    /// <summary>Маппит категорию с флагом активных расходов и полным путем от корня
+    /// (по снапшоту <see cref="ExpenseCategory.ParentCategoryIds"/>, как ExpenseCategoryResolver).</summary>
+    public static ExpenseCategoryInfo MapCategory(
+        ExpenseCategory category,
+        bool hasActiveDirectExpenses,
+        IReadOnlyDictionary<int, string> categoryNames)
         => new(
             category.GetId(),
             category.Name,
             category.ParentCategoryId is { } parentId
                 ? new ExpenseCategoryIdentification(new ProjectIdentification(category.ProjectId), parentId)
                 : null,
-            category.IsActive);
+            category.IsActive,
+            hasActiveDirectExpenses,
+            FullPath: string.Join("\\", category.ParentCategoryIds.Select(id => categoryNames[id]).Append(category.Name)));
 }

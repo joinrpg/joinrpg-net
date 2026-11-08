@@ -18,6 +18,9 @@ public interface IExpensesClient
     /// <summary>Может ли текущий мастер одобрять и отклонять расходы — для кнопок на странице.</summary>
     Task<bool> CanManageMoney(ProjectIdentification projectId);
 
+    /// <summary>Полные пути категорий для подсказок поля «Категория»: категории с не отклонёнными расходами и их предки.</summary>
+    Task<IReadOnlyCollection<string>> GetCategoryPathSuggestions(ProjectIdentification projectId);
+
     Task<ExpenseIdentification> CreateExpense(ProjectIdentification projectId, ExpenseEditViewModel model);
 
     Task EditExpense(ExpenseIdentification expenseId, ExpenseEditViewModel model);

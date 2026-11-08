@@ -15,4 +15,11 @@ public interface IExpenseService
     Task ApproveExpense(ExpenseIdentification expenseId, MarkdownString? comment);
 
     Task RejectExpense(ExpenseIdentification expenseId, MarkdownString? comment);
+
+    /// <summary>
+    /// Полные пути категорий для подсказок поля «Категория»: категории с хотя бы одним
+    /// не отклонённым расходом плюс все их предки (промежуточные уровни тоже выбираемы),
+    /// без дублей, по алфавиту.
+    /// </summary>
+    Task<IReadOnlyCollection<string>> LoadCategoryPathSuggestions(ProjectIdentification projectId);
 }
