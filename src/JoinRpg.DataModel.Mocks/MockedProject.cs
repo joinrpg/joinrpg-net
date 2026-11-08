@@ -18,8 +18,9 @@ public class MockedProject
 {
     public Project Project { get; }
     public CharacterGroup Group { get; }
-    // Auth проставлен, потому что без него падает UserExtensions.GetUserInfo — а он нужен всем,
-    // кто строит UserInfo из мока (например колонка контактов в сетке ролей).
+    // Auth проставлен, потому что без него падает тестовый хелпер, строящий UserInfo из мока
+    // (UserInfoTestExtensions), — а он нужен всем, кто собирает UserInfo из EF-сущностей мока
+    // (например колонка контактов в сетке ролей).
     public User Player { get; } = new User() { UserId = 1, PrefferedName = "Player", Email = "player@example.com", Claims = new HashSet<Claim>(), Auth = new UserAuthDetails() { UserId = 1, EmailConfirmed = true } };
     private UserInfo PlayerInfoTemplate { get; } = new UserInfo(new UserIdentification(1), Social: new UserSocialNetworks(null, null, null, null, ContactsAccessType.Public), [], [], [], IsAdmin: false, SelectedAvatar: null, new Email("player@example.com"), EmailConfirmed: true, new UserFullName(new PrefferedName("Player"), null, null, null), false, null, HasPassword: false);
 
@@ -150,7 +151,7 @@ public class MockedProject
         };
 
         // Навигационные свойства ACL заполняем, как это сделал бы реальный запрос с Include:
-        // по ним считается, в каких проектах пользователь мастерит (UserExtensions.GetUserInfo).
+        // по ним считается, в каких проектах пользователь мастерит (тестовый хелпер UserInfoTestExtensions).
         acl.Project = Project;
 
         var rootGroup = CreateCharacterGroup();
