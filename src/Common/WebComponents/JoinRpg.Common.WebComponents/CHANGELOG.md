@@ -18,6 +18,7 @@
 - `JoinDialog`: контент компенсирует отрицательные margin'ы Bootstrap-строк (`.form-horizontal .form-group`, `.row`) — формы в диалоге больше не дают горизонтальную прокрутку окна, локальные обёртки `overflow-x: hidden` у форм в диалогах больше не нужны. ([#6156](https://github.com/joinrpg/joinrpg-net/pull/6156))
 
 ### Исправлено
+- `JoinInputNumber<TValue>`: атрибуты `min`/`max` рендерятся, только когда переданы параметры `Min`/`Max`. Раньше для ненуллимого `TValue` (например, `int`) непереданные границы рендерились как `min="0" max="0"` и блокировали ввод положительных значений. ([#6171](https://github.com/joinrpg/joinrpg-net/pull/6171))
 - `JoinDialog`: `ShowModal()` из продолжения после `ShowModalAsync`/`ShowBoolModalAsync` снова открывает окно — раньше без SynchronizationContext (например, в тестах) срабатывал встроенный guard и окно не открывалось. В продакшен-приложениях Blazor поведение не меняется. ([#6156](https://github.com/joinrpg/joinrpg-net/pull/6156))
 
 ## 2026.9.651 — 2026-11-07
