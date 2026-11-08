@@ -4,6 +4,9 @@
 
 ## Не выпущено
 
+### Добавлено
+- `AddJoinHtmlSanitizers()` (вызывается автоматически из `AddJoinWebPlatform`): transient-регистрации контрактов-санитайзеров из `JoinRpg.Common.WebInfrastructure.Interfaces` поверх пула `ObjectPool` — Dispose возвращает экземпляр в пул. Санитайзеры переехали из `JoinRpg.Markdown`. ([#6164](https://github.com/joinrpg/joinrpg-net/pull/6164))
+
 ### Исправлено
 - Редирект http → https больше не срабатывает на WebSocket-апгрейдах за Traefik. Traefik шлёт для них `X-Forwarded-Proto: wss` ([traefik/traefik#6388](https://github.com/traefik/traefik/issues/6388)), редирект 307 рвал WebSocket-handshake (браузер редиректам в нём не следует) — интерактивный Blazor/SignalR за Traefik не работал с «Failed to start the transport 'WebSockets'». Схемы `wss`/`ws` нормализуются в `https`/`http` сразу после ForwardedHeaders.
 

@@ -4,6 +4,9 @@
 
 ## Не выпущено
 
+### Добавлено
+- Контракты HTML-санитайзеров (`IJoinHtmlSanitizer`: `Sanitize` + `IDisposable`, и профили `IJoinSimpleHtmlSanitizer`, `IJoinRemoveAllHtmlSanitizer`, `IJoinTelegramHtmlSanitizer`; namespace `HtmlSanitize`). Реализация (`AddJoinHtmlSanitizers`, пул `ObjectPool`) — в `JoinRpg.Common.WebInfrastructure`. Временный Obsolete-`JoinHtmlSanitizerLocator` связывает регистрацию со статическими вызовами до перевода рендеринга markdown на DI. ([#6164](https://github.com/joinrpg/joinrpg-net/pull/6164))
+
 ## 2026.9.651 — 2026-11-07
 
 ### Добавлено

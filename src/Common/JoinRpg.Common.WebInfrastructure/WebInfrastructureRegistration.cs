@@ -69,6 +69,8 @@ public static class WebInfrastructureRegistration
 
         services.AddJoinHealthChecks();
 
+        services.AddJoinHtmlSanitizers();
+
         _ = services.AddJoinRobotsTxt();
 
         services.AddOptions<SiteBannerOptions>().BindConfiguration(SiteBannerOptions.SectionName);
