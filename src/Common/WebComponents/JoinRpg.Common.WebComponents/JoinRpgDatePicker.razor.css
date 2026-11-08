@@ -1,0 +1,26 @@
+/*
+ * Собственные стили JoinRpgDatePicker. Значения перенесены из Bootstrap 3.4.0 (.form-control),
+ * чтобы поле в островах выглядело так же, как ручные form-control в cshtml, — но без опоры
+ * на классы Bootstrap (по образцу JoinTextInput.razor.css / JoinInputNumber.razor.css).
+ */
+input {
+    box-sizing: border-box;
+    display: block;
+    width: 100%;
+    max-width: 10em;
+    padding: 6px 12px;
+    font-size: 14px;
+    line-height: 1.43;
+    font-family: inherit;
+    color: #555;
+    background: #fff;
+    background-image: none;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
+}
+
+input:focus {
+    border-color: #66afe9;
+    box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 8px rgba(102, 175, 233, 0.6);
+}

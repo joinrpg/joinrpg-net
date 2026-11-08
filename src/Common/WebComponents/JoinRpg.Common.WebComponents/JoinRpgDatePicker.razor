@@ -1,4 +1,4 @@
-<input type="date" id="@inputId" class="form-control" style="max-width: 10em" @onchange="UpdateValue" name="@Name" value="@Format(Value)" min="@Format(Min)" max="@Format(Max)" />
+<input type="date" id="@inputId" @onchange="UpdateValue" name="@Name" value="@Format(Value)" min="@Format(Min)" max="@Format(Max)" />
 
 @code {
     private const string IsoDateFormat = "yyyy-MM-dd";
