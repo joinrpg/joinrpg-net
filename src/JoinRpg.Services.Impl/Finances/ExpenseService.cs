@@ -24,6 +24,7 @@ internal class ExpenseService(
         var now = DateTime.UtcNow;
         var expense = new Expense
         {
+            ProjectId = projectInfo.ProjectId.Value,
             Name = request.Name,
             Description = new MarkdownDbValue(request.Description?.Value),
             MasterId = request.MasterId.Value,

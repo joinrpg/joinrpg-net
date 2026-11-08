@@ -25,6 +25,10 @@ public class ExpenseServiceTest
 
     public ExpenseServiceTest()
     {
+        // Мок проекта по умолчанию имеет ProjectId = 0 — как у несохранённой сущности,
+        // поэтому баг «не проставлен ProjectId у расхода» на нём невиден. Задаём ненулевой.
+        mock.Project.ProjectId = 4;
+        mock.ReInitProjectInfo();
         unitOfWork = new FakeUnitOfWork(mock);
         metadataRepository = new FakeProjectMetadataRepository(mock);
         expenseRepository = new FakeExpenseRepository(categories);
@@ -95,6 +99,7 @@ public class ExpenseServiceTest
         var expense = expenses.ShouldHaveSingleItem();
         expenseId.ExpenseId.ShouldBe(expense.ExpenseId);
         expense.State.ShouldBe(ExpenseState.Proposed);
+        expense.ProjectId.ShouldBe(ProjectId.Value);
         expense.MasterId.ShouldBe(mock.Master.UserId);
         expense.CreatedById.ShouldBe(mock.Master.UserId);
         expense.PlannedQuantity.ShouldBe(2);
