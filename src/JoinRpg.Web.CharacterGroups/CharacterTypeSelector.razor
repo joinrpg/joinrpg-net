@@ -36,7 +36,7 @@
   @if (!CharactersHaveNameField)
   {
       <FormRow Label="Название шаблона персонажей" >
-        <StringInput @bind-Value="@slotName" name="@(Name + ".SlotName")" Required="true" />
+        <JoinTextInput @bind-Value="@slotName" Name="@(Name + ".SlotName")" Required="true" />
       </FormRow>
   }
 }

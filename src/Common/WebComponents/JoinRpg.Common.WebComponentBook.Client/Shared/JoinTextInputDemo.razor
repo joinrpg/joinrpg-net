@@ -1,0 +1,31 @@
+<h3>JoinTextInput</h3>
+
+<p>
+    Текстовое поле ввода (type=text) с поддержкой EditContext и без: оформление задаёт
+    собственный scoped-стиль компонента, без Bootstrap-классов. Есть обязательность
+    (клиентская валидация в Portal), placeholder и подсказки вариантов (datalist).
+</p>
+
+<label>
+    Обычное поле:
+    <JoinTextInput @bind-Value="text" Placeholder="Введите текст" />
+</label>
+
+<p>Значение: «@text».</p>
+
+<label>
+    Обязательное поле (атрибуты data-val для клиентской валидации):
+    <JoinTextInput @bind-Value="requiredText" Required="true" />
+</label>
+
+<label>
+    С подсказками вариантов:
+    <JoinTextInput @bind-Value="variant" Variants="variants" />
+</label>
+
+@code {
+    private string text = "";
+    private string requiredText = "";
+    private string variant = "";
+    private readonly string[] variants = ["300", "500", "800"];
+}

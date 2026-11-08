@@ -49,7 +49,7 @@ Bootstrap 3 пакет не приносит. На его CSS рассчитан
 таблицы, `FormRow` и поля ввода (`list-group`, `table`, `form-group`,
 `col-md-*`, `form-control`, `help-block`, `control-label`). Без Bootstrap (и его JS) обходятся
 `JoinPanel`, `JoinButton`, `JoinBadge`, `JoinCollapsePanel`, `JoinAlert` (и рендерящие его `JoinLoadingMessage` и `JoinErrorMessage`),
-`JoinInputNumber`, `Tooltip`, `TypedSelector`, `JoinDropdownButton` и его обёртки `JoinDotsMenu` и
+`JoinInputNumber`, `JoinTextInput`, `Tooltip`, `TypedSelector`, `JoinDropdownButton` и его обёртки `JoinDotsMenu` и
 `TypedDropdownButton`, `JoinDialog`.
 
 ## Что зарегистрировать у себя
