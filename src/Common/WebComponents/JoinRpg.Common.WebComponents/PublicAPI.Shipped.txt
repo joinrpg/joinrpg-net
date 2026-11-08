@@ -571,7 +571,23 @@ JoinRpg.Common.WebComponents.JoinIconType.Visible = 41 -> JoinRpg.Common.WebComp
 JoinRpg.Common.WebComponents.JoinIconType.Vk = 68 -> JoinRpg.Common.WebComponents.JoinIconType
 JoinRpg.Common.WebComponents.JoinIconType.Warning = 26 -> JoinRpg.Common.WebComponents.JoinIconType
 JoinRpg.Common.WebComponents.JoinInputNumber<TValue>
+JoinRpg.Common.WebComponents.JoinInputNumber<TValue>.AdditionalAttributes.get -> System.Collections.Generic.Dictionary<string!, object!>?
+JoinRpg.Common.WebComponents.JoinInputNumber<TValue>.AdditionalAttributes.set -> void
 JoinRpg.Common.WebComponents.JoinInputNumber<TValue>.JoinInputNumber() -> void
+JoinRpg.Common.WebComponents.JoinInputNumber<TValue>.Max.get -> TValue?
+JoinRpg.Common.WebComponents.JoinInputNumber<TValue>.Max.set -> void
+JoinRpg.Common.WebComponents.JoinInputNumber<TValue>.Min.get -> TValue?
+JoinRpg.Common.WebComponents.JoinInputNumber<TValue>.Min.set -> void
+JoinRpg.Common.WebComponents.JoinInputNumber<TValue>.Name.get -> string?
+JoinRpg.Common.WebComponents.JoinInputNumber<TValue>.Name.set -> void
+JoinRpg.Common.WebComponents.JoinInputNumber<TValue>.ParsingErrorMessage.get -> string!
+JoinRpg.Common.WebComponents.JoinInputNumber<TValue>.ParsingErrorMessage.set -> void
+JoinRpg.Common.WebComponents.JoinInputNumber<TValue>.Value.get -> TValue
+JoinRpg.Common.WebComponents.JoinInputNumber<TValue>.Value.set -> void
+JoinRpg.Common.WebComponents.JoinInputNumber<TValue>.ValueChanged.get -> Microsoft.AspNetCore.Components.EventCallback<TValue>
+JoinRpg.Common.WebComponents.JoinInputNumber<TValue>.ValueChanged.set -> void
+JoinRpg.Common.WebComponents.JoinInputNumber<TValue>.ValueExpression.get -> System.Linq.Expressions.Expression<System.Func<TValue>!>?
+JoinRpg.Common.WebComponents.JoinInputNumber<TValue>.ValueExpression.set -> void
 JoinRpg.Common.WebComponents.JoinLoadingMessage
 JoinRpg.Common.WebComponents.JoinLoadingMessage.JoinLoadingMessage() -> void
 JoinRpg.Common.WebComponents.JoinLoadingMessage.Message.get -> string!
@@ -704,8 +720,14 @@ JoinRpg.Common.WebComponents.JoinTextInput.AdditionalAttributes.set -> void
 JoinRpg.Common.WebComponents.JoinTextInput.Immediate.get -> bool
 JoinRpg.Common.WebComponents.JoinTextInput.Immediate.set -> void
 JoinRpg.Common.WebComponents.JoinTextInput.JoinTextInput() -> void
+JoinRpg.Common.WebComponents.JoinTextInput.Name.get -> string?
+JoinRpg.Common.WebComponents.JoinTextInput.Name.set -> void
 JoinRpg.Common.WebComponents.JoinTextInput.Placeholder.get -> string?
 JoinRpg.Common.WebComponents.JoinTextInput.Placeholder.set -> void
+JoinRpg.Common.WebComponents.JoinTextInput.Required.get -> bool
+JoinRpg.Common.WebComponents.JoinTextInput.Required.set -> void
+JoinRpg.Common.WebComponents.JoinTextInput.RequiredMessage.get -> string!
+JoinRpg.Common.WebComponents.JoinTextInput.RequiredMessage.set -> void
 JoinRpg.Common.WebComponents.JoinTextInput.Trim.get -> bool
 JoinRpg.Common.WebComponents.JoinTextInput.Trim.set -> void
 JoinRpg.Common.WebComponents.JoinTextInput.Value.get -> string!
@@ -714,6 +736,8 @@ JoinRpg.Common.WebComponents.JoinTextInput.ValueChanged.get -> Microsoft.AspNetC
 JoinRpg.Common.WebComponents.JoinTextInput.ValueChanged.set -> void
 JoinRpg.Common.WebComponents.JoinTextInput.ValueExpression.get -> System.Linq.Expressions.Expression<System.Func<string!>!>?
 JoinRpg.Common.WebComponents.JoinTextInput.ValueExpression.set -> void
+JoinRpg.Common.WebComponents.JoinTextInput.Variants.get -> System.Collections.Generic.IReadOnlyCollection<string!>?
+JoinRpg.Common.WebComponents.JoinTextInput.Variants.set -> void
 JoinRpg.Common.WebComponents.JoinUserLinkEditor
 JoinRpg.Common.WebComponents.JoinUserLinkEditor.InitialUsers.get -> System.Collections.Generic.IReadOnlyList<JoinRpg.Common.WebComponents.UserLinkViewModel!>!
 JoinRpg.Common.WebComponents.JoinUserLinkEditor.InitialUsers.set -> void
@@ -739,18 +763,6 @@ JoinRpg.Common.WebComponents.MessageDialogType.Fail = 5 -> JoinRpg.Common.WebCom
 JoinRpg.Common.WebComponents.MessageDialogType.Information = 2 -> JoinRpg.Common.WebComponents.MessageDialogType
 JoinRpg.Common.WebComponents.MessageDialogType.None = 0 -> JoinRpg.Common.WebComponents.MessageDialogType
 JoinRpg.Common.WebComponents.MessageDialogType.Success = 3 -> JoinRpg.Common.WebComponents.MessageDialogType
-JoinRpg.Common.WebComponents.NumberInput
-JoinRpg.Common.WebComponents.NumberInput.Max.get -> int?
-JoinRpg.Common.WebComponents.NumberInput.Max.set -> void
-JoinRpg.Common.WebComponents.NumberInput.Min.get -> int?
-JoinRpg.Common.WebComponents.NumberInput.Min.set -> void
-JoinRpg.Common.WebComponents.NumberInput.Name.get -> string!
-JoinRpg.Common.WebComponents.NumberInput.Name.set -> void
-JoinRpg.Common.WebComponents.NumberInput.NumberInput() -> void
-JoinRpg.Common.WebComponents.NumberInput.Value.get -> int?
-JoinRpg.Common.WebComponents.NumberInput.Value.set -> void
-JoinRpg.Common.WebComponents.NumberInput.ValueChanged.get -> Microsoft.AspNetCore.Components.EventCallback<int?>
-JoinRpg.Common.WebComponents.NumberInput.ValueChanged.set -> void
 JoinRpg.Common.WebComponents.PhoneLink
 JoinRpg.Common.WebComponents.PhoneLink.Contact.get -> JoinRpg.Common.PrimitiveTypes.PhoneNumber?
 JoinRpg.Common.WebComponents.PhoneLink.Contact.set -> void
@@ -784,20 +796,6 @@ JoinRpg.Common.WebComponents.SizeStyleEnum.ExtraSmall = 3 -> JoinRpg.Common.WebC
 JoinRpg.Common.WebComponents.SizeStyleEnum.Large = 0 -> JoinRpg.Common.WebComponents.SizeStyleEnum
 JoinRpg.Common.WebComponents.SizeStyleEnum.Medium = 1 -> JoinRpg.Common.WebComponents.SizeStyleEnum
 JoinRpg.Common.WebComponents.SizeStyleEnum.Small = 2 -> JoinRpg.Common.WebComponents.SizeStyleEnum
-JoinRpg.Common.WebComponents.StringInput
-JoinRpg.Common.WebComponents.StringInput.Name.get -> string?
-JoinRpg.Common.WebComponents.StringInput.Name.set -> void
-JoinRpg.Common.WebComponents.StringInput.Required.get -> bool
-JoinRpg.Common.WebComponents.StringInput.Required.set -> void
-JoinRpg.Common.WebComponents.StringInput.RequiredMessage.get -> string?
-JoinRpg.Common.WebComponents.StringInput.RequiredMessage.set -> void
-JoinRpg.Common.WebComponents.StringInput.RequiredMessageValue.get -> string?
-JoinRpg.Common.WebComponents.StringInput.StringInput() -> void
-JoinRpg.Common.WebComponents.StringInput.ValidationEnabled.get -> string?
-JoinRpg.Common.WebComponents.StringInput.Value.get -> string?
-JoinRpg.Common.WebComponents.StringInput.Value.set -> void
-JoinRpg.Common.WebComponents.StringInput.ValueChanged.get -> Microsoft.AspNetCore.Components.EventCallback<string?>
-JoinRpg.Common.WebComponents.StringInput.ValueChanged.set -> void
 JoinRpg.Common.WebComponents.SupportInfoPanel
 JoinRpg.Common.WebComponents.SupportInfoPanel.ActivityId.get -> string?
 JoinRpg.Common.WebComponents.SupportInfoPanel.ActivityId.set -> void
@@ -1007,10 +1005,7 @@ override JoinRpg.Common.WebComponents.JoinTextArea.OnParametersSet() -> void
 override JoinRpg.Common.WebComponents.JoinTextInput.OnParametersSet() -> void
 override JoinRpg.Common.WebComponents.JoinUserLinkEditor.OnInitializedAsync() -> System.Threading.Tasks.Task!
 override JoinRpg.Common.WebComponents.JoinUserLinkEditor.OnParametersSet() -> void
-override JoinRpg.Common.WebComponents.NumberInput.OnParametersSet() -> void
 override JoinRpg.Common.WebComponents.SettingsPanelBase<TModel>.OnInitializedAsync() -> System.Threading.Tasks.Task!
-override JoinRpg.Common.WebComponents.StringInput.OnInitialized() -> void
-override JoinRpg.Common.WebComponents.StringInput.OnParametersSet() -> void
 override JoinRpg.Common.WebComponents.TimeZoneListItem.Equals(object? obj) -> bool
 override JoinRpg.Common.WebComponents.TimeZoneListItem.GetHashCode() -> int
 override JoinRpg.Common.WebComponents.TimeZoneListItem.ToString() -> string!
@@ -1108,6 +1103,7 @@ virtual JoinRpg.Common.WebComponents.UserLinkViewModel.PrintMembers(System.Text.
 ~override JoinRpg.Common.WebComponents.JoinIconButton.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
 ~override JoinRpg.Common.WebComponents.JoinIconHtml.Equals(object obj) -> bool
 ~override JoinRpg.Common.WebComponents.JoinIconHtml.ToString() -> string
+~override JoinRpg.Common.WebComponents.JoinInputNumber<TValue>.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
 ~override JoinRpg.Common.WebComponents.JoinLoadingMessage.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
 ~override JoinRpg.Common.WebComponents.JoinMarkdownTextArea.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
 ~override JoinRpg.Common.WebComponents.JoinMenuHeader.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
@@ -1124,11 +1120,9 @@ virtual JoinRpg.Common.WebComponents.UserLinkViewModel.PrintMembers(System.Text.
 ~override JoinRpg.Common.WebComponents.JoinTextInput.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
 ~override JoinRpg.Common.WebComponents.JoinUserLinkEditor.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
 ~override JoinRpg.Common.WebComponents.LiveJournalLink.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
-~override JoinRpg.Common.WebComponents.NumberInput.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
 ~override JoinRpg.Common.WebComponents.PhoneLink.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
 ~override JoinRpg.Common.WebComponents.PriceElement.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
 ~override JoinRpg.Common.WebComponents.SiteBanner.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
-~override JoinRpg.Common.WebComponents.StringInput.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
 ~override JoinRpg.Common.WebComponents.SupportInfoPanel.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
 ~override JoinRpg.Common.WebComponents.TelegramLink.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
 ~override JoinRpg.Common.WebComponents.TimeZoneSelector.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void

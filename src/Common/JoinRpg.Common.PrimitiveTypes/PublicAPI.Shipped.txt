@@ -101,6 +101,10 @@ JoinRpg.Common.PrimitiveTypes.SendingResult.Common.get -> bool
 JoinRpg.Common.PrimitiveTypes.SendingResult.Common.set -> void
 JoinRpg.Common.PrimitiveTypes.SendingResult.Deconstruct(out bool Succeeded, out bool Repeatable, out bool Common) -> void
 JoinRpg.Common.PrimitiveTypes.SendingResult.Equals(JoinRpg.Common.PrimitiveTypes.SendingResult other) -> bool
+JoinRpg.Common.PrimitiveTypes.SendingResult.IsSkipped.get -> bool
+JoinRpg.Common.PrimitiveTypes.SendingResult.IsSkipped.init -> void
+JoinRpg.Common.PrimitiveTypes.SendingResult.Message.get -> string?
+JoinRpg.Common.PrimitiveTypes.SendingResult.Message.init -> void
 JoinRpg.Common.PrimitiveTypes.SendingResult.Repeatable.get -> bool
 JoinRpg.Common.PrimitiveTypes.SendingResult.Repeatable.set -> void
 JoinRpg.Common.PrimitiveTypes.SendingResult.SendingResult() -> void
@@ -426,6 +430,7 @@ static JoinRpg.Common.PrimitiveTypes.PrefferedName.operator ==(JoinRpg.Common.Pr
 static JoinRpg.Common.PrimitiveTypes.SendingResult.CommonFailure() -> JoinRpg.Common.PrimitiveTypes.SendingResult
 static JoinRpg.Common.PrimitiveTypes.SendingResult.PermanentUserFailure() -> JoinRpg.Common.PrimitiveTypes.SendingResult
 static JoinRpg.Common.PrimitiveTypes.SendingResult.RepeatableFailure() -> JoinRpg.Common.PrimitiveTypes.SendingResult
+static JoinRpg.Common.PrimitiveTypes.SendingResult.Skipped(string? reason = null) -> JoinRpg.Common.PrimitiveTypes.SendingResult
 static JoinRpg.Common.PrimitiveTypes.SendingResult.Success() -> JoinRpg.Common.PrimitiveTypes.SendingResult
 static JoinRpg.Common.PrimitiveTypes.SendingResult.operator !=(JoinRpg.Common.PrimitiveTypes.SendingResult left, JoinRpg.Common.PrimitiveTypes.SendingResult right) -> bool
 static JoinRpg.Common.PrimitiveTypes.SendingResult.operator ==(JoinRpg.Common.PrimitiveTypes.SendingResult left, JoinRpg.Common.PrimitiveTypes.SendingResult right) -> bool

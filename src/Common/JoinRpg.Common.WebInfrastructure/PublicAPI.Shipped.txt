@@ -65,6 +65,7 @@ JoinRpg.Common.WebInfrastructure.HealthCheckMetricsPublisher
 JoinRpg.Common.WebInfrastructure.HealthCheckMetricsPublisher.HealthCheckMetricsPublisher() -> void
 JoinRpg.Common.WebInfrastructure.HealthCheckMetricsPublisher.PublishAsync(Microsoft.Extensions.Diagnostics.HealthChecks.HealthReport! report, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task!
 JoinRpg.Common.WebInfrastructure.HostRuntimeStartWaiter
+JoinRpg.Common.WebInfrastructure.HtmlSanitizersRegistration
 JoinRpg.Common.WebInfrastructure.Job.BackgroundServiceActivity
 JoinRpg.Common.WebInfrastructure.Job.MidnightJobsRegistration
 JoinRpg.Common.WebInfrastructure.JoinHttpsRedirectionOptions
@@ -138,6 +139,7 @@ static JoinRpg.Common.WebInfrastructure.ForwardedHeadersExtensions.ConfigureForw
 static JoinRpg.Common.WebInfrastructure.HealthCheckExtensions.AddJoinHealthChecks(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
 static JoinRpg.Common.WebInfrastructure.HealthCheckExtensions.MapJoinHealthChecks(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder! endpoints) -> void
 static JoinRpg.Common.WebInfrastructure.HostRuntimeStartWaiter.WaitForAppStartup(this Microsoft.Extensions.Hosting.IHostApplicationLifetime! lifetime, System.Threading.CancellationToken stoppingToken) -> System.Threading.Tasks.Task!
+static JoinRpg.Common.WebInfrastructure.HtmlSanitizersRegistration.AddJoinHtmlSanitizers(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
 static JoinRpg.Common.WebInfrastructure.Job.MidnightJobsRegistration.AddMidnightJobs(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
 static JoinRpg.Common.WebInfrastructure.LoggingExtensions.UseJoinRequestLogging(this Microsoft.AspNetCore.Builder.IApplicationBuilder! app) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
 static JoinRpg.Common.WebInfrastructure.LoggingExtensions.UseJoinSerilog(this Microsoft.Extensions.Hosting.IHostBuilder! host, string! appname) -> Microsoft.Extensions.Hosting.IHostBuilder!

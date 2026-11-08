@@ -1,4 +1,10 @@
 #nullable enable
+JoinRpg.Common.WebInfrastructure.HtmlSanitize.IJoinHtmlSanitizer
+JoinRpg.Common.WebInfrastructure.HtmlSanitize.IJoinHtmlSanitizer.Sanitize(string! html) -> string!
+JoinRpg.Common.WebInfrastructure.HtmlSanitize.IJoinRemoveAllHtmlSanitizer
+JoinRpg.Common.WebInfrastructure.HtmlSanitize.IJoinSimpleHtmlSanitizer
+JoinRpg.Common.WebInfrastructure.HtmlSanitize.IJoinTelegramHtmlSanitizer
+JoinRpg.Common.WebInfrastructure.HtmlSanitize.JoinHtmlSanitizerLocator
 JoinRpg.Common.WebInfrastructure.Job.IJob
 JoinRpg.Common.WebInfrastructure.Job.IJob.RunOnce(System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task!
 JoinRpg.Common.WebInfrastructure.Job.IJobImpersonator
@@ -46,6 +52,10 @@ override JoinRpg.Common.WebInfrastructure.Job.JobId.ToString() -> string!
 override JoinRpg.Common.WebInfrastructure.Job.RegisteredJob.Equals(object? obj) -> bool
 override JoinRpg.Common.WebInfrastructure.Job.RegisteredJob.GetHashCode() -> int
 override JoinRpg.Common.WebInfrastructure.Job.RegisteredJob.ToString() -> string!
+static JoinRpg.Common.WebInfrastructure.HtmlSanitize.JoinHtmlSanitizerLocator.GetRemoveAllSanitizer() -> JoinRpg.Common.WebInfrastructure.HtmlSanitize.IJoinRemoveAllHtmlSanitizer!
+static JoinRpg.Common.WebInfrastructure.HtmlSanitize.JoinHtmlSanitizerLocator.GetSimpleSanitizer() -> JoinRpg.Common.WebInfrastructure.HtmlSanitize.IJoinSimpleHtmlSanitizer!
+static JoinRpg.Common.WebInfrastructure.HtmlSanitize.JoinHtmlSanitizerLocator.GetTelegramSanitizer() -> JoinRpg.Common.WebInfrastructure.HtmlSanitize.IJoinTelegramHtmlSanitizer!
+static JoinRpg.Common.WebInfrastructure.HtmlSanitize.JoinHtmlSanitizerLocator.Initialize(System.Func<JoinRpg.Common.WebInfrastructure.HtmlSanitize.IJoinSimpleHtmlSanitizer!>! simpleSanitizer, System.Func<JoinRpg.Common.WebInfrastructure.HtmlSanitize.IJoinRemoveAllHtmlSanitizer!>! removeAllSanitizer, System.Func<JoinRpg.Common.WebInfrastructure.HtmlSanitize.IJoinTelegramHtmlSanitizer!>! telegramSanitizer) -> void
 static JoinRpg.Common.WebInfrastructure.Job.JobId.operator !=(JoinRpg.Common.WebInfrastructure.Job.JobId? left, JoinRpg.Common.WebInfrastructure.Job.JobId? right) -> bool
 static JoinRpg.Common.WebInfrastructure.Job.JobId.operator ==(JoinRpg.Common.WebInfrastructure.Job.JobId? left, JoinRpg.Common.WebInfrastructure.Job.JobId? right) -> bool
 static JoinRpg.Common.WebInfrastructure.Job.JobRegistration.AddJob<TJob>(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!

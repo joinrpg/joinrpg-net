@@ -1,6 +1,1 @@
 #nullable enable
-JoinRpg.Common.PrimitiveTypes.SendingResult.IsSkipped.get -> bool
-JoinRpg.Common.PrimitiveTypes.SendingResult.IsSkipped.init -> void
-JoinRpg.Common.PrimitiveTypes.SendingResult.Message.get -> string?
-JoinRpg.Common.PrimitiveTypes.SendingResult.Message.init -> void
-static JoinRpg.Common.PrimitiveTypes.SendingResult.Skipped(string? reason = null) -> JoinRpg.Common.PrimitiveTypes.SendingResult

@@ -1,3 +1,1 @@
 #nullable enable
-JoinRpg.Common.WebInfrastructure.HtmlSanitizersRegistration
-static JoinRpg.Common.WebInfrastructure.HtmlSanitizersRegistration.AddJoinHtmlSanitizers(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
