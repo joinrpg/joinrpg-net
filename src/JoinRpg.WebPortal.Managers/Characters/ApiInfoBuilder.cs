@@ -39,7 +39,8 @@ public class ApiInfoBuilder
                                                 // Контракт PlayerContacts обещает отдавать только
                                                 // подтверждённый VK — как и версия для User.
                                                 player.Social.Vk is { IsVerified: true } vk ? $"id{vk.Id}" : null,
-                                                player.Social.Telegram?.PrettyName?.Value);
+                                                player.Social.Telegram?.PrettyName?.Value,
+                                                player.Social.Telegram is { IsVerified: true } tg ? tg.ChatId?.Value : null);
     }
 
     /// <summary>
