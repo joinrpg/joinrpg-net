@@ -160,6 +160,17 @@ public class ExpensesControllerTest
     }
 
     [Fact]
+    public async Task CategoryPathSuggestionsPassesServiceResultThrough()
+    {
+        var controller = CreateController(service: new FakeExpenseService { Suggestions = ["Аренда базы", "Транспорт"] });
+
+        var result = await controller.CategoryPathSuggestions(ProjectId);
+
+        result.Result.ShouldBeOfType<OkObjectResult>().Value
+            .ShouldBeAssignableTo<IReadOnlyCollection<string>>()!.ShouldBe(["Аренда базы", "Транспорт"]);
+    }
+
+    [Fact]
     public async Task CanManageMoneyComesFromMasterPermissions()
     {
         var mock = new MockedProject();
@@ -244,6 +255,10 @@ public class ExpensesControllerTest
 
         public Task ApproveExpense(ExpenseIdentification expenseId, MarkdownString? comment) => throw new NotSupportedException();
         public Task RejectExpense(ExpenseIdentification expenseId, MarkdownString? comment) => throw new NotSupportedException();
+        public Task<IReadOnlyCollection<string>> LoadCategoryPathSuggestions(ProjectIdentification projectId)
+            => Task.FromResult(Suggestions);
+
+        public IReadOnlyCollection<string> Suggestions { get; init; } = [];
     }
 
     private sealed class FakeProjectMetadataRepository(ProjectInfo projectInfo) : IProjectMetadataRepository

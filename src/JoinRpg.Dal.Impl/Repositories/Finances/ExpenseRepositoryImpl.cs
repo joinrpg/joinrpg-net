@@ -13,10 +13,22 @@ internal class ExpenseRepositoryImpl(MyDbContext ctx) : GameRepositoryImplBase(c
             .ToListAsync(), projectId);
 
     public async Task<IReadOnlyCollection<ExpenseCategoryInfo>> GetCategories(ProjectIdentification projectId)
-        => [.. (await Ctx.Set<ExpenseCategory>()
-                .Where(c => c.ProjectId == projectId.Value)
-                .ToListAsync())
-            .Select(ExpenseMapper.MapCategory)];
+    {
+        var rows = await Ctx.Set<ExpenseCategory>()
+            .Where(c => c.ProjectId == projectId.Value)
+            .Select(c => new
+            {
+                Category = c,
+                // EXISTS-подзапрос: у категории есть привязанный расход не в состоянии Rejected
+                HasActiveDirectExpenses = Ctx.Set<Expense>().Any(e =>
+                    e.ProjectId == c.ProjectId
+                    && e.CategoryId == c.ExpenseCategoryId
+                    && e.State != ExpenseState.Rejected),
+            })
+            .ToListAsync();
+        var categoryNames = rows.ToDictionary(r => r.Category.ExpenseCategoryId, r => r.Category.Name);
+        return [.. rows.Select(r => ExpenseMapper.MapCategory(r.Category, r.HasActiveDirectExpenses, categoryNames))];
+    }
 
     private async Task<IReadOnlyCollection<ExpenseInfo>> MapExpenses(List<Expense> expenses, ProjectIdentification projectId)
     {

@@ -99,6 +99,9 @@ public class ExpensesPageTest : BunitContext
 
         public Task<bool> CanManageMoney(ProjectIdentification projectId) => Task.FromResult(false);
 
+        public Task<IReadOnlyCollection<string>> GetCategoryPathSuggestions(ProjectIdentification projectId)
+            => Task.FromResult<IReadOnlyCollection<string>>([]);
+
         public Task<ExpenseIdentification> CreateExpense(ProjectIdentification projectId, ExpenseEditViewModel model)
             => throw new NotSupportedException();
 

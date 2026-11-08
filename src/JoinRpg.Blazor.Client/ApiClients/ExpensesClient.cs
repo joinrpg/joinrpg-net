@@ -21,6 +21,10 @@ public class ExpensesClient(HttpClient httpClient, CsrfTokenProvider csrfTokenPr
         => await (await httpClient.GetAsync($"webapi/{projectId.Value}/expenses/canmanagemoney"))
             .ReadFromJsonOrThrowProblem<bool>();
 
+    public async Task<IReadOnlyCollection<string>> GetCategoryPathSuggestions(ProjectIdentification projectId)
+        => await (await httpClient.GetAsync($"webapi/{projectId.Value}/expenses/categorypathsuggestions"))
+            .ReadFromJsonOrThrowProblem<IReadOnlyCollection<string>>();
+
     public async Task<ExpenseIdentification> CreateExpense(ProjectIdentification projectId, ExpenseEditViewModel model)
         => await Post(
             $"webapi/{projectId.Value}/expenses/create",

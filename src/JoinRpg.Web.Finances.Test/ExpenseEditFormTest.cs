@@ -46,6 +46,30 @@ public class ExpenseEditFormTest : BunitContext
     }
 
     [Fact]
+    public void CategoryFieldRendersSuggestionsAsDatalist()
+    {
+        string[] suggestions = ["Аренда базы", "Аренда базы\\Жилые корпуса", "Транспорт"];
+        var cut = RenderForm(new ExpenseEditViewModel(), categorySuggestions: suggestions);
+
+        var dataList = cut.Find("datalist");
+        dataList.Id.ShouldNotBeNullOrWhiteSpace();
+        cut.FindAll("datalist option")
+            .Select(option => option.GetAttribute("value"))
+            .ShouldBe(suggestions);
+        // Поле категории привязано к этому datalist атрибутом list (первый input — название)
+        cut.FindAll("input[type=text]")[1].GetAttribute("list").ShouldBe(dataList.Id);
+    }
+
+    [Fact]
+    public void CategoryFieldWithoutSuggestionsHasNoDatalist()
+    {
+        var cut = RenderForm(new ExpenseEditViewModel());
+
+        cut.FindAll("datalist").ShouldBeEmpty();
+        cut.FindAll("input[type=text]")[1].HasAttribute("list").ShouldBeFalse();
+    }
+
+    [Fact]
     public void NumberFieldsHaveMinZeroAndNoMax()
     {
         var cut = RenderForm(new ExpenseEditViewModel());
@@ -178,12 +202,14 @@ public class ExpenseEditFormTest : BunitContext
     private IRenderedComponent<ExpenseEditForm> RenderForm(
         ExpenseEditViewModel model,
         ExpenseStateView? state = null,
+        IReadOnlyCollection<string>? categorySuggestions = null,
         Action<ExpenseEditViewModel>? onSave = null,
         Action? onCancel = null)
         => Render<ExpenseEditForm>(p => p
             .Add(x => x.Model, model)
             .Add(x => x.ProjectId, ProjectId)
             .Add(x => x.State, state)
+            .Add(x => x.CategorySuggestions, categorySuggestions)
             .Add(x => x.OnSave, EventCallback.Factory.Create<ExpenseEditViewModel>(this, savedModel => onSave?.Invoke(savedModel)))
             .Add(x => x.OnCancel, EventCallback.Factory.Create(this, () => onCancel?.Invoke())));
 

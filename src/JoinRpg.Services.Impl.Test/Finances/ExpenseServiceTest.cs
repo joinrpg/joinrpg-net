@@ -31,7 +31,7 @@ public class ExpenseServiceTest
         mock.ReInitProjectInfo();
         unitOfWork = new FakeUnitOfWork(mock);
         metadataRepository = new FakeProjectMetadataRepository(mock);
-        expenseRepository = new FakeExpenseRepository(categories);
+        expenseRepository = new FakeExpenseRepository(categories, expenses);
         unitOfWork.UseDbSet<Expense>(expenses);
         unitOfWork.UseDbSet<ExpenseCategory>(categories);
         unitOfWork.UseDbSet<ExpenseApproval>(approvals);
@@ -118,6 +118,56 @@ public class ExpenseServiceTest
         // Снапшот пути от корня к листу, по нему грид фильтрует поддерево
         expense.CategoryId.ShouldBe(leaf.ExpenseCategoryId);
         expense.CategoryPathIds.ShouldBe([root.ExpenseCategoryId, leaf.ExpenseCategoryId]);
+    }
+
+    [Fact]
+    public async Task LoadCategoryPathSuggestions_ReturnsFullPathsForEveryExpenseNodeSorted()
+    {
+        var service = CreateService(mock.Master.UserId);
+        await CreateExpenseAsMaster();
+        await service.CreateExpense(
+            ProjectId,
+            CreateRequest(new UserIdentification(mock.Master.UserId), categoryPath: "Аренда базы\\Полигон"));
+        await service.CreateExpense(
+            ProjectId,
+            CreateRequest(new UserIdentification(mock.Master.UserId), categoryPath: "Транспорт"));
+        // Второй расход в той же категории — подсказка не дублируется
+        await service.CreateExpense(
+            ProjectId,
+            CreateRequest(new UserIdentification(mock.Master.UserId), categoryPath: "Транспорт"));
+
+        var suggestions = await service.LoadCategoryPathSuggestions(ProjectId);
+
+        // Каждый узел пути — самостоятельный вариант: лист даёт и промежуточные уровни,
+        // их тоже можно выбрать в поле «Категория»; сортировка по алфавиту
+        suggestions.ShouldBe(["Аренда базы", "Аренда базы\\Жилые корпуса", "Аренда базы\\Полигон", "Транспорт"]);
+    }
+
+    [Fact]
+    public async Task LoadCategoryPathSuggestions_SkipsRejectedExpensesButKeepsSharedAncestors()
+    {
+        var service = CreateService(mock.Master.UserId);
+        var rejectedExpenseId = await CreateExpenseAsMaster();
+        await service.RejectExpense(rejectedExpenseId, null);
+        // У «Аренда базы\Жилые корпуса» остаётся только rejected-расход — подсказки нет,
+        // но «Аренда базы» остаётся: у неё есть не rejected-расход
+        await service.CreateExpense(
+            ProjectId,
+            CreateRequest(new UserIdentification(mock.Master.UserId), categoryPath: "Аренда базы\\Полигон"));
+
+        var suggestions = await service.LoadCategoryPathSuggestions(ProjectId);
+
+        suggestions.ShouldBe(["Аренда базы", "Аренда базы\\Полигон"]);
+    }
+
+    [Fact]
+    public async Task LoadCategoryPathSuggestions_WithoutExpenses_ReturnsEmpty()
+    {
+        var service = CreateService(mock.Master.UserId);
+
+        var suggestions = await service.LoadCategoryPathSuggestions(ProjectId);
+
+        suggestions.ShouldBeEmpty();
     }
 
     [Fact]

@@ -45,6 +45,11 @@ public class ExpensesController(
         return Ok(projectInfo.HasMasterAccess(currentUserAccessor, Permission.CanManageMoney));
     }
 
+    /// <summary>Полные пути категорий с не отклонёнными расходами и их предков — подсказки поля «Категория».</summary>
+    [HttpGet]
+    public async Task<ActionResult<IReadOnlyCollection<string>>> CategoryPathSuggestions(ProjectIdentification projectId)
+        => Ok(await expenseService.LoadCategoryPathSuggestions(projectId));
+
     [HttpPost]
     public async Task<ActionResult<ExpenseIdentification>> Create(ProjectIdentification projectId, ExpenseEditViewModel model)
     {

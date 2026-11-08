@@ -16,7 +16,7 @@
                     <JoinTextInput @bind-Value="Model.Name" />
                 </FormRowFor>
                 <FormRowFor For="@(() => Model.CategoryPath)">
-                    <JoinTextInput @bind-Value="Model.CategoryPath" />
+                    <JoinTextInput @bind-Value="Model.CategoryPath" Variants="CategorySuggestions" />
                 </FormRowFor>
                 <FormRowFor For="@(() => Model.MasterId)">
                     <MasterSelector ProjectId="ProjectId.Value" MasterId="Model.MasterId" MasterIdChanged="OnMasterChanged" />
@@ -65,6 +65,10 @@
     /// <summary>Текущее состояние расхода; <c>null</c> при создании — бейдж не показываем.</summary>
     [Parameter]
     public ExpenseStateView? State { get; set; }
+
+    /// <summary>Полные пути категорий для подсказок поля «Категория»; <c>null</c> — без подсказок.</summary>
+    [Parameter]
+    public IReadOnlyCollection<string>? CategorySuggestions { get; set; }
 
     /// <summary>Сабмит формы; страница сама отправляет результат на сервер.</summary>
     [Parameter]
