@@ -5,7 +5,10 @@
         <tr>
             <th>Категория</th>
             <th>Название</th>
-            <th>Мастер</th>
+            @if (ShowMaster)
+            {
+                <th>Мастер</th>
+            }
             <th>План</th>
             <th>Факт</th>
             <th>Состояние</th>
@@ -20,7 +23,10 @@
         <tr>
             <td>@expense.CategoryPath</td>
             <td>@expense.Name</td>
-            <td>@expense.MasterName</td>
+            @if (ShowMaster)
+            {
+                <td>@expense.MasterName</td>
+            }
             <td>@FormatCost(expense.PlannedQuantity, expense.PlannedPrice, expense.PlannedCost)</td>
             <td>
                 @if (expense.ActualCost is { } actualCost)
@@ -42,7 +48,7 @@
     </ItemTemplate>
     <EmptyContent>
         <tr>
-            <td colspan="@(RowActions is null ? 7 : 8)">Расходов пока нет</td>
+            <td colspan="@(6 + (ShowMaster ? 1 : 0) + (RowActions is null ? 0 : 1))">Расходов пока нет</td>
         </tr>
     </EmptyContent>
 </JoinBorderedTable>
@@ -57,6 +63,10 @@
     /// <summary>Кнопки действий со строкой; <c>null</c> — колонки «Действия» нет.</summary>
     [Parameter]
     public RenderFragment<ExpenseViewModel>? RowActions { get; set; }
+
+    /// <summary>Колонка «Мастер»; <c>false</c> — для списка расходов одного мастера.</summary>
+    [Parameter]
+    public bool ShowMaster { get; set; } = true;
 
     private static string FormatCost(int quantity, int price, int cost) => $"{quantity} × {price} = {cost} ₽";
 }
