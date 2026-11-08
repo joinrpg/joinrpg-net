@@ -168,6 +168,15 @@ internal class SenderJobService<TSender>(IServiceProvider serviceProvider,
                 sendingResult = SendingResult.RepeatableFailure();
             }
 
+            if (sendingResult.IsSkipped)
+            {
+                // Отправка намеренно не выполнялась — это не ошибка сервиса: не трогаем счетчики
+                // успехов/ошибок. В БД финального статуса «пропущено» нет, помечаем как неотправленное без ретраев.
+                logger.LogInformation("Сообщение {messageId} намеренно не отправлено отправщиком {senderJobName}: {skipReason}", nextMessage.MessageId, JobName, sendingResult.Message);
+                await notificationRepository.MarkSendingFailed(nextMessage.MessageId, channel);
+                return; // Выходим, очищаем скоуп
+            }
+
             if (sendingResult.Succeeded)
             {
 
