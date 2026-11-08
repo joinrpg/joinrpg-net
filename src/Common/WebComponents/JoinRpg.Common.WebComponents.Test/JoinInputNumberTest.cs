@@ -100,6 +100,40 @@ public class JoinInputNumberTest
     }
 
     [Fact]
+    public void ExternalValueChange_UpdatesValueAttribute()
+    {
+        using var ctx = new BunitContext();
+        var cut = ctx.Render<JoinInputNumber<int?>>(p => p.Add(x => x.Value, null));
+        cut.Find("input").GetAttribute("value").ShouldBe("");
+
+        cut.Render(p => p.Add(x => x.Value, 42));
+
+        cut.Find("input").GetAttribute("value").ShouldBe("42");
+    }
+
+    [Fact]
+    public void Change_Garbage_KeepsRawText_AfterExternalRerenderWithoutValueChange()
+    {
+        using var ctx = new BunitContext();
+        var captured = 7;
+        var cut = ctx.Render<JoinInputNumber<int>>(p => p
+            .Add(x => x.Value, 0)
+            .Add(x => x.ValueChanged, v => captured = v));
+
+        cut.Find("input").Change("abc");
+        captured.ShouldBe(7);
+
+        // Родительский ре-рендер без изменения Value (поменялся другой параметр)
+        // не должен стирать сырое значение после ошибки парсинга
+        cut.Render(p => p
+            .Add(x => x.Value, 0)
+            .Add(x => x.Name, "Qty")
+            .Add(x => x.ValueChanged, v => captured = v));
+
+        cut.Find("input").GetAttribute("value").ShouldBe("abc");
+    }
+
+    [Fact]
     public void Change_Garbage_AddsValidationMessageAndKeepsRawText_ForNonNullableIntInEditForm()
     {
         using var ctx = new BunitContext();

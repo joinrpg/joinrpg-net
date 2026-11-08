@@ -36,6 +36,7 @@
 
     private string displayValue = "";
     private string? inputId;
+    private object? previousValue;
 
     private FieldIdentifier fieldIdentifier;
     private ValidationMessageStore? messages;
@@ -43,11 +44,11 @@
     protected override void OnParametersSet()
     {
         // Перезаписываем отображаемое значение только если значение поменяли снаружи —
-        // иначе не ввести число посимвольно.
-        var value = Format(Value) ?? "";
-        if (value != displayValue)
+        // иначе не ввести число посимвольно и не оставить сырое значение после ошибки парсинга.
+        if (!Equals(Value, previousValue))
         {
-            displayValue = value;
+            displayValue = Format(Value) ?? "";
+            previousValue = Value;
         }
         inputId = LabelTarget?.Claim(this, FormRowLabelTarget.ExplicitId(AdditionalAttributes));
         if (EditContext is not null && messages is null)
@@ -65,13 +66,7 @@
         var raw = (string?)eventArgs.Value;
         messages?.Clear(fieldIdentifier);
 
-        if (TryParseValue(raw, out var parsed))
-        {
-            displayValue = raw ?? "";
-            await ValueChanged.InvokeAsync(parsed!);
-            NotifyFieldChanged();
-        }
-        else if (IsNullable)
+        if (TryParseValue(raw, out var parsed) || IsNullable)
         {
             // Непарсабельный ввод у nullable-поля считаем пустым значением
             displayValue = raw ?? "";
@@ -82,7 +77,10 @@
         {
             // Значение не меняем, сырое остаётся в поле, ошибка уходит в EditContext
             displayValue = raw ?? "";
-            messages?.Add(fieldIdentifier, ParsingErrorMessage);
+            if (ValueExpression is not null)
+            {
+                messages?.Add(fieldIdentifier, ParsingErrorMessage);
+            }
         }
     }
 
