@@ -36,24 +36,46 @@ $unreleasedHeader = '## Не выпущено'
 & git -C $repoRoot rev-parse --verify --quiet "${PublishedRef}^{commit}" > $null
 if ($LASTEXITCODE -ne 0) { throw "Нет коммита $PublishedRef" }
 
-# Раздел «Не выпущено»: подраздел → записи в исходном порядке. Всё, что не подраздел и не
-# запись, — ошибка: при перезаписи раздела такая строка потерялась бы.
+# Раздел «Не выпущено»: подраздел → записи в исходном порядке, запись может занимать
+# несколько строк (все строки после `- `, не начинающиеся с подраздела, — продолжение
+# последней записи). Всё, что не подраздел, не запись и не продолжение, — ошибка:
+# при перезаписи раздела такая строка потерялась бы.
 function Read-Unreleased([string[]] $lines, [string] $relative) {
     $sections = [ordered]@{}
     $inUnreleased = $false
     $current = $null
-    foreach ($line in $lines) {
+    for ($i = 0; $i -lt $lines.Count; $i++) {
+        $line = $lines[$i]
         if ($line.StartsWith('## ')) {
             $inUnreleased = $line -eq $unreleasedHeader
             continue
         }
-        if (-not $inUnreleased -or $line.Trim() -eq '') { continue }
+        if (-not $inUnreleased) { continue }
+        if ($line.Trim() -eq '') {
+            # Пустая строка — разделитель, но не внутри записи: если дальше продолжение,
+            # разрыв молча потерялся бы.
+            if ($current -and $sections[$current].Count -gt 0) {
+                $next = $null
+                for ($j = $i + 1; $j -lt $lines.Count; $j++) {
+                    if ($lines[$j].Trim() -ne '') { $next = $lines[$j]; break }
+                }
+                if ($null -ne $next -and -not $next.StartsWith('## ') -and -not $next.StartsWith('### ') -and -not $next.StartsWith('- ')) {
+                    throw "${relative}: пустая строка внутри записи не поддерживается (уберите разрыв или разбейте на две записи)"
+                }
+            }
+            continue
+        }
         if ($line.StartsWith('### ')) {
             $current = $line
             if (-not $sections.Contains($current)) { $sections[$current] = [System.Collections.Generic.List[string]]::new() }
         }
         elseif ($line.StartsWith('- ') -and $current) {
             $sections[$current].Add($line)
+        }
+        elseif ($current -and $sections[$current].Count -gt 0) {
+            # Продолжение многострочной записи: запись целиком — юнит переноса и сравнения.
+            $last = $sections[$current].Count - 1
+            $sections[$current][$last] = $sections[$current][$last] + "`r`n" + $line
         }
         else {
             throw "${relative}: в «Не выпущено» строка не подраздел и не запись (продолжение записи? подвал под последним разделом?): $line"
@@ -85,7 +107,7 @@ foreach ($file in $changelogs) {
     foreach ($entries in $remaining.Values) { foreach ($e in $entries) { [void] $inMaster.Add($e) } }
     foreach ($e in $released) {
         if (-not $inMaster.Contains($e)) {
-            Write-Host "::warning file=$relative::Запись исправлена или удалена в master после публикации: $e"
+            Write-Host "::warning file=$relative::Запись исправлена или удалена в master после публикации: $($e.Replace("`r`n", '%0A'))"
         }
     }
 
