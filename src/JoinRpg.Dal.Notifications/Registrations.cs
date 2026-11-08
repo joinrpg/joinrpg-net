@@ -9,7 +9,7 @@ public static class Registrations
 {
     public static IServiceCollection AddNotificationsDal(this IServiceCollection services, IConfiguration configuration, IHostEnvironment environment)
     {
-        _ = services.AddJoinEfCoreDbContext<NotificationsDataDbContext>(configuration, environment, "Notifications");
+        _ = services.AddJoinEfCoreDbContext<NotificationsDataDbContext>(configuration, environment, "Notifications", includeInReadyHealthCheck: false);
         return services.AddTransient<INotificationRepository, NotificationsRepository>();
     }
 }

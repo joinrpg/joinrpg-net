@@ -21,12 +21,24 @@ public static class DbContextRegisterHelper
     /// с именем <c>{connectionStringName}-db</c>. Если строки подключения с таким именем нет,
     /// ничего не регистрирует и возвращает <c>false</c> — вызывающий может решить, критично ли это.
     /// </summary>
+    /// <param name="services">Коллекция сервисов.</param>
+    /// <param name="configuration">Конфигурация со строками подключения.</param>
+    /// <param name="environment">Окружение хоста (включает лог SQL в Development).</param>
+    /// <param name="connectionStringName">Имя строки подключения.</param>
+    /// <param name="optionsBuilder">Дополнительная настройка <see cref="DbContextOptionsBuilder"/>.</param>
+    /// <param name="includeInReadyHealthCheck">
+    /// Включать ли health check в readiness-пробу (<c>/health/ready</c> фильтрует чеки по тегу
+    /// <c>ready</c>). По умолчанию <c>true</c>: база нужна для обработки запросов. Отключайте
+    /// для баз, без которых приложение запускается и работает (очередь уведомлений, расписание
+    /// джоб) — иначе недоступность такой базы будет держать под внешним трафиком неготовый под.
+    /// </param>
     public static bool AddJoinEfCoreDbContext<TContext>(
         this IServiceCollection services,
         IConfiguration configuration,
         IHostEnvironment environment,
         string connectionStringName,
-        Action<DbContextOptionsBuilder>? optionsBuilder = null)
+        Action<DbContextOptionsBuilder>? optionsBuilder = null,
+        bool includeInReadyHealthCheck = true)
         where TContext : DbContext
     {
         var connectionString = configuration.GetConnectionString(connectionStringName);
@@ -66,7 +78,8 @@ public static class DbContextRegisterHelper
             .AddNpgSql(
                 connectionString,
                 name: $"{connectionStringName}-db",
-                failureStatus: HealthStatus.Degraded);
+                failureStatus: HealthStatus.Degraded,
+                tags: includeInReadyHealthCheck ? ["ready"] : null);
 
         return true;
     }

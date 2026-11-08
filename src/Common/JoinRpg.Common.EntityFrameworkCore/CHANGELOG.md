@@ -4,6 +4,11 @@
 
 ## Не выпущено
 
+### Изменено
+- `AddJoinEfCoreDbContext<TContext>()` — health check теперь по умолчанию помечается тегом `ready`
+  (включается в readiness-пробу `/health/ready`). Параметр `includeInReadyHealthCheck: false`
+  отключает тег для баз, без которых приложение запускается и работает.
+
 ## 2026.9.651 — 2026-11-07
 
 ### Добавлено
