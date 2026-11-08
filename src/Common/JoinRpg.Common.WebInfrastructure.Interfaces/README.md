@@ -33,6 +33,17 @@ services.AddJob<AdvertisementJob>();
 Выключение конфигом — секция `DailyJobs:Disabled` (короткое или полное имя класса), см.
 `JobsOptions`.
 
+## HTML-санитайзеры (HtmlSanitize)
+
+Контракты одноразовых HTML-санитайзеров: `IJoinHtmlSanitizer` (`Sanitize` + `IDisposable`) и три
+профиля — `IJoinSimpleHtmlSanitizer` (пропускает безопасное форматирование), `IJoinRemoveAllHtmlSanitizer`
+(выкидывает всю разметку), `IJoinTelegramHtmlSanitizer` (только inline-разметка для Telegram).
+Реализация поверх пула (`Microsoft.Extensions.ObjectPool`) и регистрация `AddJoinHtmlSanitizers()` —
+в пакете `JoinRpg.Common.WebInfrastructure`; `Dispose` возвращает экземпляр в пул.
+
+Временно для статических вызовов есть `JoinHtmlSanitizerLocator` (Obsolete — уберём, когда рендеринг
+markdown переведут на DI).
+
 ## Типы
 
 - `IJob` + `JobDelayAttribute` — контракт джобы.

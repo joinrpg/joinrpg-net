@@ -3,11 +3,11 @@
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\Common\JoinRpg.Common.PrimitiveTypes\JoinRpg.Common.PrimitiveTypes.csproj" />
+    <ProjectReference Include="..\Common\JoinRpg.Common.WebInfrastructure.Interfaces\JoinRpg.Common.WebInfrastructure.Interfaces.csproj" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Markdig" />
     <PackageReference Include="Microsoft.AspNetCore.Components" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
-    <PackageReference Include="Vereyon.Web.HtmlSanitizer" />
   </ItemGroup>
 </Project>

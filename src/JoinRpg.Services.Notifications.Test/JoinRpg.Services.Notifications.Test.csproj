@@ -17,6 +17,7 @@
   <ItemGroup>
     <ProjectReference Include="..\JoinRpg.Services.Notifications\JoinRpg.Services.Notifications.csproj" />
     <ProjectReference Include="..\JoinRpg.DataModel.Mocks\JoinRpg.DataModel.Mocks.csproj" />
+    <ProjectReference Include="..\Common\JoinRpg.Common.WebInfrastructure\JoinRpg.Common.WebInfrastructure.csproj" />
   </ItemGroup>
 
   <ItemGroup>

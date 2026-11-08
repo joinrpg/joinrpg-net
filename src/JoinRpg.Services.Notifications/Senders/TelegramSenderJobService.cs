@@ -41,7 +41,7 @@ internal class TelegramSenderJobService(
     {
         // Заголовок — жирным и отдельной строкой, потом пустая строка, тело, ссылка, затем (если не
         // пропущена) подпись курсивом. Теги <strong>/<em>/<a> переживают санитайзер Telegram
-        // (см. HtmlSanitizers.InitTelegramSanitizer).
+        // (см. InitTelegramSanitizer в JoinRpg.Common.WebInfrastructure).
         // Заголовок — обычный текст, а не markdown, поэтому размечаем его сразу как HTML: иначе
         // символы вроде * или _ внутри темы рассылки развалили бы выделение.
         var linkPart = entityLink is null ? "" : $"\n\n{entityLink.Markdown.Value}";

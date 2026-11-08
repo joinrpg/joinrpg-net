@@ -36,7 +36,7 @@ internal class TelegramSingleHotRoleSender(
         Uri kogdaIgraCardUri,
         Uri addClaimUri)
     {
-        // Только <strong>/<em>/<a> переживают санитайзер Telegram (см. HtmlSanitizers.InitTelegramSanitizer) —
+        // Только <strong>/<em>/<a> переживают санитайзер Telegram (см. InitTelegramSanitizer в JoinRpg.Common.WebInfrastructure) —
         // заголовки (<h1>-<h6>) и <small> им не поддерживаются и вырезаются целиком вместе с содержимым,
         // поэтому вместо них используем <strong>/<em> и обычные переносы строк.
         var masterGroupSuffix = string.IsNullOrWhiteSpace(kogdaIgraGame.MasterGroupName)

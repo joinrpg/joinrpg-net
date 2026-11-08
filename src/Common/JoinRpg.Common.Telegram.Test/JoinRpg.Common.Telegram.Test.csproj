@@ -12,5 +12,6 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\JoinRpg.Common.Telegram\JoinRpg.Common.Telegram.csproj" />
+    <ProjectReference Include="..\JoinRpg.Common.WebInfrastructure\JoinRpg.Common.WebInfrastructure.csproj" />
   </ItemGroup>
 </Project>

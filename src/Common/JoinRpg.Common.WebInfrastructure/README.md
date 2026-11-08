@@ -140,6 +140,7 @@ options.Filters.Add<SerilogRazorPagesFilter>();
 | **Логин через id.joinrpg.ru** | `AddJoinRpgAuthentication<T>()`, `MapAuthEndpoints()`, `IJoinUserLoginHandler` | OpenIddict client (authorization code flow), cookie-схема, эндпойнты `/login`, `/signin-joinrpg`, `/logout` |
 | **Конфигурация хостов** | `JoinRpgHostNamesOptions` | Имена хостов всех сервисов JoinRpg (основной сайт, IdPortal, KogdaIgra, рейтинг) |
 | **MVC фильтры** | `SerilogMvcFilter`, `SerilogRazorPagesFilter` | Обогащение логов данными из HTTP-контекста для MVC и Razor Pages |
+| **HTML-санитайзеры** | `AddJoinHtmlSanitizers()` (вызывается из `AddJoinWebPlatform`) | Transient-регистрации `IJoinSimpleHtmlSanitizer`, `IJoinRemoveAllHtmlSanitizer`, `IJoinTelegramHtmlSanitizer` (контракты — в пакете `JoinRpg.Common.WebInfrastructure.Interfaces`) поверх пула `Microsoft.Extensions.ObjectPool`: экземпляр берётся из пула при создании и возвращается при `Dispose`. Используются при рендеринге markdown и для подготовки сообщений Telegram |
 
 ---
 

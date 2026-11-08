@@ -15,6 +15,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\JoinRpg.Mcp\JoinRpg.Mcp.csproj" />
+    <ProjectReference Include="..\Common\JoinRpg.Common.WebInfrastructure\JoinRpg.Common.WebInfrastructure.csproj" />
   </ItemGroup>
 
 </Project>

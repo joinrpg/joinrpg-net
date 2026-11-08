@@ -9,6 +9,7 @@
     <ProjectReference Include="..\JoinRpg.DataModel.Mocks\JoinRpg.DataModel.Mocks.csproj" />
     <!-- Сверка словаря статусов разбора с Display у ClaimStatusView. -->
     <ProjectReference Include="..\JoinRpg.Web.Claims\JoinRpg.Web.Claims.csproj" />
+    <ProjectReference Include="..\Common\JoinRpg.Common.WebInfrastructure\JoinRpg.Common.WebInfrastructure.csproj" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" />

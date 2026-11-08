@@ -1,1 +1,11 @@
 #nullable enable
+JoinRpg.Common.WebInfrastructure.HtmlSanitize.IJoinHtmlSanitizer
+JoinRpg.Common.WebInfrastructure.HtmlSanitize.IJoinHtmlSanitizer.Sanitize(string! html) -> string!
+JoinRpg.Common.WebInfrastructure.HtmlSanitize.IJoinRemoveAllHtmlSanitizer
+JoinRpg.Common.WebInfrastructure.HtmlSanitize.IJoinSimpleHtmlSanitizer
+JoinRpg.Common.WebInfrastructure.HtmlSanitize.IJoinTelegramHtmlSanitizer
+JoinRpg.Common.WebInfrastructure.HtmlSanitize.JoinHtmlSanitizerLocator
+static JoinRpg.Common.WebInfrastructure.HtmlSanitize.JoinHtmlSanitizerLocator.GetRemoveAllSanitizer() -> JoinRpg.Common.WebInfrastructure.HtmlSanitize.IJoinRemoveAllHtmlSanitizer!
+static JoinRpg.Common.WebInfrastructure.HtmlSanitize.JoinHtmlSanitizerLocator.GetSimpleSanitizer() -> JoinRpg.Common.WebInfrastructure.HtmlSanitize.IJoinSimpleHtmlSanitizer!
+static JoinRpg.Common.WebInfrastructure.HtmlSanitize.JoinHtmlSanitizerLocator.GetTelegramSanitizer() -> JoinRpg.Common.WebInfrastructure.HtmlSanitize.IJoinTelegramHtmlSanitizer!
+static JoinRpg.Common.WebInfrastructure.HtmlSanitize.JoinHtmlSanitizerLocator.Initialize(System.Func<JoinRpg.Common.WebInfrastructure.HtmlSanitize.IJoinSimpleHtmlSanitizer!>! simpleSanitizer, System.Func<JoinRpg.Common.WebInfrastructure.HtmlSanitize.IJoinRemoveAllHtmlSanitizer!>! removeAllSanitizer, System.Func<JoinRpg.Common.WebInfrastructure.HtmlSanitize.IJoinTelegramHtmlSanitizer!>! telegramSanitizer) -> void

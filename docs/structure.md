@@ -29,8 +29,8 @@
 - `JoinRpg.Markdown` — обработка Markdown (Markdig)
 - `JoinRpg.PrimitiveTypes` — доменные типы-значения: идентификаторы и Value Objects
 - `JoinRpg.Common.EntityFrameworkCore` — generic EF Core ValueConverter для `[TypedEntityId]`-типов, реализующих `IEntityId<TSelf,TValue>` (не составные id), и регистрация DbContext `AddJoinEfCoreDbContext<T>()` (PostgreSQL, EntityFramework.Exceptions, health check) — лёгкая зависимость для проектов, которым нужен EF Core-контекст без тяжёлого WebInfrastructure
-- `JoinRpg.Common.WebInfrastructure` — веб-инфраструктура: логирование (Serilog), кеш, DataProtection, планировщик ежедневных джоб (`AddMidnightJobs`, контракты — в `JoinRpg.Common.WebInfrastructure.Interfaces`), общий OIDC-логин через id.joinrpg.ru для сателлитных сайтов (`AddJoinRpgAuthentication`, приложение-специфичная часть — через `IJoinUserLoginHandler`)
-- `JoinRpg.Common.WebInfrastructure.Interfaces` — контракты фоновых джоб (`IJob`, `IJobRepository`, `IJobRunner`, `JobsOptions`, `AddJob<T>()`): лёгкая зависимость для проектов, объявляющих джобы, без тяжёлого WebInfrastructure
+- `JoinRpg.Common.WebInfrastructure` — веб-инфраструктура: логирование (Serilog), кеш, DataProtection, планировщик ежедневных джоб (`AddMidnightJobs`, контракты — в `JoinRpg.Common.WebInfrastructure.Interfaces`), общий OIDC-логин через id.joinrpg.ru для сателлитных сайтов (`AddJoinRpgAuthentication`, приложение-специфичная часть — через `IJoinUserLoginHandler`), HTML-санитайзеры (`AddJoinHtmlSanitizers`, пул через ObjectPool)
+- `JoinRpg.Common.WebInfrastructure.Interfaces` — контракты фоновых джоб (`IJob`, `IJobRepository`, `IJobRunner`, `JobsOptions`, `AddJob<T>()`) и HTML-санитайзеров (`IJoinSimpleHtmlSanitizer`, `IJoinRemoveAllHtmlSanitizer`, `IJoinTelegramHtmlSanitizer`): лёгкая зависимость для проектов, объявляющих джобы или рендерящих markdown, без тяжёлого WebInfrastructure
 - `JoinRpg.Common.Telegram` — интеграция с Telegram Bot
 - `JoinRpg.Common.BastiliaRatingClient` — HTTP-клиент к сайту клуба #Бастилия
 - `JoinRpg.Common.KogdaIgraClient` — HTTP-клиент к сервису KogdaIgra (сырые вызовы API)

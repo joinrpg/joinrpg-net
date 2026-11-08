@@ -12,6 +12,8 @@
         <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" />
         <PackageReference Include="Serilog" />
         <PackageReference Include="Serilog.AspNetCore" />
+        <PackageReference Include="Vereyon.Web.HtmlSanitizer" />
+        <PackageReference Include="HtmlAgilityPack" />
         <PackageReference Include="Serilog.Enrichers.Environment" />
         <PackageReference Include="Serilog.Expressions" />
         <PackageReference Include="Serilog.Sinks.Console" />

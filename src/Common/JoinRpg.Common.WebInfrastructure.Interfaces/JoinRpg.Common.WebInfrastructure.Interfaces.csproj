@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <IsPackable>true</IsPackable>
-    <Description>Background job contracts for JoinRpg web infrastructure: IJob, IJobRepository, job runner and registration helpers.</Description>
+    <Description>Background job contracts (IJob, AddJob, job runner) and HTML sanitizer contracts (IJoinSimpleHtmlSanitizer, IJoinRemoveAllHtmlSanitizer, IJoinTelegramHtmlSanitizer) for JoinRpg web infrastructure; implementation — in JoinRpg.Common.WebInfrastructure.</Description>
   </PropertyGroup>
 
   <ItemGroup>

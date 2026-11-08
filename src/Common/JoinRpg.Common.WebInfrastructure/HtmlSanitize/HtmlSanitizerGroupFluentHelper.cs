@@ -1,6 +1,6 @@
 using Vereyon.Web;
 
-namespace JoinRpg.Markdown;
+namespace JoinRpg.Common.WebInfrastructure.HtmlSanitize;
 /// <summary>
 /// https://github.com/Vereyon/HtmlRuleSanitizer/pull/40
 /// </summary>

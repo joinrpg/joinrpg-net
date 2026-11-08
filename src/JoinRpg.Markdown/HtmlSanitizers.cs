@@ -1,105 +1,34 @@
-using HtmlAgilityPack;
-using Vereyon.Web;
+using JoinRpg.Common.WebInfrastructure.HtmlSanitize;
 
 namespace JoinRpg.Markdown;
 
-internal static partial class HtmlSanitizers
+/// <summary>
+/// Точка входа к HTML-санитайзерам для статического <see cref="MarkDownRendererFacade"/>.
+/// Делегирует в <see cref="JoinHtmlSanitizerLocator"/>; сами санитайзеры живут в JoinRpg.Common.WebInfrastructure.
+/// </summary>
+internal static class HtmlSanitizers
 {
-    //TODO
-    // Refactor this to go to object pool https://learn.microsoft.com/en-us/aspnet/core/performance/objectpool?view=aspnetcore-9.0
-    private static HtmlSanitizerPool SimpleSanitizers { get; } = new(InitHtml5Sanitizer);
-
-    /// <returns>An instance of <see cref="IDisposableHtmlSanitizer"/> which has to be disposed right after use.</returns>
-    public static IDisposableHtmlSanitizer GetSimple() => SimpleSanitizers.Get();
-
-    private static HtmlSanitizerPool RemoveAllSanitizers { get; } = new(InitRemoveSanitizer);
-
-    /// <returns>An instance of <see cref="IDisposableHtmlSanitizer"/> which has to be disposed right after use.</returns>
-    public static IDisposableHtmlSanitizer GetRemoveAll() => RemoveAllSanitizers.Get();
-
-    private static HtmlSanitizerPool TelegramSanitizers { get; } = new(InitTelegramSanitizer);
-
-    /// <returns>An instance of <see cref="IDisposableHtmlSanitizer"/> which has to be disposed right after use.</returns>
-    public static IDisposableHtmlSanitizer GetTelegram() => TelegramSanitizers.Get();
-
-    private static HtmlSanitizer InitRemoveSanitizer()
+    /// <returns>An instance of <see cref="IJoinSimpleHtmlSanitizer"/> which has to be disposed right after use.</returns>
+    public static IJoinSimpleHtmlSanitizer GetSimple()
     {
-        var x = new HtmlSanitizer();
-        _ = x.Tags("p", "h1", "h2", "h3", "h4", "h5",
-                "strong", "b", "i", "em", "br", "p", "div", "span", "ul", "ol",
-                "li", "a", "blockquote")
-            .Flatten();
-
-        return x;
+#pragma warning disable CS0618 // JoinHtmlSanitizerLocator — временный механизм связи для статических вызовов
+        return JoinHtmlSanitizerLocator.GetSimpleSanitizer();
+#pragma warning restore CS0618
     }
 
-    private static HtmlSanitizer InitHtml5Sanitizer()
+    /// <returns>An instance of <see cref="IJoinRemoveAllHtmlSanitizer"/> which has to be disposed right after use.</returns>
+    public static IJoinRemoveAllHtmlSanitizer GetRemoveAll()
     {
-        var sanitizer = HtmlSanitizer.SimpleHtml5Sanitizer();
-        _ = sanitizer.AllowCss("table");
-        _ = sanitizer.Tag("img")
-           .CheckAttributeUrl("src")
-           .AllowAttributes("height")
-           .AllowAttributes("width")
-           .AllowAttributes("alt");
-        _ = sanitizer
-            .Tag("iframe")
-            .SanitizeAttributes("src", AllowWhiteListedIframeDomains.Default)
-            .AllowAttributes("height")
-            .AllowAttributes("width")
-            .AllowAttributes("frameborder");
-
-        sanitizer.Tags("hr", "blockquote", "s", "pre", "code", "table", "thead", "tbody", "tr", "td", "th");
-
-        return sanitizer;
+#pragma warning disable CS0618 // JoinHtmlSanitizerLocator — временный механизм связи для статических вызовов
+        return JoinHtmlSanitizerLocator.GetRemoveAllSanitizer();
+#pragma warning restore CS0618
     }
 
-    private static HtmlSanitizer InitTelegramSanitizer()
+    /// <returns>An instance of <see cref="IJoinTelegramHtmlSanitizer"/> which has to be disposed right after use.</returns>
+    public static IJoinTelegramHtmlSanitizer GetTelegram()
     {
-        var htmlSanitizer = new HtmlSanitizer
-        {
-            WhiteListMode = true
-        };
-        htmlSanitizer.Tags("b", "strong", "i", "em", "u", "ins", "s", "strike", "del").RemoveEmpty();
-
-        htmlSanitizer.Tag("a").SetAttribute("target", "_blank").SetAttribute("rel", "nofollow")
-            .CheckAttributeUrl("href")
-            .RemoveEmpty()
-            .NoAttributes(SanitizerOperation.FlattenTag);
-
-
-        htmlSanitizer.Tags("code", "pre", "blockquote").RemoveEmpty();
-
-        htmlSanitizer.Tags("p", "div", "span", "ul", "ol", "li").Flatten();
-
-        return htmlSanitizer;
-    }
-
-
-    private class AllowWhiteListedIframeDomains : UrlCheckerAttributeSanitizer
-    {
-        private AllowWhiteListedIframeDomains() { }
-        public static AllowWhiteListedIframeDomains Default { get; private set; } = new AllowWhiteListedIframeDomains();
-
-        protected override bool AttributeUrlCheck(HtmlAttribute attribute)
-        {
-            var baseResult = base.AttributeUrlCheck(attribute);
-            if (!baseResult)
-            {
-                return false;
-            }
-
-            if (attribute.Value.StartsWith("https://music.yandex.ru/iframe/")
-                || attribute.Value.StartsWith("https://www.youtube.com/embed/")
-                || attribute.Value.StartsWith("https://ok.ru/videoembed/")
-                )
-            {
-                return true;
-            }
-
-            return false;
-        }
+#pragma warning disable CS0618 // JoinHtmlSanitizerLocator — временный механизм связи для статических вызовов
+        return JoinHtmlSanitizerLocator.GetTelegramSanitizer();
+#pragma warning restore CS0618
     }
 }
-
-
