@@ -4,6 +4,9 @@
 
 ## Не выпущено
 
+### Добавлено
+- При логине claims из `connect/user_info` мёржатся в principal (best effort): ник, аватар и другие данные IdPortal доступны в `IJoinUserLoginHandler.HandleLoginAsync` без сервисных вызовов.
+
 ### Изменено
 - `AddJoinDataProtection()` — health check БД ключей Data Protection (регистрируется через `AddJoinEfCoreDbContext`) по умолчанию помечается тегом `ready` и включается в readiness-пробу `/health/ready`. ([#6173](https://github.com/joinrpg/joinrpg-net/pull/6173))
 

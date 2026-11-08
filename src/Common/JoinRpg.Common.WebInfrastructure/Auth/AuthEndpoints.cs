@@ -28,6 +28,7 @@ public static class AuthEndpoints
         endpoints.MapGet("/signin-joinrpg", async (
             HttpContext context,
             IJoinUserLoginHandler loginHandler,
+            LoginPrincipalEnricher enricher,
             ILoggerFactory loggerFactory,
             CancellationToken cancellationToken) =>
         {
@@ -42,7 +43,7 @@ public static class AuthEndpoints
                     statusCode: StatusCodes.Status401Unauthorized);
             }
 
-            var externalPrincipal = result.Principal!;
+            var externalPrincipal = await enricher.EnrichAsync(result.Principal!, result.Properties, cancellationToken);
 
             var sub = externalPrincipal.FindFirstValue("sub");
             if (sub is null || !UserIdentification.TryParse(sub, provider: null, out var userId))

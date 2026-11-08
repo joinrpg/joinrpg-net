@@ -97,6 +97,8 @@ app.MapAuthEndpoints();
 }
 ```
 
+При логине всегда (best effort) дополнительно вызывается `{Issuer}connect/user_info` с access token, и все скалярные свойства ответа мёржатся как claims во внешний principal, передаваемый в `IJoinUserLoginHandler.HandleLoginAsync`. Сбой или таймаут (5 с) не прерывают логин — только warning в лог, principal остаётся исходным.
+
 Получить id пользователя из текущего `ClaimsPrincipal`: `user.GetJoinrpgUserId()`.
 
 ### 4. Middleware pipeline

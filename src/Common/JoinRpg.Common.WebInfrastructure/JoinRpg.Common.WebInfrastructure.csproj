@@ -30,6 +30,10 @@
     </ItemGroup>
 
     <ItemGroup>
+        <InternalsVisibleTo Include="JoinRpg.Common.WebInfrastructure.Test" />
+    </ItemGroup>
+
+    <ItemGroup>
         <ProjectReference Include="..\JoinRpg.Common.PrimitiveTypes\JoinRpg.Common.PrimitiveTypes.csproj" />
         <ProjectReference Include="..\JoinRpg.Common.EntityFrameworkCore\JoinRpg.Common.EntityFrameworkCore.csproj" />
         <ProjectReference Include="..\JoinRpg.Common.WebInfrastructure.Interfaces\JoinRpg.Common.WebInfrastructure.Interfaces.csproj" />

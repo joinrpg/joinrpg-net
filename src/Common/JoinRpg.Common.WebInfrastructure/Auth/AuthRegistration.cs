@@ -32,6 +32,17 @@ public static class AuthRegistration
         var oidcOptions = configuration.GetSection("JoinRpgOidc").Get<JoinRpgOidcOptions>()
             ?? throw new InvalidOperationException("JoinRpgOidc configuration section is required");
 
+        services.AddSingleton(oidcOptions);
+
+        services.AddHttpClient<UserInfoClient>((serviceProvider, client) =>
+        {
+            var oidc = serviceProvider.GetRequiredService<JoinRpgOidcOptions>();
+            client.BaseAddress = new Uri(oidc.Issuer, "connect/user_info");
+            client.Timeout = TimeSpan.FromSeconds(5);
+        });
+
+        services.AddTransient<LoginPrincipalEnricher>();
+
         services.AddOpenIddict()
             .AddCore(options =>
             {
