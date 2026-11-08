@@ -1,4 +1,10 @@
 #nullable enable
+JoinRpg.Common.WebComponents.JoinInteractiveGate
+JoinRpg.Common.WebComponents.JoinInteractiveGate.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment!
+JoinRpg.Common.WebComponents.JoinInteractiveGate.ChildContent.set -> void
+JoinRpg.Common.WebComponents.JoinInteractiveGate.JoinInteractiveGate() -> void
+JoinRpg.Common.WebComponents.JoinInteractiveGate.Message.get -> string?
+JoinRpg.Common.WebComponents.JoinInteractiveGate.Message.set -> void
 JoinRpg.Common.WebComponents.JoinMarkdownTextArea.MaxLength.get -> int?
 JoinRpg.Common.WebComponents.JoinMarkdownTextArea.MaxLength.set -> void
 JoinRpg.Common.WebComponents.JoinMarkdownTextArea.ShowCounter.get -> bool
@@ -7,3 +13,4 @@ JoinRpg.Common.WebComponents.JoinTextArea.MaxLength.get -> int?
 JoinRpg.Common.WebComponents.JoinTextArea.MaxLength.set -> void
 JoinRpg.Common.WebComponents.JoinTextArea.ShowCounter.get -> bool
 JoinRpg.Common.WebComponents.JoinTextArea.ShowCounter.set -> void
+~override JoinRpg.Common.WebComponents.JoinInteractiveGate.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
