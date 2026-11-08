@@ -56,6 +56,18 @@ public class JoinTextAreaTest
     }
 
     [Fact]
+    public void Counter_StartsFromZero_WhenValueNull()
+    {
+        using var ctx = NewContext();
+        var cut = ctx.Render<JoinTextArea>(p => p
+            .Add(x => x.Value, null)
+            .Add(x => x.MaxLength, 3000)
+            .Add(x => x.ShowCounter, true));
+
+        cut.Find(".text-muted").TextContent.ShouldBe("0/3000");
+    }
+
+    [Fact]
     public void Counter_UpdatesOnInput()
     {
         using var ctx = NewContext();

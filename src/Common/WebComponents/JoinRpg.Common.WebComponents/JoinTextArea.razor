@@ -76,7 +76,7 @@
     protected override void OnInitialized()
     {
         internalValue = Value;
-        liveLength = Value.Length;
+        liveLength = Value?.Length ?? 0;
         if (ValueExpression is not null)
         {
             FieldIdentifier = FieldIdentifier.Create(ValueExpression);
