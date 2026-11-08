@@ -29,8 +29,8 @@ namespace JoinRpg.Common.WebInfrastructure;
 /// <c>ForwardLimit = 1</c>): <c>none</c>, <c>http</c>, <c>https</c>, <c>other</c>.</item>
 /// <item><c>host.kind</c> — Host запроса: <c>ip</c> (IP-литерал, с портом или без), <c>name</c>
 /// (доменное имя), <c>none</c> (Host пустой).</item>
-/// <item><c>scheme</c> — итоговый <c>Request.Scheme</c> после ForwardedHeaders: <c>http</c>, <c>https</c>,
-/// <c>other</c>.</item>
+/// <item><c>scheme</c> — итоговый <c>Request.Scheme</c> после ForwardedHeaders и нормализации wss/ws → https/http:
+/// <c>http</c>, <c>https</c>, <c>other</c> (сырое значение X-Forwarded-Proto видно в теге <c>xfp</c>).</item>
 /// </list>
 /// <para>Как читать сочетания:</para>
 /// <list type="bullet">

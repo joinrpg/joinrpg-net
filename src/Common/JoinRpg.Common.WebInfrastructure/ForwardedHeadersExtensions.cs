@@ -35,13 +35,16 @@ public static class ForwardedHeadersExtensions
     /// </summary>
     /// <remarks>
     /// <para>
-    /// Сразу за ForwardedHeaders считается метрика <see cref="PrivateNetworkRequestMetrics"/> —
-    /// она ловит неправильную настройку ForwardedHeaders.
+    /// Сразу за ForwardedHeaders схема нормализуется (wss/ws → https/http, см. ниже), затем считается
+    /// метрика <see cref="PrivateNetworkRequestMetrics"/> — она ловит неправильную настройку ForwardedHeaders.
     /// </para>
     /// <para>
     /// Затем — редирект http → https (307) и HSTS (вне Development). Схему запроса знаем из X-Forwarded-Proto,
-    /// поэтому редирект стоит после ForwardedHeaders. Служебные пути (/health*, /metrics) не редиректятся:
-    /// kubelet и Prometheus ходят на под по http. Отключается настройкой <see cref="JoinHttpsRedirectionOptions.Enabled"/>.
+    /// поэтому редирект стоит после ForwardedHeaders. Traefik шлёт X-Forwarded-Proto: wss для WebSocket-апгрейдов
+    /// (traefik/traefik#6388), а UseHttpsRedirection редиректит всё, что не распознал как https, — без
+    /// нормализации редирект 307 рвал бы WebSocket-handshake. Служебные пути (/health*, /metrics)
+    /// не редиректятся: kubelet и Prometheus ходят на под по http. Отключается настройкой
+    /// <see cref="JoinHttpsRedirectionOptions.Enabled"/>.
     /// </para>
     /// </remarks>
     internal static IServiceCollection AddJoinForwardedHeaders(this IServiceCollection services, IWebHostEnvironment environment)
@@ -93,6 +96,23 @@ public static class ForwardedHeadersExtensions
             });
 
             _ = app.UseForwardedHeaders();
+
+            _ = app.Use((context, nextMiddleware) =>
+            {
+                // Traefik для WebSocket-апгрейдов шлёт X-Forwarded-Proto: wss (traefik/traefik#6388).
+                // UseHttpsRedirection ниже редиректит всё, что не распознал как https, — без нормализации
+                // wss получает редирект 307, которому браузер в WebSocket-handshake не следует,
+                // и SignalR падает с «Failed to start the transport 'WebSockets'».
+                if (string.Equals(context.Request.Scheme, "wss", StringComparison.OrdinalIgnoreCase))
+                {
+                    context.Request.Scheme = "https";
+                }
+                else if (string.Equals(context.Request.Scheme, "ws", StringComparison.OrdinalIgnoreCase))
+                {
+                    context.Request.Scheme = "http";
+                }
+                return nextMiddleware(context);
+            });
 
             _ = app.Use((context, nextMiddleware) =>
             {

@@ -4,6 +4,9 @@
 
 ## Не выпущено
 
+### Исправлено
+- Редирект http → https больше не срабатывает на WebSocket-апгрейдах за Traefik. Traefik шлёт для них `X-Forwarded-Proto: wss` ([traefik/traefik#6388](https://github.com/traefik/traefik/issues/6388)), редирект 307 рвал WebSocket-handshake (браузер редиректам в нём не следует) — интерактивный Blazor/SignalR за Traefik не работал с «Failed to start the transport 'WebSockets'». Схемы `wss`/`ws` нормализуются в `https`/`http` сразу после ForwardedHeaders.
+
 ## 2026.9.651 — 2026-11-07
 
 ### Ломающие изменения

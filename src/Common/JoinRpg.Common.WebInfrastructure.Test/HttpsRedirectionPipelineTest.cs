@@ -43,6 +43,26 @@ public class HttpsRedirectionPipelineTest
         response.Headers.GetValues("Strict-Transport-Security").ShouldBe(["max-age=86400"]);
     }
 
+    [Fact]
+    public async Task ForwardedWssIsNotRedirected()
+    {
+        await using var app = await StartApp(Environments.Production);
+        using var client = CreateClient(app);
+
+        // Как у Traefik для WebSocket-апгрейдов (traefik/traefik#6388): X-Forwarded-Proto: wss.
+        // Редирект для таких запросов рвёт WebSocket-handshake — браузер редиректам в нём не следует
+        using var request = new HttpRequestMessage(HttpMethod.Get, "/_blazor?id=123");
+        request.Headers.Host = PublicHost;
+        request.Headers.Add("X-Forwarded-Proto", "wss");
+        request.Headers.Add("Connection", "Upgrade");
+        request.Headers.Add("Upgrade", "websocket");
+        request.Headers.Add("Sec-WebSocket-Version", "13");
+        request.Headers.Add("Sec-WebSocket-Key", "dGhlIHNhbXBsZSBub25jZQ==");
+        var response = await client.SendAsync(request);
+
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+    }
+
     [Theory]
     [InlineData("/health")]
     [InlineData("/health/live")]
