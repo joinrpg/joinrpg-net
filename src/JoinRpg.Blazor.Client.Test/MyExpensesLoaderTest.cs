@@ -94,6 +94,9 @@ public class MyExpensesLoaderTest : BunitContext
         public Task<IReadOnlyCollection<ExpenseCategoryInfo>> GetCategories(ProjectIdentification projectId)
             => throw new NotSupportedException();
 
+        public Task<IReadOnlyCollection<string>> GetCategoryPathSuggestions(ProjectIdentification projectId)
+            => throw new NotSupportedException();
+
         public Task<bool> CanManageMoney(ProjectIdentification projectId) => throw new NotSupportedException();
 
         public Task<ExpenseIdentification> CreateExpense(ProjectIdentification projectId, ExpenseEditViewModel model)
