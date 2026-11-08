@@ -64,6 +64,9 @@ internal class ExpenseService(
 
         var category = await categoryResolver.ResolveCategoryPath(expenseId.ProjectId, request.CategoryPath);
 
+        var previousPlannedCost = ExpenseCost.Planned(expense.PlannedQuantity, expense.PlannedPrice);
+        var newPlannedCost = ExpenseCost.Planned(request.PlannedQuantity, request.PlannedPrice);
+
         expense.Name = request.Name;
         expense.Description = new MarkdownDbValue(request.Description?.Value);
         expense.MasterId = request.MasterId.Value;
@@ -71,7 +74,11 @@ internal class ExpenseService(
         expense.CategoryPathIds = category.PathIds;
         expense.PlannedQuantity = request.PlannedQuantity;
         expense.PlannedPrice = request.PlannedPrice;
-        expense.State = ExpenseState.Proposed;
+        // Одобрение сохраняем, только если план не вырос: уменьшение или та же сумма
+        // денежную сторону не меняют. Иначе согласование требуется заново.
+        expense.State = expense.State == ExpenseState.Approved && newPlannedCost <= previousPlannedCost
+            ? ExpenseState.Approved
+            : ExpenseState.Proposed;
         EntityAudit.MarkChanged(expense, DateTime.UtcNow, currentUserAccessor.UserId);
         await unitOfWork.SaveChangesAsync();
         logger.LogInformation(
@@ -87,9 +94,9 @@ internal class ExpenseService(
         var expense = await LoadExpense(expenseId);
         RequestOwnExpenseAccess(projectInfo, expense);
 
-        var plannedCost = expense.PlannedQuantity * expense.PlannedPrice;
-        var previousActual = expense.ActualQuantity is { } quantity && expense.ActualPrice is { } price ? quantity * price : (int?)null;
-        var newCost = request.ActualQuantity * request.ActualPrice;
+        var plannedCost = ExpenseCost.Planned(expense.PlannedQuantity, expense.PlannedPrice);
+        var previousActual = ExpenseCost.Actual(expense.ActualQuantity, expense.ActualPrice);
+        var newCost = ExpenseCost.Planned(request.ActualQuantity, request.ActualPrice);
 
         expense.ActualQuantity = request.ActualQuantity;
         expense.ActualPrice = request.ActualPrice;
