@@ -6,7 +6,6 @@ namespace JoinRpg.Common.WebInfrastructure.Auth;
 
 internal sealed class LoginPrincipalEnricher(
     UserInfoClient userInfoClient,
-    JoinRpgOidcOptions options,
     ILogger<LoginPrincipalEnricher> logger)
 {
     public async Task<ClaimsPrincipal> EnrichAsync(
@@ -14,11 +13,6 @@ internal sealed class LoginPrincipalEnricher(
         AuthenticationProperties properties,
         CancellationToken cancellationToken)
     {
-        if (!options.FetchUserInfo)
-        {
-            return principal;
-        }
-
         var token = properties.GetTokenValue("access_token");
         if (token is null)
         {

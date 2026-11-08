@@ -12,25 +12,11 @@ namespace JoinRpg.Common.WebInfrastructure.Test.Auth;
 public class LoginPrincipalEnricherTests
 {
     [Fact]
-    public async Task EnrichAsync_Disabled_NoRequest()
-    {
-        var handler = new StubHttpMessageHandler(_ => JsonResponse("""{"preferred_username":"nick"}"""));
-        var enricher = CreateEnricher(handler, fetchUserInfo: false);
-        var principal = CreatePrincipal();
-        var properties = CreatePropertiesWithToken();
-
-        var result = await enricher.EnrichAsync(principal, properties, CancellationToken.None);
-
-        result.ShouldBeSameAs(principal);
-        handler.RequestCount.ShouldBe(0);
-    }
-
-    [Fact]
     public async Task EnrichAsync_MergesClaims()
     {
         var handler = new StubHttpMessageHandler(
             _ => JsonResponse("""{"sub":"1","preferred_username":"nick","picture":"url"}"""));
-        var enricher = CreateEnricher(handler, fetchUserInfo: true);
+        var enricher = CreateEnricher(handler);
         var principal = CreatePrincipal();
         var properties = CreatePropertiesWithToken();
 
@@ -46,7 +32,7 @@ public class LoginPrincipalEnricherTests
     {
         var handler = new StubHttpMessageHandler(
             _ => JsonResponse("""{"preferred_username":"nick"}"""));
-        var enricher = CreateEnricher(handler, fetchUserInfo: true);
+        var enricher = CreateEnricher(handler);
         var principal = CreatePrincipal();
         var properties = CreatePropertiesWithToken();
 
@@ -61,7 +47,7 @@ public class LoginPrincipalEnricherTests
     {
         var handler = new StubHttpMessageHandler(
             _ => new HttpResponseMessage(HttpStatusCode.InternalServerError));
-        var enricher = CreateEnricher(handler, fetchUserInfo: true);
+        var enricher = CreateEnricher(handler);
         var principal = CreatePrincipal();
         var properties = CreatePropertiesWithToken();
 
@@ -76,7 +62,7 @@ public class LoginPrincipalEnricherTests
     {
         var handler = new StubHttpMessageHandler(
             _ => JsonResponse("""{"preferred_username":"nick"}"""));
-        var enricher = CreateEnricher(handler, fetchUserInfo: true);
+        var enricher = CreateEnricher(handler);
         var principal = CreatePrincipal();
         var properties = new AuthenticationProperties();
 
@@ -86,10 +72,9 @@ public class LoginPrincipalEnricherTests
         handler.RequestCount.ShouldBe(0);
     }
 
-    private static LoginPrincipalEnricher CreateEnricher(StubHttpMessageHandler handler, bool fetchUserInfo)
+    private static LoginPrincipalEnricher CreateEnricher(StubHttpMessageHandler handler)
         => new(
             new UserInfoClient(new HttpClient(handler) { BaseAddress = new Uri("https://issuer.example/") }),
-            new JoinRpgOidcOptions { ClientId = "x", FetchUserInfo = fetchUserInfo },
             NullLogger<LoginPrincipalEnricher>.Instance);
 
     private static ClaimsPrincipal CreatePrincipal()

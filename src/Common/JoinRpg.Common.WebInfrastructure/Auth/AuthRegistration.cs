@@ -41,6 +41,8 @@ public static class AuthRegistration
             client.Timeout = TimeSpan.FromSeconds(5);
         });
 
+        services.AddTransient<LoginPrincipalEnricher>();
+
         services.AddOpenIddict()
             .AddCore(options =>
             {
