@@ -1,0 +1,38 @@
+@*
+    Обертка для содержимого WASM-островов, которому нужна работающая Blazor-интерактивность (формы, ввод).
+
+    Пререндеренный остров выглядит живым еще до загрузки WebAssembly, но Blazor в браузере еще не
+    исполняется: клики обрабатывает только делегированный JS (JoinRpg.Common.WebComponents.lib.module.js)
+    и меняет DOM, ничего не зная о состоянии C#. Когда WASM догружается и Blazor забирает остров,
+    источником истины становится состояние C# — и ввод, сделанный до загрузки, тихо стирается:
+    селектор снова показывает «(нет)», форма постит пустые поля.
+
+    Поэтому такое содержимое рендерим только когда рендерер интерактивен, а до этого показываем
+    загрузку: потерять ввод нельзя, если взаимодействовать с ним было нельзя.
+
+    Статические SSR-формы (method="post" + FormName, постинг без JS) гейтить нельзя: они работают
+    благодаря пререндеру. Их интерактивность дополняют нативным постингом полей — см. CheckboxInput.
+*@
+@if (RendererInfo.IsInteractive)
+{
+    @ChildContent
+}
+else if (Message is null)
+{
+    <JoinLoadingMessage />
+}
+else
+{
+    <JoinLoadingMessage Message="@Message" />
+}
+
+@code {
+
+    /// <summary>Содержимое, которое должно попасть на страницу только после загрузки WebAssembly.</summary>
+    [Parameter, EditorRequired]
+    public RenderFragment ChildContent { get; set; } = null!;
+
+    /// <summary>Текст-заглушка на время пререндера. null — стандартный текст <see cref="JoinLoadingMessage"/>.</summary>
+    [Parameter]
+    public string? Message { get; set; }
+}
