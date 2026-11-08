@@ -4,6 +4,10 @@
 
 ## Не выпущено
 
+### Ломающие изменения
+- Удалён `NumberInput` — заменён на `JoinInputNumber<TValue>`. Переход: использовать `JoinInputNumber<TValue>`. ([#6138](https://github.com/joinrpg/joinrpg-net/issues/6138))
+- `JoinInputNumber<TValue>` переписан — больше не наследует `InputNumber<TValue>`; дефолтное сообщение об ошибке парсинга — русское «Укажите число» (был английский ресурс `InputNumber`). Переход: не рассчитывать на члены базового `InputNumber<TValue>`; своё сообщение — параметром `ParsingErrorMessage`. ([#6136](https://github.com/joinrpg/joinrpg-net/issues/6136))
+
 ### Добавлено
 - `JoinTextInput`: параметр `Variants` — варианты значений для подсказки ввода (datalist). ([#6156](https://github.com/joinrpg/joinrpg-net/pull/6156))
 
