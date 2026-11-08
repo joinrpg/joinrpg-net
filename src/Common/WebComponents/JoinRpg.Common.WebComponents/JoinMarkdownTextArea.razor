@@ -6,7 +6,7 @@
 @* Иначе Blazor склеит текст подсказки со ссылкой и тегами. *@
 @preservewhitespace true
 
-<JoinTextArea Value="@Value" ValueChanged="@ValueChanged" ValueExpression="@ValueExpression" Rows="@Rows" Placeholder="@Placeholder" @attributes="AdditionalAttributes" />
+<JoinTextArea Value="@Value" ValueChanged="@ValueChanged" ValueExpression="@ValueExpression" Rows="@Rows" Placeholder="@Placeholder" MaxLength="@MaxLength" ShowCounter="@ShowCounter" @attributes="AdditionalAttributes" />
 <div class="help-block">Можно использовать <a href="https://commonmark.org/help/" target="_blank">Markdown</a> (**<b>полужирный</b>**, _<i>курсив</i>_)</div>
 
 @code {
@@ -25,6 +25,14 @@
 
     [Parameter]
     public string? Placeholder { get; set; }
+
+    /// <summary>Maximum text length; when set, the <c>maxlength</c> attribute is rendered on the textarea.</summary>
+    [Parameter]
+    public int? MaxLength { get; set; }
+
+    /// <summary>When true (and <see cref="MaxLength"/> is set), shows a small muted counter «current/maximum» under the field.</summary>
+    [Parameter]
+    public bool ShowCounter { get; set; }
 
     [Parameter(CaptureUnmatchedValues = true)]
     public Dictionary<string, object>? AdditionalAttributes { get; set; }

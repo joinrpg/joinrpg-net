@@ -3,10 +3,10 @@
 
 <div style="position: relative; display: block;">
     <textarea @ref="textareaRef" id="@inputId" name="@FieldIdentifier.FieldName" rows="@Rows"
-              class="form-control" placeholder="@Placeholder"
+              class="form-control" placeholder="@Placeholder" maxlength="@MaxLength"
               readonly="@ReadOnly"
               style="@(HasCopyButton ? "padding-right: 24px;" : null)"
-              @onchange="UpdateValue" @attributes="AdditionalAttributes">@internalValue</textarea>
+              @onchange="UpdateValue" @oninput="UpdateCounter" @attributes="AdditionalAttributes">@internalValue</textarea>
     @if (HasCopyButton)
     {
         <button type="button"
@@ -17,6 +17,10 @@
         </button>
     }
 </div>
+@if (ShowCounter && MaxLength is not null)
+{
+    <div class="text-muted small">@liveLength/@MaxLength</div>
+}
 
 @code {
     [CascadingParameter]
@@ -46,6 +50,14 @@
     [Parameter]
     public bool HasCopyButton { get; set; }
 
+    /// <summary>Maximum text length; when set, the <c>maxlength</c> attribute is rendered on the textarea.</summary>
+    [Parameter]
+    public int? MaxLength { get; set; }
+
+    /// <summary>When true (and <see cref="MaxLength"/> is set), shows a small muted counter «current/maximum» under the field.</summary>
+    [Parameter]
+    public bool ShowCounter { get; set; }
+
     [Parameter(CaptureUnmatchedValues = true)]
     public Dictionary<string, object>? AdditionalAttributes { get; set; }
 
@@ -54,6 +66,7 @@
 
     private FieldIdentifier FieldIdentifier { get; set; }
     private string internalValue = "";
+    private int liveLength;
     private ElementReference textareaRef;
     private string? inputId;
 
@@ -63,6 +76,7 @@
     protected override void OnInitialized()
     {
         internalValue = Value;
+        liveLength = Value?.Length ?? 0;
         if (ValueExpression is not null)
         {
             FieldIdentifier = FieldIdentifier.Create(ValueExpression);
@@ -72,12 +86,16 @@
     private async Task UpdateValue(ChangeEventArgs eventArgs)
     {
         internalValue = (string?)eventArgs.Value ?? "";
+        liveLength = internalValue.Length;
         await ValueChanged.InvokeAsync(internalValue);
         if (ValueExpression is not null)
         {
             EditContext?.NotifyFieldChanged(FieldIdentifier);
         }
     }
+
+    private void UpdateCounter(ChangeEventArgs eventArgs)
+        => liveLength = ((string?)eventArgs.Value ?? "").Length;
 
     private async Task CopyToClipboardAsync()
     {
