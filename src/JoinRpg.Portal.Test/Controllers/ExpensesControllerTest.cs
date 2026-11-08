@@ -111,6 +111,56 @@ public class ExpensesControllerTest
     }
 
     [Fact]
+    public async Task CreateWithMoneyRightsApprovesExpenseAfterCreation()
+    {
+        // Финансовый администратор: отдельный вызов ApproveExpense сразу после создания
+        var mock = new MockedProject();
+        var service = new FakeExpenseService();
+        var controller = CreateController(
+            service: service,
+            metadataRepository: new FakeProjectMetadataRepository(mock.ProjectInfo),
+            currentUserId: new UserIdentification(mock.Master.UserId));
+
+        var result = await controller.Create(ProjectId, CreateForm());
+
+        result.Result.ShouldBeOfType<OkObjectResult>().Value
+            .ShouldBe(new ExpenseIdentification(ProjectId, 42));
+        _ = service.Created.ShouldBeOfType<(ProjectIdentification, CreateExpenseRequest)>();
+        var approved = service.Approved.ShouldBeOfType<(ExpenseIdentification, MarkdownString?)>();
+        approved.Item1.ShouldBe(new ExpenseIdentification(ProjectId, 42));
+        approved.Item2.ShouldBeNull();
+    }
+
+    [Fact]
+    public async Task CreateWithoutMoneyRightsLeavesExpenseProposed()
+    {
+        var mock = new MockedProject();
+        var masterWithoutMoney = mock.CreateMaster("Безденежный");
+        mock.Project.ProjectAcls.Single(acl => acl.UserId == masterWithoutMoney.UserId).CanManageMoney = false;
+        mock.ReInitProjectInfo();
+        var service = new FakeExpenseService();
+        var controller = CreateController(
+            service: service,
+            metadataRepository: new FakeProjectMetadataRepository(mock.ProjectInfo),
+            currentUserId: new UserIdentification(masterWithoutMoney.UserId));
+
+        _ = await controller.Create(ProjectId, CreateForm());
+
+        _ = service.Created.ShouldBeOfType<(ProjectIdentification, CreateExpenseRequest)>();
+        service.Approved.ShouldBeNull();
+    }
+
+    private static ExpenseEditViewModel CreateForm()
+        => new()
+        {
+            MasterId = MasterId,
+            Name = "Аренда столов",
+            CategoryPath = "Аренда базы\\Инвентарь",
+            PlannedQuantity = 10,
+            PlannedPrice = 300,
+        };
+
+    [Fact]
     public async Task EditPassesTypedIdAndMapsForm()
     {
         var service = new FakeExpenseService();
@@ -224,6 +274,8 @@ public class ExpensesControllerTest
 
         public object? ActualSet { get; private set; }
 
+        public object? Approved { get; private set; }
+
         public Task<ExpenseIdentification> CreateExpense(ProjectIdentification projectId, CreateExpenseRequest request)
         {
             Created = (projectId, request);
@@ -242,7 +294,12 @@ public class ExpensesControllerTest
             return Task.CompletedTask;
         }
 
-        public Task ApproveExpense(ExpenseIdentification expenseId, MarkdownString? comment) => throw new NotSupportedException();
+        public Task ApproveExpense(ExpenseIdentification expenseId, MarkdownString? comment)
+        {
+            Approved = (expenseId, comment);
+            return Task.CompletedTask;
+        }
+
         public Task RejectExpense(ExpenseIdentification expenseId, MarkdownString? comment) => throw new NotSupportedException();
     }
 

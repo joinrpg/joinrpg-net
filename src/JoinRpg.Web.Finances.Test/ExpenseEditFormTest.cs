@@ -158,6 +158,33 @@ public class ExpenseEditFormTest : BunitContext
     }
 
     [Fact]
+    public void CreateModeDefaultsSpentAtToToday()
+    {
+        var cut = RenderForm(new ExpenseEditViewModel());
+
+        var today = DateOnly.FromDateTime(DateTime.Today).ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture);
+        cut.Find("input[name=SpentAt]").GetAttribute("value").ShouldBe(today);
+    }
+
+    [Fact]
+    public void EditModeKeepsSavedSpentAt()
+    {
+        var model = new ExpenseEditViewModel
+        {
+            ExpenseId = new ExpenseIdentification(new ProjectIdentification(1), 42),
+            Name = "Аренда зала",
+            CategoryPath = "Аренда базы",
+            MasterId = new UserIdentification(1),
+            PlannedPrice = 100,
+            SpentAt = new DateOnly(2026, 2, 15),
+        };
+
+        var cut = RenderForm(model);
+
+        cut.Find("input[name=SpentAt]").GetAttribute("value").ShouldBe("2026-02-15");
+    }
+
+    [Fact]
     public void CancelButtonInvokesCallback()
     {
         var cancelled = false;

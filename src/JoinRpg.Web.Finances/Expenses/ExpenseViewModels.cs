@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using JoinRpg.Common.WebComponents;
 using JoinRpg.DomainTypes.Finances;
 
 namespace JoinRpg.Web.Finances.Expenses;
@@ -39,6 +40,9 @@ public record ExpenseViewModel(
     public int PlannedCost => ExpenseCost.Planned(PlannedQuantity, PlannedPrice);
 
     public int? ActualCost => ExpenseCost.Actual(ActualQuantity, ActualPrice);
+
+    /// <summary>Ссылка на профиль мастера для колонки «Мастер» грида.</summary>
+    public UserLinkViewModel MasterLink => new(MasterId, MasterName, ViewMode.Show);
 }
 
 /// <summary>
