@@ -1,0 +1,183 @@
+@using JoinRpg.Blazor.Client.ApiClients
+@using JoinRpg.DomainTypes.Finances
+@using JoinRpg.Web.Finances.Expenses
+@inject IExpensesClient Client
+@inject ILogger<ExpensesPage> Logger
+
+@* Страница «Расходы»: грид всех расходов проекта с действиями в строках и форма
+   создания/правки. Править можно свои расходы (или любые, с правом на деньги),
+   одобрять/отклонять — только с правом на деньги. *@
+@if (loadError is not null)
+{
+    <JoinAlert Variation="VariationStyleEnum.Danger">@loadError</JoinAlert>
+}
+else if (expenses is null)
+{
+    <JoinLoadingMessage />
+}
+else
+{
+    @if (actionError is not null)
+    {
+        <JoinAlert Variation="VariationStyleEnum.Danger">@actionError</JoinAlert>
+    }
+    <p>
+        <JoinButton Preset="ButtonPreset.Add" Label="Новый расход" Disabled="@(editing is not null)" OnClick="@StartCreate" />
+    </p>
+
+    @if (editing is not null)
+    {
+        <ExpenseEditForm @key="editing.Model" Model="editing.Model" ProjectId="ProjectId" State="editing.State" OnSave="Save" />
+        <p>
+            <JoinButton Label="Отмена" Disabled="@saving" OnClick="@CancelEdit" />
+        </p>
+    }
+
+    <ExpensesGrid Expenses="expenses">
+        <RowActions Context="expense">
+            @if (CanEdit(expense))
+            {
+                <JoinButton Label="Править" Size="SizeStyleEnum.Small" Disabled="@(editing is not null)" OnClick="@(args => StartEdit(expense))" />
+            }
+            @if (CanDecide(expense))
+            {
+                <JoinButton Label="Одобрить" Style="VariationStyleEnum.Success" Size="SizeStyleEnum.Small"
+                            AutoConfirm="true" AutoConfirmMessage="@($"Одобрить расход «{expense.Name}»?")"
+                            OnClick="@(args => Decide(args, expense, Client.ApproveExpense))" />
+                <JoinButton Label="Отклонить" Style="VariationStyleEnum.Danger" Size="SizeStyleEnum.Small"
+                            AutoConfirm="true" AutoConfirmMessage="@($"Отклонить расход «{expense.Name}»?")"
+                            OnClick="@(args => Decide(args, expense, Client.RejectExpense))" />
+            }
+        </RowActions>
+    </ExpensesGrid>
+}
+
+@code {
+    [Parameter, EditorRequired]
+    public ProjectIdentification ProjectId { get; set; } = null!;
+
+    private IReadOnlyList<ExpenseViewModel>? expenses;
+    private HashSet<ExpenseIdentification>? myExpenseIds;
+    private bool canManageMoney;
+    private EditingExpense? editing;
+    private bool saving;
+    private string? loadError;
+    private string? actionError;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            await LoadAll();
+        }
+        catch (Exception exception)
+        {
+            Logger.LogError(exception, "Ошибка загрузки расходов проекта {ProjectId}", ProjectId);
+            loadError = "Не удалось загрузить расходы. Обновите страницу и попробуйте ещё раз.";
+        }
+    }
+
+    private async Task LoadAll()
+    {
+        var expensesTask = Client.GetExpenses(ProjectId);
+        var myExpensesTask = Client.GetMyExpenses(ProjectId);
+        var accessTask = Client.CanManageMoney(ProjectId);
+        await Task.WhenAll(expensesTask, myExpensesTask, accessTask);
+        expenses = expensesTask.Result;
+        myExpenseIds = [.. myExpensesTask.Result.Select(expense => expense.ExpenseId)];
+        canManageMoney = accessTask.Result;
+    }
+
+    // Сервис разрешает править также расходы, созданные текущим пользователем, но понёсшие другого
+    // мастера (MasterId ИЛИ CreatedById); остров показывает «Править» только по MasterId — в ExpenseViewModel
+    // нет CreatedById. Осознанное сокращение, а не баг: не «исправлять» молча.
+    private bool CanEdit(ExpenseViewModel expense)
+        => canManageMoney || (myExpenseIds?.Contains(expense.ExpenseId) ?? false);
+
+    private bool CanDecide(ExpenseViewModel expense)
+        => canManageMoney && expense.State == ExpenseStateView.Proposed;
+
+    private void StartCreate()
+    {
+        actionError = null;
+        editing = new(new ExpenseEditViewModel(), State: null);
+    }
+
+    private void StartEdit(ExpenseViewModel expense)
+    {
+        actionError = null;
+        var model = new ExpenseEditViewModel
+        {
+            ExpenseId = expense.ExpenseId,
+            Name = expense.Name,
+            CategoryPath = expense.CategoryPath,
+            MasterId = expense.MasterId,
+            PlannedQuantity = expense.PlannedQuantity,
+            PlannedPrice = expense.PlannedPrice,
+            ActualQuantity = expense.ActualQuantity,
+            ActualPrice = expense.ActualPrice,
+            SpentAt = expense.SpentAt,
+            Description = expense.Description,
+        };
+        editing = new(model, expense.State);
+    }
+
+    private void CancelEdit() => editing = null;
+
+    private async Task Save(ExpenseEditViewModel model)
+    {
+        actionError = null;
+        saving = true;
+        try
+        {
+            if (model.ExpenseId is { } expenseId)
+            {
+                await Client.EditExpense(expenseId, model);
+            }
+            else
+            {
+                await Client.CreateExpense(ProjectId, model);
+            }
+
+            editing = null;
+            await LoadAll();
+        }
+        catch (ServerProblemException exception)
+        {
+            // Ожидаемый отказ сервиса (нет прав, чужой расход) — текст предназначен мастеру
+            actionError = $"Ошибка: {exception.Message}";
+        }
+        catch (Exception exception)
+        {
+            Logger.LogError(exception, "Ошибка сохранения расхода проекта {ProjectId}", ProjectId);
+            actionError = "Не удалось сохранить расход. Обновите страницу и попробуйте ещё раз.";
+        }
+        finally
+        {
+            saving = false;
+        }
+    }
+
+    private async Task Decide(ButtonClickEventArgs args, ExpenseViewModel expense, Func<ExpenseIdentification, string?, Task> decision)
+    {
+        actionError = null;
+        try
+        {
+            await decision(expense.ExpenseId, null);
+            await LoadAll();
+        }
+        catch (ServerProblemException exception)
+        {
+            actionError = $"Ошибка: {exception.Message}";
+            args.ExitProgressState = true;
+        }
+        catch (Exception exception)
+        {
+            Logger.LogError(exception, "Ошибка согласования расхода {ExpenseId}", expense.ExpenseId);
+            actionError = "Не удалось сохранить решение по расходу. Обновите страницу и попробуйте ещё раз.";
+            args.ExitProgressState = true;
+        }
+    }
+
+    private sealed record EditingExpense(ExpenseEditViewModel Model, ExpenseStateView? State);
+}

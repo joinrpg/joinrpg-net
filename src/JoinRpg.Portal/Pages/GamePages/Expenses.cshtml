@@ -1,0 +1,11 @@
+@page "/{projectId:int}/expenses"
+@using JoinRpg.Blazor.Client.Expenses
+@model JoinRpg.Portal.Pages.GamePages.ExpensesModel
+
+@{
+    ViewData["Title"] = "Расходы";
+}
+
+<h3>@ViewData["Title"]</h3>
+
+@(await Html.RenderComponentAsync<ExpensesPage>(RenderMode.WebAssembly, new { Model.ProjectId }))
