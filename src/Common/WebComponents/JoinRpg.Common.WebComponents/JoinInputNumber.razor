@@ -1,0 +1,144 @@
+@typeparam TValue
+@using System.Globalization
+@using System.Linq.Expressions
+<input type="number" id="@inputId" name="@Name" value="@displayValue" min="@Format(Min)" max="@Format(Max)" @onchange="UpdateValue" @attributes="AdditionalAttributes" />
+
+@code {
+    [CascadingParameter]
+    private EditContext? EditContext { get; set; }
+
+    [CascadingParameter]
+    private FormRowLabelTarget? LabelTarget { get; set; }
+
+    [Parameter]
+    public TValue Value { get; set; } = default!;
+
+    [Parameter]
+    public EventCallback<TValue> ValueChanged { get; set; }
+
+    [Parameter]
+    public Expression<Func<TValue>>? ValueExpression { get; set; }
+
+    [Parameter]
+    public string? Name { get; set; }
+
+    [Parameter]
+    public TValue? Min { get; set; }
+
+    [Parameter]
+    public TValue? Max { get; set; }
+
+    [Parameter]
+    public string ParsingErrorMessage { get; set; } = "Укажите число";
+
+    [Parameter(CaptureUnmatchedValues = true)]
+    public Dictionary<string, object>? AdditionalAttributes { get; set; }
+
+    private string displayValue = "";
+    private string? inputId;
+
+    private FieldIdentifier fieldIdentifier;
+    private ValidationMessageStore? messages;
+
+    protected override void OnParametersSet()
+    {
+        // Перезаписываем отображаемое значение только если значение поменяли снаружи —
+        // иначе не ввести число посимвольно.
+        var value = Format(Value) ?? "";
+        if (value != displayValue)
+        {
+            displayValue = value;
+        }
+        inputId = LabelTarget?.Claim(this, FormRowLabelTarget.ExplicitId(AdditionalAttributes));
+        if (EditContext is not null && messages is null)
+        {
+            messages = new ValidationMessageStore(EditContext);
+        }
+        if (ValueExpression is not null)
+        {
+            fieldIdentifier = FieldIdentifier.Create(ValueExpression);
+        }
+    }
+
+    private async Task UpdateValue(ChangeEventArgs eventArgs)
+    {
+        var raw = (string?)eventArgs.Value;
+        messages?.Clear(fieldIdentifier);
+
+        if (TryParseValue(raw, out var parsed))
+        {
+            displayValue = raw ?? "";
+            await ValueChanged.InvokeAsync(parsed!);
+            NotifyFieldChanged();
+        }
+        else if (IsNullable)
+        {
+            // Непарсабельный ввод у nullable-поля считаем пустым значением
+            displayValue = raw ?? "";
+            await ValueChanged.InvokeAsync(parsed!);
+            NotifyFieldChanged();
+        }
+        else
+        {
+            // Значение не меняем, сырое остаётся в поле, ошибка уходит в EditContext
+            displayValue = raw ?? "";
+            messages?.Add(fieldIdentifier, ParsingErrorMessage);
+        }
+    }
+
+    private void NotifyFieldChanged()
+    {
+        if (ValueExpression is not null)
+        {
+            EditContext?.NotifyFieldChanged(fieldIdentifier);
+        }
+    }
+
+    private static bool IsNullable => Nullable.GetUnderlyingType(typeof(TValue)) is not null;
+
+    private static bool TryParseValue(string? raw, out TValue? result)
+    {
+        var targetType = Nullable.GetUnderlyingType(typeof(TValue)) ?? typeof(TValue);
+        var style = targetType == typeof(float) || targetType == typeof(double) || targetType == typeof(decimal)
+            ? NumberStyles.Number
+            : NumberStyles.Integer;
+        var culture = CultureInfo.InvariantCulture;
+
+        bool success;
+        object? parsed;
+        switch (Type.GetTypeCode(targetType))
+        {
+            case TypeCode.Int32:
+                success = int.TryParse(raw, style, culture, out var intValue);
+                parsed = intValue;
+                break;
+            case TypeCode.Int64:
+                success = long.TryParse(raw, style, culture, out var longValue);
+                parsed = longValue;
+                break;
+            case TypeCode.Int16:
+                success = short.TryParse(raw, style, culture, out var shortValue);
+                parsed = shortValue;
+                break;
+            case TypeCode.Single:
+                success = float.TryParse(raw, style, culture, out var floatValue);
+                parsed = floatValue;
+                break;
+            case TypeCode.Double:
+                success = double.TryParse(raw, style, culture, out var doubleValue);
+                parsed = doubleValue;
+                break;
+            case TypeCode.Decimal:
+                success = decimal.TryParse(raw, style, culture, out var decimalValue);
+                parsed = decimalValue;
+                break;
+            default:
+                throw new InvalidOperationException($"Тип {targetType} не поддерживается.");
+        }
+
+        result = success ? (TValue?)parsed : default;
+        return success;
+    }
+
+    private static string? Format(TValue? value) => value is null ? null : Convert.ToString(value, CultureInfo.InvariantCulture);
+}
