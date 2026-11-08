@@ -78,6 +78,23 @@ public class JoinInputNumberTest
     }
 
     [Fact]
+    public void MinMax_RenderAsAttributes_OnlyWhenSet_ForNonNullableInt()
+    {
+        using var ctx = new BunitContext();
+        var plain = ctx.Render<JoinInputNumber<int>>(p => p.Add(x => x.Value, 0));
+        var plainInput = plain.Find("input");
+        plainInput.HasAttribute("min").ShouldBeFalse();
+        plainInput.HasAttribute("max").ShouldBeFalse();
+
+        var withMin = ctx.Render<JoinInputNumber<int>>(p => p
+            .Add(x => x.Value, 0)
+            .Add(x => x.Min, 0));
+        var withMinInput = withMin.Find("input");
+        withMinInput.GetAttribute("min").ShouldBe("0");
+        withMinInput.HasAttribute("max").ShouldBeFalse();
+    }
+
+    [Fact]
     public void AdditionalAttributes_MinReachesInput()
     {
         using var ctx = new BunitContext();

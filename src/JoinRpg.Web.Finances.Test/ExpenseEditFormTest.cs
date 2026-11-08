@@ -46,6 +46,20 @@ public class ExpenseEditFormTest : BunitContext
     }
 
     [Fact]
+    public void NumberFieldsHaveMinZeroAndNoMax()
+    {
+        var cut = RenderForm(new ExpenseEditViewModel());
+
+        var inputs = cut.FindAll("input[type=number]");
+        inputs.Count.ShouldBe(4); // план и факт: количество и цена
+        foreach (var input in inputs)
+        {
+            input.GetAttribute("min").ShouldBe("0");
+            input.HasAttribute("max").ShouldBeFalse();
+        }
+    }
+
+    [Fact]
     public void CreateModeShowsAddButtonInPanel()
     {
         var cut = RenderForm(new ExpenseEditViewModel());

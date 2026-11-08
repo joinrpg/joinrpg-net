@@ -22,16 +22,16 @@
                     <MasterSelector ProjectId="ProjectId.Value" MasterId="Model.MasterId" MasterIdChanged="OnMasterChanged" />
                 </FormRowFor>
                 <FormRowFor For="@(() => Model.PlannedQuantity)">
-                    <JoinInputNumber @bind-Value="Model.PlannedQuantity" />
+                    <JoinInputNumber @bind-Value="Model.PlannedQuantity" Min="0" />
                 </FormRowFor>
                 <FormRowFor For="@(() => Model.PlannedPrice)">
-                    <JoinInputNumber @bind-Value="Model.PlannedPrice" />
+                    <JoinInputNumber @bind-Value="Model.PlannedPrice" Min="0" />
                 </FormRowFor>
                 <FormRowFor For="@(() => Model.ActualQuantity)">
-                    <JoinInputNumber @bind-Value="Model.ActualQuantity" />
+                    <JoinInputNumber @bind-Value="Model.ActualQuantity" Min="0" />
                 </FormRowFor>
                 <FormRowFor For="@(() => Model.ActualPrice)">
-                    <JoinInputNumber @bind-Value="Model.ActualPrice" />
+                    <JoinInputNumber @bind-Value="Model.ActualPrice" Min="0" />
                 </FormRowFor>
                 <FormRowFor For="@(() => Model.SpentAt)">
                     <InputDate class="form-control" @bind-Value="Model.SpentAt" />
