@@ -34,7 +34,7 @@
                     <JoinInputNumber @bind-Value="Model.ActualPrice" Min="0" />
                 </FormRowFor>
                 <FormRowFor For="@(() => Model.SpentAt)">
-                    <InputDate class="form-control" @bind-Value="Model.SpentAt" />
+                    <JoinRpgDatePicker Name="@nameof(Model.SpentAt)" @bind-Value="Model.SpentAt" />
                 </FormRowFor>
                 <FormRowFor For="@(() => Model.Description)">
                     <JoinMarkdownTextArea @bind-Value="Model.Description" />
