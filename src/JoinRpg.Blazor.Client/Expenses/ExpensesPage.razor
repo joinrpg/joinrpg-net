@@ -21,16 +21,15 @@ else
     {
         <JoinAlert Variation="VariationStyleEnum.Danger">@actionError</JoinAlert>
     }
-    <p>
-        <JoinButton Preset="ButtonPreset.Add" Label="Новый расход" Disabled="@(editing is not null)" OnClick="@StartCreate" />
-    </p>
-
-    @if (editing is not null)
+    @if (editing is null)
     {
-        <ExpenseEditForm @key="editing.Model" Model="editing.Model" ProjectId="ProjectId" State="editing.State" OnSave="Save" />
         <p>
-            <JoinButton Label="Отмена" Disabled="@saving" OnClick="@CancelEdit" />
+            <JoinButton Preset="ButtonPreset.Add" Label="Новый расход" OnClick="@StartCreate" />
         </p>
+    }
+    else
+    {
+        <ExpenseEditForm @key="editing.Model" Model="editing.Model" ProjectId="ProjectId" State="editing.State" OnSave="Save" OnCancel="CancelEdit" />
     }
 
     <ExpensesGrid Expenses="expenses">
@@ -60,7 +59,6 @@ else
     private HashSet<ExpenseIdentification>? myExpenseIds;
     private bool canManageMoney;
     private EditingExpense? editing;
-    private bool saving;
     private string? loadError;
     private string? actionError;
 
@@ -127,7 +125,6 @@ else
     private async Task Save(ExpenseEditViewModel model)
     {
         actionError = null;
-        saving = true;
         try
         {
             if (model.ExpenseId is { } expenseId)
@@ -151,10 +148,6 @@ else
         {
             Logger.LogError(exception, "Ошибка сохранения расхода проекта {ProjectId}", ProjectId);
             actionError = "Не удалось сохранить расход. Обновите страницу и попробуйте ещё раз.";
-        }
-        finally
-        {
-            saving = false;
         }
     }
 
