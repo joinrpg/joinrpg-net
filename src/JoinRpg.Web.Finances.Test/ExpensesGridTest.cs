@@ -41,6 +41,19 @@ public class ExpensesGridTest : BunitContext
     }
 
     [Fact]
+    public void ShowMasterFalseHidesMasterColumn()
+    {
+        var cut = Render<ExpensesGrid>(p => p
+            .Add(x => x.Expenses, SampleExpenses)
+            .Add(x => x.ShowMaster, false));
+
+        cut.Markup.ShouldNotContain("Мастер");
+        cut.Markup.ShouldNotContain("Иван Мастеров");
+        cut.Markup.ShouldContain("Аренда зала");
+        cut.Markup.ShouldContain("2 × 1500 = 3000 ₽");
+    }
+
+    [Fact]
     public void RowActionsRenderedForEachRow()
     {
         var cut = Render<ExpensesGrid>(p => p
