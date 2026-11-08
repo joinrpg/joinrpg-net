@@ -46,6 +46,10 @@ JoinRpg.Common.WebComponents.JoinInputNumber<TValue>.ValueChanged.get -> Microso
 JoinRpg.Common.WebComponents.JoinInputNumber<TValue>.ValueChanged.set -> void
 JoinRpg.Common.WebComponents.JoinInputNumber<TValue>.ValueExpression.get -> System.Linq.Expressions.Expression<System.Func<TValue>!>?
 JoinRpg.Common.WebComponents.JoinInputNumber<TValue>.ValueExpression.set -> void
+JoinRpg.Common.WebComponents.JoinMarkdownTextArea.MaxLength.get -> int?
+JoinRpg.Common.WebComponents.JoinMarkdownTextArea.MaxLength.set -> void
+JoinRpg.Common.WebComponents.JoinMarkdownTextArea.ShowCounter.get -> bool
+JoinRpg.Common.WebComponents.JoinMarkdownTextArea.ShowCounter.set -> void
 JoinRpg.Common.WebComponents.JoinTextArea.MaxLength.get -> int?
 JoinRpg.Common.WebComponents.JoinTextArea.MaxLength.set -> void
 JoinRpg.Common.WebComponents.JoinTextArea.ShowCounter.get -> bool
