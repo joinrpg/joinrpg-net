@@ -22,11 +22,13 @@ public class GetUserInfoMethodTest
         string? surName = "Иванов",
         string? fatherName = null,
         string? phoneNumber = null,
-        AvatarIdentification? selectedAvatarId = null)
+        AvatarIdentification? selectedAvatarId = null,
+        TelegramSocialLink? telegram = null,
+        DateOnly? birthDate = null)
     {
         return new UserInfo(
             UserId: UserId1,
-            Social: new UserSocialNetworks(null, null, null, null, ContactsAccessType.OnlyForMasters),
+            Social: new UserSocialNetworks(telegram, null, null, null, ContactsAccessType.OnlyForMasters),
             ActiveClaims: [],
             ActiveProjects: [],
             AllProjects: [],
@@ -37,7 +39,8 @@ public class GetUserInfoMethodTest
             UserFullName: new UserFullName(null, BornName.FromOptional(bornName), SurName.FromOptional(surName), FatherName.FromOptional(fatherName)),
             VerifiedProfileFlag: false,
             PhoneNumber: phoneNumber,
-            HasPassword: false);
+            HasPassword: false,
+            BirthDate: birthDate);
     }
 
     private static IOptions<JoinRpgHostNamesOptions> DefaultOptions => Options.Create(new JoinRpgHostNamesOptions
@@ -186,5 +189,51 @@ public class GetUserInfoMethodTest
             avatarUrl: avatarUrl);
         dict.ShouldContainKey(OpenIddictConstants.Claims.Picture);
         dict[OpenIddictConstants.Claims.Picture].ShouldBe(new Uri(avatarUrl));
+    }
+
+    [Fact]
+    public async Task WithProfileScope_ReturnsTelegramAndBirthdate()
+    {
+        var telegram = new TelegramSocialLink(new TelegramChatId(123456789), new PrefferedName("ivan_petrov"), isVerified: true);
+        var dict = await GetOkResult(
+            BuildPrincipal(UserId1.ToString(), OpenIddictConstants.Scopes.Profile),
+            BuildUserInfo(telegram: telegram, birthDate: new DateOnly(1985, 4, 12)));
+        dict["telegram"].ShouldBe("ivan_petrov");
+        dict["telegram_chat_id"].ShouldBe(123456789L);
+        dict["birthdate"].ShouldBe("1985-04-12");
+    }
+
+    [Fact]
+    public async Task WithProfileScope_UnverifiedTelegram_NoChatId()
+    {
+        var telegram = new TelegramSocialLink(null, new PrefferedName("ivan_petrov"));
+        var dict = await GetOkResult(
+            BuildPrincipal(UserId1.ToString(), OpenIddictConstants.Scopes.Profile),
+            BuildUserInfo(telegram: telegram));
+        dict["telegram"].ShouldBe("ivan_petrov");
+        dict.ShouldNotContainKey("telegram_chat_id");
+    }
+
+    [Fact]
+    public async Task WithProfileScope_NoTelegramNoBirthdate_NoExtraClaims()
+    {
+        var dict = await GetOkResult(
+            BuildPrincipal(UserId1.ToString(), OpenIddictConstants.Scopes.Profile),
+            BuildUserInfo());
+        dict.ShouldNotContainKey("telegram");
+        dict.ShouldNotContainKey("telegram_chat_id");
+        dict.ShouldNotContainKey("birthdate");
+    }
+
+    [Fact]
+    public async Task WithoutProfileScope_NoTelegramAndBirthdate()
+    {
+        var telegram = new TelegramSocialLink(new TelegramChatId(123456789), new PrefferedName("ivan_petrov"), isVerified: true);
+        var dict = await GetOkResult(
+            BuildPrincipal(UserId1.ToString()),
+            BuildUserInfo(telegram: telegram, birthDate: new DateOnly(1985, 4, 12)));
+        dict.ShouldNotContainKey("telegram");
+        dict.ShouldNotContainKey("telegram_chat_id");
+        dict.ShouldNotContainKey("birthdate");
     }
 }

@@ -1,4 +1,5 @@
 using System.Collections.Immutable;
+using System.Globalization;
 using System.Security.Claims;
 using System.Security.Cryptography.X509Certificates;
 using Joinrpg.Web.Identity;
@@ -226,6 +227,21 @@ public static class OAuthServerRegistration
             claims[Claims.GivenName] = userInfo.UserFullName.BornName?.Value;
             claims[Claims.FamilyName] = userInfo.UserFullName.SurName?.Value;
             claims[Claims.MiddleName] = userInfo.UserFullName.FatherName?.Value;
+
+            if (userInfo.Social.Telegram?.PrettyName is { } prettyName)
+            {
+                claims["telegram"] = prettyName.Value;
+            }
+
+            if (userInfo.Social.Telegram is { IsVerified: true, ChatId: { } chatId })
+            {
+                claims["telegram_chat_id"] = chatId.Value;
+            }
+
+            if (userInfo.BirthDate is { } birthDate)
+            {
+                claims[Claims.Birthdate] = birthDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+            }
 
             if (userInfo.SelectedAvatarId is not null)
             {
