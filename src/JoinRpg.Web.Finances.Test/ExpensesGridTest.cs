@@ -25,6 +25,15 @@ public class ExpensesGridTest : BunitContext
     }
 
     [Fact]
+    public void SpentAtColumnHeaderIsDate()
+    {
+        var cut = RenderGrid();
+
+        cut.Markup.ShouldNotContain("Дата факта");
+        cut.FindAll("th").ShouldContain(header => header.TextContent.Trim() == "Дата");
+    }
+
+    [Fact]
     public void EmptyListShowsPlaceholder()
     {
         var cut = Render<ExpensesGrid>(p => p.Add(x => x.Expenses, []));

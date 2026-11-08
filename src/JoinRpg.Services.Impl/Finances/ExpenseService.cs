@@ -32,6 +32,7 @@ internal class ExpenseService(
             CategoryPathIds = category.PathIds,
             PlannedQuantity = request.PlannedQuantity,
             PlannedPrice = request.PlannedPrice,
+            SpentAt = request.SpentAt?.ToDateTime(TimeOnly.MinValue),
             State = ExpenseState.Proposed,
         };
         EntityAudit.MarkCreated(expense, now, currentUserAccessor.UserId);
@@ -74,6 +75,7 @@ internal class ExpenseService(
         expense.CategoryPathIds = category.PathIds;
         expense.PlannedQuantity = request.PlannedQuantity;
         expense.PlannedPrice = request.PlannedPrice;
+        expense.SpentAt = request.SpentAt?.ToDateTime(TimeOnly.MinValue);
         // Одобрение сохраняем, только если план не вырос: уменьшение или та же сумма
         // денежную сторону не меняют. Иначе согласование требуется заново.
         expense.State = expense.State == ExpenseState.Approved && newPlannedCost <= previousPlannedCost

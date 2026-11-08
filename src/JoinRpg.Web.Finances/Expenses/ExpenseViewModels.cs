@@ -78,7 +78,7 @@ public class ExpenseEditViewModel
     [Range(1, int.MaxValue, ErrorMessage = "Фактическая цена должна быть больше нуля")]
     public int? ActualPrice { get; set; }
 
-    [Display(Name = "Дата траты")]
+    [Display(Name = "Дата")]
     public DateOnly? SpentAt { get; set; }
 
     [Display(Name = "Описание")]

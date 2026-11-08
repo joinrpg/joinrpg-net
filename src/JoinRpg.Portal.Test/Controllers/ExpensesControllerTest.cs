@@ -83,6 +83,7 @@ public class ExpensesControllerTest
     {
         var service = new FakeExpenseService();
         var controller = CreateController(service: service);
+        var spentAt = new DateOnly(2026, 2, 15);
         var form = new ExpenseEditViewModel
         {
             MasterId = MasterId,
@@ -90,6 +91,7 @@ public class ExpensesControllerTest
             CategoryPath = "Аренда базы\\Инвентарь",
             PlannedQuantity = 10,
             PlannedPrice = 300,
+            SpentAt = spentAt,
             Description = "описание",
         };
 
@@ -104,6 +106,7 @@ public class ExpensesControllerTest
         request.Item2.CategoryPath.ShouldBe("Аренда базы\\Инвентарь");
         request.Item2.PlannedQuantity.ShouldBe(10);
         request.Item2.PlannedPrice.ShouldBe(300);
+        request.Item2.SpentAt.ShouldBe(spentAt);
         request.Item2.Description.ShouldBe(new MarkdownString("описание"));
     }
 
@@ -112,6 +115,7 @@ public class ExpensesControllerTest
     {
         var service = new FakeExpenseService();
         var controller = CreateController(service: service);
+        var spentAt = new DateOnly(2026, 3, 1);
         var form = new ExpenseEditViewModel
         {
             ExpenseId = new ExpenseIdentification(ProjectId, 7),
@@ -120,6 +124,7 @@ public class ExpensesControllerTest
             CategoryPath = "Аренда базы\\Инвентарь",
             PlannedQuantity = 12,
             PlannedPrice = 350,
+            SpentAt = spentAt,
             Description = "новое описание",
         };
 
@@ -133,6 +138,7 @@ public class ExpensesControllerTest
         edited.Request.CategoryPath.ShouldBe("Аренда базы\\Инвентарь");
         edited.Request.PlannedQuantity.ShouldBe(12);
         edited.Request.PlannedPrice.ShouldBe(350);
+        edited.Request.SpentAt.ShouldBe(spentAt);
         edited.Request.Description.ShouldBe(new MarkdownString("новое описание"));
     }
 
