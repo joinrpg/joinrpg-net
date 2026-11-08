@@ -4,6 +4,8 @@
 
 ## Не выпущено
 
+## 2026.9.668 — 2026-11-08
+
 ### Ломающие изменения
 - Удалён `NumberInput` — заменён на `JoinInputNumber<TValue>`. Переход: использовать `JoinInputNumber<TValue>`. ([#6166](https://github.com/joinrpg/joinrpg-net/pull/6166))
 - `JoinInputNumber<TValue>` переписан — больше не наследует `InputNumber<TValue>`; дефолтное сообщение об ошибке парсинга — русское «Укажите число» (был английский ресурс `InputNumber`); поле больше не получает Bootstrap-класс `form-control` (оформление — собственный scoped CSS, компонент работает без Bootstrap). Переход: не рассчитывать на члены базового `InputNumber<TValue>`; своё сообщение — параметром `ParsingErrorMessage`. ([#6166](https://github.com/joinrpg/joinrpg-net/pull/6166))

@@ -7,6 +7,8 @@
 ### Изменено
 - `AddJoinDataProtection()` — health check БД ключей Data Protection (регистрируется через `AddJoinEfCoreDbContext`) по умолчанию помечается тегом `ready` и включается в readiness-пробу `/health/ready`. ([#6173](https://github.com/joinrpg/joinrpg-net/pull/6173))
 
+## 2026.9.668 — 2026-11-08
+
 ### Добавлено
 - `AddJoinHtmlSanitizers()` (вызывается автоматически из `AddJoinWebPlatform`): transient-регистрации контрактов-санитайзеров из `JoinRpg.Common.WebInfrastructure.Interfaces` поверх пула `ObjectPool` — Dispose возвращает экземпляр в пул. Санитайзеры переехали из `JoinRpg.Markdown`. ([#6164](https://github.com/joinrpg/joinrpg-net/pull/6164))
 
