@@ -43,7 +43,16 @@ public class ExpenseEditFormTest : BunitContext
         cut.Find("input[type=date]");
         cut.Find("textarea");
         cut.Find("details.join-select"); // селектор мастера
-        cut.Markup.ShouldContain("Сохранить");
+    }
+
+    [Fact]
+    public void CreateModeShowsAddButtonInPanel()
+    {
+        var cut = RenderForm(new ExpenseEditViewModel());
+
+        cut.Markup.ShouldContain("Новый расход"); // заголовок панели
+        cut.Markup.ShouldContain("Добавить");
+        cut.Markup.ShouldNotContain("Сохранить");
     }
 
     [Fact]
@@ -115,11 +124,25 @@ public class ExpenseEditFormTest : BunitContext
         var cut = RenderForm(model, state: ExpenseStateView.Rejected, onSave: savedModel => saved = savedModel);
 
         cut.Markup.ShouldContain("Отклонён");
+        cut.Markup.ShouldContain("Редактирование расхода");
+        cut.Markup.ShouldContain("Сохранить");
+        cut.Markup.ShouldNotContain("Добавить");
 
         cut.Find("form").Submit();
 
         saved.ShouldNotBeNull();
         saved.ExpenseId.ShouldBe(new ExpenseIdentification(new ProjectIdentification(1), 42));
+    }
+
+    [Fact]
+    public void CancelButtonInvokesCallback()
+    {
+        var cancelled = false;
+        var cut = RenderForm(new ExpenseEditViewModel(), onCancel: () => cancelled = true);
+
+        cut.FindAll("button").Single(button => button.TextContent.Trim() == "Отменить").Click();
+
+        cancelled.ShouldBeTrue();
     }
 
     private static void SelectMaster(IRenderedComponent<ExpenseEditForm> cut, string displayName)
@@ -132,12 +155,14 @@ public class ExpenseEditFormTest : BunitContext
     private IRenderedComponent<ExpenseEditForm> RenderForm(
         ExpenseEditViewModel model,
         ExpenseStateView? state = null,
-        Action<ExpenseEditViewModel>? onSave = null)
+        Action<ExpenseEditViewModel>? onSave = null,
+        Action? onCancel = null)
         => Render<ExpenseEditForm>(p => p
             .Add(x => x.Model, model)
             .Add(x => x.ProjectId, ProjectId)
             .Add(x => x.State, state)
-            .Add(x => x.OnSave, EventCallback.Factory.Create<ExpenseEditViewModel>(this, savedModel => onSave?.Invoke(savedModel))));
+            .Add(x => x.OnSave, EventCallback.Factory.Create<ExpenseEditViewModel>(this, savedModel => onSave?.Invoke(savedModel)))
+            .Add(x => x.OnCancel, EventCallback.Factory.Create(this, () => onCancel?.Invoke())));
 
     private sealed class FakeMasterClient(UserInfoHeader[] masters) : IMasterClient
     {

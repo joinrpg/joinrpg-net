@@ -1,44 +1,52 @@
 @using JoinRpg.DomainTypes
-<EditForm EditContext="editContext" OnSubmit="HandleSubmit">
-    <DataAnnotationsValidator />
-    <ValidationSummary />
-    <FormHorizontal>
-        @if (State is { } state)
-        {
-            <FormRow Label="Состояние">
-                <ExpenseStateBadge State="state" />
-            </FormRow>
-        }
-        <FormRowFor For="@(() => Model.Name)">
-            <JoinTextInput @bind-Value="Model.Name" />
-        </FormRowFor>
-        <FormRowFor For="@(() => Model.CategoryPath)">
-            <JoinTextInput @bind-Value="Model.CategoryPath" />
-        </FormRowFor>
-        <FormRowFor For="@(() => Model.MasterId)">
-            <MasterSelector ProjectId="ProjectId.Value" MasterId="Model.MasterId" MasterIdChanged="OnMasterChanged" />
-        </FormRowFor>
-        <FormRowFor For="@(() => Model.PlannedQuantity)">
-            <JoinInputNumber @bind-Value="Model.PlannedQuantity" />
-        </FormRowFor>
-        <FormRowFor For="@(() => Model.PlannedPrice)">
-            <JoinInputNumber @bind-Value="Model.PlannedPrice" />
-        </FormRowFor>
-        <FormRowFor For="@(() => Model.ActualQuantity)">
-            <JoinInputNumber @bind-Value="Model.ActualQuantity" />
-        </FormRowFor>
-        <FormRowFor For="@(() => Model.ActualPrice)">
-            <JoinInputNumber @bind-Value="Model.ActualPrice" />
-        </FormRowFor>
-        <FormRowFor For="@(() => Model.SpentAt)">
-            <InputDate class="form-control" @bind-Value="Model.SpentAt" />
-        </FormRowFor>
-        <FormRowFor For="@(() => Model.Description)">
-            <JoinMarkdownTextArea @bind-Value="Model.Description" />
-        </FormRowFor>
-    </FormHorizontal>
-    <JoinButton Preset="ButtonPreset.Save" Submit="true" Disabled="@formInvalid" />
-</EditForm>
+<JoinPanel>
+    <Header>@(IsNew ? "Новый расход" : "Редактирование расхода")</Header>
+    <ChildContent>
+        <EditForm EditContext="editContext" OnSubmit="HandleSubmit">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+            <FormHorizontal>
+                @if (State is { } state)
+                {
+                    <FormRow Label="Состояние">
+                        <ExpenseStateBadge State="state" />
+                    </FormRow>
+                }
+                <FormRowFor For="@(() => Model.Name)">
+                    <JoinTextInput @bind-Value="Model.Name" />
+                </FormRowFor>
+                <FormRowFor For="@(() => Model.CategoryPath)">
+                    <JoinTextInput @bind-Value="Model.CategoryPath" />
+                </FormRowFor>
+                <FormRowFor For="@(() => Model.MasterId)">
+                    <MasterSelector ProjectId="ProjectId.Value" MasterId="Model.MasterId" MasterIdChanged="OnMasterChanged" />
+                </FormRowFor>
+                <FormRowFor For="@(() => Model.PlannedQuantity)">
+                    <JoinInputNumber @bind-Value="Model.PlannedQuantity" />
+                </FormRowFor>
+                <FormRowFor For="@(() => Model.PlannedPrice)">
+                    <JoinInputNumber @bind-Value="Model.PlannedPrice" />
+                </FormRowFor>
+                <FormRowFor For="@(() => Model.ActualQuantity)">
+                    <JoinInputNumber @bind-Value="Model.ActualQuantity" />
+                </FormRowFor>
+                <FormRowFor For="@(() => Model.ActualPrice)">
+                    <JoinInputNumber @bind-Value="Model.ActualPrice" />
+                </FormRowFor>
+                <FormRowFor For="@(() => Model.SpentAt)">
+                    <InputDate class="form-control" @bind-Value="Model.SpentAt" />
+                </FormRowFor>
+                <FormRowFor For="@(() => Model.Description)">
+                    <JoinMarkdownTextArea @bind-Value="Model.Description" />
+                </FormRowFor>
+                <br />
+                <JoinButton Preset="@(IsNew ? ButtonPreset.Add : ButtonPreset.Save)" Submit="true" Disabled="@formInvalid" />
+                |
+                <JoinButton Preset="ButtonPreset.Cancel" OnClick="OnCancel" />
+            </FormHorizontal>
+        </EditForm>
+    </ChildContent>
+</JoinPanel>
 
 @code {
     /// <summary>
@@ -61,6 +69,13 @@
     /// <summary>Сабмит формы; страница сама отправляет результат на сервер.</summary>
     [Parameter]
     public EventCallback<ExpenseEditViewModel> OnSave { get; set; }
+
+    /// <summary>Отмена редактирования; страница прячет форму.</summary>
+    [Parameter]
+    public EventCallback OnCancel { get; set; }
+
+    /// <summary>Режим формы: создание нового расхода (пустой <see cref="ExpenseEditViewModel.ExpenseId"/>) или правка существующего.</summary>
+    private bool IsNew => Model.ExpenseId is null;
 
     private EditContext editContext = null!;
     private bool formInvalid = true;
