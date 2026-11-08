@@ -10,6 +10,7 @@
 - Удалён `StringInput` — заменён на `JoinTextInput`. Переход: использовать `JoinTextInput` (`Name` вместо lowercase-атрибута `name`, пустой/пробельный ввод уходит наружу как `""`, а не `null` — серверные проверки на пустоту ведут себя как раньше). ([#6169](https://github.com/joinrpg/joinrpg-net/pull/6169))
 
 ### Добавлено
+- `JoinTextArea`, `JoinMarkdownTextArea`: параметры `MaxLength` (рендерит `maxlength`) и `ShowCounter` — счётчик «текущая/максимальная» длина мелким текстом под полем, обновляется при наборе.
 - `JoinTextInput`: параметр `Variants` — варианты значений для подсказки ввода (datalist). ([#6156](https://github.com/joinrpg/joinrpg-net/pull/6156))
 
 ### Изменено
