@@ -24,7 +24,7 @@ else
     @if (editing is null)
     {
         <p>
-            <JoinButton Preset="ButtonPreset.Add" Label="Новый расход" OnClick="@StartCreate" />
+            <JoinButton Preset="ButtonPreset.Add" Label="Новый расход" AutoProgress="false" OnClick="@StartCreate" />
         </p>
     }
     else
@@ -36,7 +36,7 @@ else
         <RowActions Context="expense">
             @if (CanEdit(expense))
             {
-                <JoinButton Label="Править" Size="SizeStyleEnum.Small" Disabled="@(editing is not null)" OnClick="@(args => StartEdit(expense))" />
+                <JoinButton Label="Править" Size="SizeStyleEnum.Small" AutoProgress="false" Disabled="@(editing is not null)" OnClick="@(args => StartEdit(expense))" />
             }
             @if (CanDecide(expense))
             {
