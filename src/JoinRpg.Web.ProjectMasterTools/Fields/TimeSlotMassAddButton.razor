@@ -32,10 +32,10 @@
         }
     </FormRowFor>
     <FormRowFor For="@(() => form.SlotMinutes)">
-        <NumberInput Name="@nameof(form.SlotMinutes)" @bind-Value="form.SlotMinutes" Min="1" />
+        <JoinInputNumber Name="@nameof(form.SlotMinutes)" @bind-Value="form.SlotMinutes" Min="1" />
     </FormRowFor>
     <FormRowFor For="@(() => form.BreakMinutes)">
-        <NumberInput Name="@nameof(form.BreakMinutes)" @bind-Value="form.BreakMinutes" Min="0" />
+        <JoinInputNumber Name="@nameof(form.BreakMinutes)" @bind-Value="form.BreakMinutes" Min="0" />
     </FormRowFor>
     <FormRow Label="Будет создано">
         @{ var (errors, slots) = Preview(); }

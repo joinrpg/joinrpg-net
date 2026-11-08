@@ -1,0 +1,25 @@
+<h3>JoinInputNumber</h3>
+
+<p>
+    Числовое поле ввода (type=number) с парсингом и поддержкой валидации через EditContext.
+    Работает без Bootstrap-классов: оформление задаёт собственный scoped-стиль компонента.
+</p>
+
+<label>
+    Пустое поле (int?):
+    <JoinInputNumber @bind-Value="emptyValue" />
+</label>
+
+<p>Значение: @(emptyValue?.ToString() ?? "не задано").</p>
+
+<label>
+    С ограничением 1–10:
+    <JoinInputNumber @bind-Value="limitedValue" Min="1" Max="10" />
+</label>
+
+<p>Значение: @(limitedValue?.ToString() ?? "не задано").</p>
+
+@code {
+    private int? emptyValue;
+    private int? limitedValue = 5;
+}

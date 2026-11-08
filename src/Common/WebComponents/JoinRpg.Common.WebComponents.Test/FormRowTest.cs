@@ -59,7 +59,6 @@ public class FormRowTest
     [InlineData(nameof(JoinTextArea), "TEXTAREA")]
     [InlineData(nameof(JoinMarkdownTextArea), "TEXTAREA")]
     [InlineData(nameof(CheckboxInput), "INPUT")]
-    [InlineData(nameof(NumberInput), "INPUT")]
     [InlineData(nameof(JoinInputNumber<>), "INPUT")]
     [InlineData(nameof(JoinRpgDatePicker), "INPUT")]
     [InlineData(nameof(JoinRpgTimePicker), "INPUT")]
@@ -204,9 +203,6 @@ public class FormRowTest
             case nameof(CheckboxInput):
                 builder.OpenComponent<CheckboxInput>(0);
                 builder.AddComponentParameter(1, nameof(CheckboxInput.ValueExpression), (System.Linq.Expressions.Expression<Func<bool>>)(() => model.Flag));
-                break;
-            case nameof(NumberInput):
-                builder.OpenComponent<NumberInput>(0);
                 break;
             case nameof(JoinInputNumber<>):
                 builder.OpenComponent<JoinInputNumber<int>>(0);
