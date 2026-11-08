@@ -50,6 +50,12 @@ public sealed record TelegramSocialLink : SocialLink, ISpanParsable<TelegramSoci
     public static TelegramSocialLink? FromOptional(string? key, PrefferedName? userName, bool isVerified = false)
         => string.IsNullOrWhiteSpace(key) ? null : new TelegramSocialLink(new TelegramChatId(long.Parse(key)), userName, isVerified);
 
+    public static TelegramSocialLink? FromOptional(long? id, string? userName, bool isVerified = false)
+        => FromOptional(id, PrefferedName.FromOptional(userName), isVerified);
+
+    public static TelegramSocialLink? FromOptional(string? key, string? userName, bool isVerified = false)
+        => FromOptional(key, PrefferedName.FromOptional(userName), isVerified);
+
     /// <summary>
     /// Строит из привязанного ExternalLogin (даёт ChatId и верификацию) и/или legacy-поля
     /// UserExtra.Telegram (даёт PrettyName). Если ExternalLogin отсутствует, а PrettyName есть,

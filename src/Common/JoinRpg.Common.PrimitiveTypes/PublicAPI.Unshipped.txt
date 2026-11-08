@@ -1,1 +1,3 @@
 #nullable enable
+static JoinRpg.Common.PrimitiveTypes.TelegramSocialLink.FromOptional(long? id, string? userName, bool isVerified = false) -> JoinRpg.Common.PrimitiveTypes.TelegramSocialLink?
+static JoinRpg.Common.PrimitiveTypes.TelegramSocialLink.FromOptional(string? key, string? userName, bool isVerified = false) -> JoinRpg.Common.PrimitiveTypes.TelegramSocialLink?
