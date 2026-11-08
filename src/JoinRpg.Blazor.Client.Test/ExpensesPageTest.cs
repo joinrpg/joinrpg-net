@@ -32,9 +32,11 @@ public class ExpensesPageTest : BunitContext
         MasterName: "Иван Мастеров",
         CreatedByName: "Иван Мастеров");
 
+    private readonly FakeExpensesClient expensesClient = new([Expense]);
+
     public ExpensesPageTest()
     {
-        Services.AddSingleton<IExpensesClient>(new FakeExpensesClient([Expense]));
+        Services.AddSingleton<IExpensesClient>(expensesClient);
         Services.AddSingleton<IMasterClient>(new FakeMasterClient([]));
         _ = AddBunitPersistentComponentState();
         Services.AddScoped<SelectorListCache>();
@@ -64,6 +66,17 @@ public class ExpensesPageTest : BunitContext
         cut.Markup.ShouldContain("Редактирование расхода");
     }
 
+    [Fact]
+    public void RowWithoutAvailableActionsRendersNoButtonGroup()
+    {
+        // Расход не мой и нет права на деньги — ни одной кнопки действия,
+        // пустая JoinButtonGroup не должна оставлять пустой div в строке.
+        expensesClient.MyExpenses = [];
+        var cut = Render<ExpensesPage>(p => p.Add(x => x.ProjectId, ProjectId));
+
+        cut.FindAll("div[role=group]").ShouldBeEmpty();
+    }
+
     private static void ClickEditButton(IRenderedComponent<ExpensesPage> cut)
         => FindEditButton(cut).Click();
 
@@ -72,11 +85,14 @@ public class ExpensesPageTest : BunitContext
 
     private sealed class FakeExpensesClient(ExpenseViewModel[] expenses) : IExpensesClient
     {
+        /// <summary>Расходы текущего пользователя; null — совпадают с <c>expenses</c>.</summary>
+        public ExpenseViewModel[]? MyExpenses { get; set; }
+
         public Task<IReadOnlyList<ExpenseViewModel>> GetExpenses(ProjectIdentification projectId)
             => Task.FromResult<IReadOnlyList<ExpenseViewModel>>(expenses);
 
         public Task<IReadOnlyList<ExpenseViewModel>> GetMyExpenses(ProjectIdentification projectId)
-            => Task.FromResult<IReadOnlyList<ExpenseViewModel>>(expenses);
+            => Task.FromResult<IReadOnlyList<ExpenseViewModel>>(MyExpenses ?? expenses);
 
         public Task<IReadOnlyCollection<ExpenseCategoryInfo>> GetCategories(ProjectIdentification projectId)
             => Task.FromResult<IReadOnlyCollection<ExpenseCategoryInfo>>([]);

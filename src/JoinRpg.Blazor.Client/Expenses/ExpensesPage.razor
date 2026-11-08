@@ -34,18 +34,23 @@ else
 
     <ExpensesGrid Expenses="expenses">
         <RowActions Context="expense">
-            @if (CanEdit(expense))
+            @if (CanEdit(expense) || CanDecide(expense))
             {
-                <JoinButton Label="Править" Size="SizeStyleEnum.Small" AutoProgress="false" Disabled="@(editing is not null)" OnClick="@(args => StartEdit(expense))" />
-            }
-            @if (CanDecide(expense))
-            {
-                <JoinButton Label="Одобрить" Style="VariationStyleEnum.Success" Size="SizeStyleEnum.Small"
-                            AutoConfirm="true" AutoConfirmMessage="@($"Одобрить расход «{expense.Name}»?")"
-                            OnClick="@(args => Decide(args, expense, Client.ApproveExpense))" />
-                <JoinButton Label="Отклонить" Style="VariationStyleEnum.Danger" Size="SizeStyleEnum.Small"
-                            AutoConfirm="true" AutoConfirmMessage="@($"Отклонить расход «{expense.Name}»?")"
-                            OnClick="@(args => Decide(args, expense, Client.RejectExpense))" />
+                <JoinButtonGroup Size="SizeStyleEnum.Small">
+                    @if (CanEdit(expense))
+                    {
+                        <JoinButton Label="Править" AutoProgress="false" Disabled="@(editing is not null)" OnClick="@(args => StartEdit(expense))" />
+                    }
+                    @if (CanDecide(expense))
+                    {
+                        <JoinButton Label="Одобрить" Style="VariationStyleEnum.Success"
+                                    AutoConfirm="true" AutoConfirmMessage="@($"Одобрить расход «{expense.Name}»?")"
+                                    OnClick="@(args => Decide(args, expense, Client.ApproveExpense))" />
+                        <JoinButton Label="Отклонить" Style="VariationStyleEnum.Danger"
+                                    AutoConfirm="true" AutoConfirmMessage="@($"Отклонить расход «{expense.Name}»?")"
+                                    OnClick="@(args => Decide(args, expense, Client.RejectExpense))" />
+                    }
+                </JoinButtonGroup>
             }
         </RowActions>
     </ExpensesGrid>
