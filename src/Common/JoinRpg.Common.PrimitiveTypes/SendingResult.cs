@@ -12,6 +12,17 @@ namespace JoinRpg.Common.PrimitiveTypes;
 /// </param>
 public record struct SendingResult(bool Succeeded, bool Repeatable, bool Common)
 {
+    /// <summary>
+    /// Отправка намеренно не выполнялась (сервис выключен конфигурацией, адресат не настроен).
+    /// Попытки не было вовсе — в отличие от неуспешной отправки.
+    /// </summary>
+    public bool IsSkipped { get; init; }
+
+    /// <summary>
+    /// Сообщение об ошибке или причине пропуска — для показа человеку (логи, UI).
+    /// </summary>
+    public string? Message { get; init; }
+
     public static SendingResult Success() => new(true, false, false);
 
     public static SendingResult RepeatableFailure() => new(false, true, false);
@@ -22,4 +33,11 @@ public record struct SendingResult(bool Succeeded, bool Repeatable, bool Common)
     /// Сообщение сразу помечается как неотправленное, без ретраев.
     /// </summary>
     public static SendingResult PermanentUserFailure() => new(false, false, false);
+
+    /// <summary>
+    /// Отправка намеренно не выполнялась (сервис выключен конфигурацией, адресат не настроен).
+    /// Не путать с <see cref="PermanentUserFailure"/>: попытки не было вовсе, и это не ошибка отправки.
+    /// </summary>
+    /// <param name="reason">Причина пропуска — для показа человеку. Попадает в <see cref="Message"/>.</param>
+    public static SendingResult Skipped(string? reason = null) => new(false, false, false) { IsSkipped = true, Message = reason };
 }
