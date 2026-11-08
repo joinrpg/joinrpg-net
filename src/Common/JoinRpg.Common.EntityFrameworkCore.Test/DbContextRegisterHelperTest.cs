@@ -15,7 +15,7 @@ public class DbContextRegisterHelperTest
     [Fact]
     public void RegistersHealthCheckWithReadyTagByDefault()
     {
-        var registration = RegisterHealthCheck(includeInReadyHealthCheck: true);
+        var registration = RegisterHealthCheck(includeInReadyHealthCheck: null);
 
         registration.Name.ShouldBe("TestDb-db");
         registration.Tags.ShouldBe(["ready"]);
@@ -29,7 +29,7 @@ public class DbContextRegisterHelperTest
         registration.Tags.ShouldNotContain("ready");
     }
 
-    private static HealthCheckRegistration RegisterHealthCheck(bool includeInReadyHealthCheck)
+    private static HealthCheckRegistration RegisterHealthCheck(bool? includeInReadyHealthCheck)
     {
         var configuration = new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?>
@@ -39,11 +39,22 @@ public class DbContextRegisterHelperTest
             .Build();
 
         var services = new ServiceCollection();
-        services.AddJoinEfCoreDbContext<TestDbContext>(
-            configuration,
-            new TestHostEnvironment(),
-            "TestDb",
-            includeInReadyHealthCheck: includeInReadyHealthCheck);
+        if (includeInReadyHealthCheck is { } include)
+        {
+            services.AddJoinEfCoreDbContext<TestDbContext>(
+                configuration,
+                new TestHostEnvironment(),
+                "TestDb",
+                optionsBuilder: null,
+                includeInReadyHealthCheck: include);
+        }
+        else
+        {
+            services.AddJoinEfCoreDbContext<TestDbContext>(
+                configuration,
+                new TestHostEnvironment(),
+                "TestDb");
+        }
 
         using var provider = services.BuildServiceProvider();
         var options = provider.GetRequiredService<IOptions<HealthCheckServiceOptions>>().Value;

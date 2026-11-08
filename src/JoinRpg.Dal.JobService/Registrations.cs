@@ -9,7 +9,7 @@ public static class Registrations
 {
     public static void AddJobsDal(this IServiceCollection services, IConfiguration configuration, IHostEnvironment environment)
     {
-        services.AddJoinEfCoreDbContext<JobScheduleDataDbContext>(configuration, environment, "DailyJob", includeInReadyHealthCheck: false);
+        services.AddJoinEfCoreDbContext<JobScheduleDataDbContext>(configuration, environment, "DailyJob", optionsBuilder: null, includeInReadyHealthCheck: false);
         services.AddTransient<IJobRepository, JobRepository>();
     }
 }

@@ -6,8 +6,8 @@
 
 ### Изменено
 - `AddJoinEfCoreDbContext<TContext>()` — health check теперь по умолчанию помечается тегом `ready`
-  (включается в readiness-пробу `/health/ready`). Параметр `includeInReadyHealthCheck: false`
-  отключает тег для баз, без которых приложение запускается и работает.
+  (включается в readiness-пробу `/health/ready`). Перегрузка с `includeInReadyHealthCheck: false`
+  отключает тег для баз, которые не нужны для обработки запросов. ([#6173](https://github.com/joinrpg/joinrpg-net/pull/6173))
 
 ## 2026.9.651 — 2026-11-07
 
