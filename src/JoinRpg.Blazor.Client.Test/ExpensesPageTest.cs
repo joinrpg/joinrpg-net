@@ -94,7 +94,7 @@ public class ExpensesPageTest : BunitContext
         => FindEditButton(cut).Click();
 
     private static AngleSharp.Dom.IElement FindEditButton(IRenderedComponent<ExpensesPage> cut)
-        => cut.FindAll("button").Single(button => button.TextContent.Trim() == "Править");
+        => cut.FindAll("button").Single(button => button.TextContent.Trim() == "Изменить");
 
     private sealed class FakeExpensesClient(ExpenseViewModel[] expenses) : IExpensesClient
     {

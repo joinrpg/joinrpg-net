@@ -39,7 +39,7 @@ else
                 <JoinButtonGroup Size="SizeStyleEnum.Small">
                     @if (CanEdit(expense))
                     {
-                        <JoinButton Label="Править" AutoProgress="false" Disabled="@(editing is not null)" OnClick="@(args => StartEdit(expense))" />
+                        <JoinButton Preset="ButtonPreset.Edit" AutoProgress="false" Disabled="@(editing is not null)" OnClick="@(args => StartEdit(expense))" />
                     }
                     @if (CanDecide(expense))
                     {

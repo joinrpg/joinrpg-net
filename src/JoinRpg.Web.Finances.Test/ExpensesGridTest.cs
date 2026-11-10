@@ -31,11 +31,11 @@ public class ExpensesGridTest : BunitContext
         cut.Markup.ShouldContain("Аренда базы\\Жилые корпуса");
         cut.Markup.ShouldContain("Аренда зала");
         cut.Markup.ShouldContain("Иван Мастеров");
-        cut.Markup.ShouldContain("2 × 1500 = 3000 ₽");
-        cut.Markup.ShouldContain("2 × 1400 = 2800 ₽");
+        cut.Markup.ShouldContain("2 × 1500 ₽ = 3000 ₽");
+        cut.Markup.ShouldContain("2 × 1400 ₽ = 2800 ₽");
         cut.Markup.ShouldContain("Одобрен");
         cut.Markup.ShouldContain("На рассмотрении");
-        cut.Markup.ShouldContain("10 × 100 = 1000 ₽");
+        cut.Markup.ShouldContain("10 × 100 ₽ = 1000 ₽");
         cut.Markup.ShouldContain("15.02.2026");
     }
 
@@ -74,7 +74,7 @@ public class ExpensesGridTest : BunitContext
         cut.Markup.ShouldNotContain("Мастер");
         cut.Markup.ShouldNotContain("Иван Мастеров");
         cut.Markup.ShouldContain("Аренда зала");
-        cut.Markup.ShouldContain("2 × 1500 = 3000 ₽");
+        cut.Markup.ShouldContain("2 × 1500 ₽ = 3000 ₽");
     }
 
     [Fact]
