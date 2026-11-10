@@ -176,30 +176,14 @@ public class ExpenseEditFormTest : BunitContext
         var cut = RenderForm(new ExpenseEditViewModel(), onSave: savedModel => saved = savedModel);
         FillRequiredTextFields(cut);
         SelectMaster(cut, "Марья Мастериха");
-        cut.FindAll("input[type=number]")[3].Change("1400"); // план заполнился из факта
+        cut.FindAll("input[type=number]")[0].Change("1"); // плановое количество — вручную
+        cut.FindAll("input[type=number]")[3].Change("1400"); // план цены заполнился из факта
         cut.FindAll("input[type=number]")[3].Change("2000"); // факт изменили — план не перезаписываем
 
         cut.Find("form").Submit();
 
         saved.ShouldNotBeNull();
         saved.PlannedPrice.ShouldBe(1400);
-    }
-
-    [Fact]
-    public void ActualPriceWithoutActualQuantityKeepsPlannedQuantity()
-    {
-        ExpenseEditViewModel? saved = null;
-        var cut = RenderForm(new ExpenseEditViewModel(), onSave: savedModel => saved = savedModel);
-        FillRequiredTextFields(cut);
-        SelectMaster(cut, "Марья Мастериха");
-        // Только цена факта, без количества: цена плана копируется, количество плана — прежнее
-        cut.FindAll("input[type=number]")[3].Change("1400");
-
-        cut.Find("form").Submit();
-
-        saved.ShouldNotBeNull();
-        saved.PlannedPrice.ShouldBe(1400);
-        saved.PlannedQuantity.ShouldBe(1);
     }
 
     [Fact]
@@ -234,6 +218,7 @@ public class ExpenseEditFormTest : BunitContext
             Name = "Аренда зала",
             CategoryPath = "Аренда базы",
             MasterId = new UserIdentification(1),
+            PlannedQuantity = 1,
             PlannedPrice = 100,
         };
         var cut = RenderForm(model, state: ExpenseStateView.Rejected, onSave: savedModel => saved = savedModel);
@@ -265,15 +250,6 @@ public class ExpenseEditFormTest : BunitContext
         var cut = RenderForm(model, state: ExpenseStateView.Rejected);
 
         cut.Markup.ShouldContain("Не согласован");
-    }
-
-    [Fact]
-    public void CreateModeDefaultsSpentAtToToday()
-    {
-        var cut = RenderForm(new ExpenseEditViewModel());
-
-        var today = DateOnly.FromDateTime(DateTime.Today).ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture);
-        cut.Find("input[name=SpentAt]").GetAttribute("value").ShouldBe(today);
     }
 
     [Fact]

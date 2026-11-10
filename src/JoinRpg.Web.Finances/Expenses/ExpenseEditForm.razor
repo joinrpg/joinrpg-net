@@ -111,10 +111,10 @@
     // заполненный (или исправленный пользователем) план факт не перезаписывает.
     private void FillPlannedFromActualIfEmpty()
     {
-        if (Model.PlannedPrice == 0 && Model.ActualPrice is > 0)
+        if (Model.PlannedPrice is null or 0 && Model.ActualPrice is > 0)
         {
             Model.PlannedPrice = Model.ActualPrice.Value;
-            Model.PlannedQuantity = Model.ActualQuantity ?? Model.PlannedQuantity;
+            Model.PlannedQuantity ??= Model.ActualQuantity;
             editContext.NotifyFieldChanged(new FieldIdentifier(Model, nameof(Model.PlannedPrice)));
             editContext.NotifyFieldChanged(new FieldIdentifier(Model, nameof(Model.PlannedQuantity)));
         }

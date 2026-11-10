@@ -70,10 +70,10 @@ public class ExpenseEditViewModel : IValidatableObject
 
     [Display(Name = "Количество (план)")]
     [Range(1, int.MaxValue, ErrorMessage = "Плановое количество должно быть больше нуля")]
-    public int PlannedQuantity { get; set; } = 1;
+    public int? PlannedQuantity { get; set; }
 
     [Display(Name = "Цена (план)")]
-    public decimal PlannedPrice { get; set; }
+    public decimal? PlannedPrice { get; set; }
 
     [Display(Name = "Количество (факт)")]
     [Range(1, int.MaxValue, ErrorMessage = "Фактическое количество должно быть больше нуля")]
@@ -90,11 +90,15 @@ public class ExpenseEditViewModel : IValidatableObject
 
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
-        if (PlannedPrice <= 0)
+        if (PlannedQuantity is null or < 1)
+        {
+            yield return new ValidationResult("Укажите плановое количество", [nameof(PlannedQuantity)]);
+        }
+        if (PlannedPrice is null or <= 0)
         {
             yield return new ValidationResult("Плановая цена должна быть больше нуля", [nameof(PlannedPrice)]);
         }
-        if (!FitsMoneyColumn(PlannedPrice))
+        if (PlannedPrice is { } plannedPrice && !FitsMoneyColumn(plannedPrice))
         {
             yield return new ValidationResult("Плановая цена — не больше двух знаков после запятой", [nameof(PlannedPrice)]);
         }

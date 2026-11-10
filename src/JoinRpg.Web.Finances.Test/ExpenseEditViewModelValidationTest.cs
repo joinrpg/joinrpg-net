@@ -34,6 +34,22 @@ public class ExpenseEditViewModelValidationTest
     }
 
     [Fact]
+    public void NullPlannedQuantityFails()
+    {
+        var form = ValidForm();
+        form.PlannedQuantity = null;
+        Validate(form).ShouldContain(nameof(ExpenseEditViewModel.PlannedQuantity));
+    }
+
+    [Fact]
+    public void NullPlannedPriceFails()
+    {
+        var form = ValidForm();
+        form.PlannedPrice = null;
+        Validate(form).ShouldContain(nameof(ExpenseEditViewModel.PlannedPrice));
+    }
+
+    [Fact]
     public void SubKopeckPlannedPriceFails()
     {
         var form = ValidForm();
