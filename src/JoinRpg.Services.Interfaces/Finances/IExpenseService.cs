@@ -8,7 +8,10 @@ public interface IExpenseService
 {
     Task<ExpenseIdentification> CreateExpense(ProjectIdentification projectId, CreateExpenseRequest request);
 
-    Task EditExpense(ExpenseIdentification expenseId, EditExpenseRequest request);
+    /// <summary>Правит расход. Возвращает true, если в этой правке одобрение сброшено
+    /// (переход Approved → Proposed) — вызывающий код может восстановить его, если у
+    /// редактирующего есть <see cref="Permission.CanManageMoney"/>.</summary>
+    Task<bool> EditExpense(ExpenseIdentification expenseId, EditExpenseRequest request);
 
     Task SetExpenseActual(ExpenseIdentification expenseId, ExpenseActualRequest request);
 

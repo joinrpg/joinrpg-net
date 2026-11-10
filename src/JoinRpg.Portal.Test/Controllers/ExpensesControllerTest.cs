@@ -204,6 +204,59 @@ public class ExpensesControllerTest
     }
 
     [Fact]
+    public async Task EditWithApprovalResetAndMoneyRightsReapprovesExpense()
+    {
+        // Правка сбросила одобрение, редактирующий — финансовый администратор: одобрение восстановлено
+        var mock = new MockedProject();
+        var service = new FakeExpenseService() { EditApprovalReset = true };
+        var controller = CreateController(
+            service: service,
+            metadataRepository: new FakeProjectMetadataRepository(mock.ProjectInfo),
+            currentUserId: new UserIdentification(mock.Master.UserId));
+
+        var result = await controller.Edit(ProjectId, new ExpenseIdentification(ProjectId, 7), CreateForm());
+
+        _ = result.ShouldBeOfType<OkResult>();
+        var approved = service.Approved.ShouldBeOfType<(ExpenseIdentification, MarkdownString?)>();
+        approved.Item1.ShouldBe(new ExpenseIdentification(ProjectId, 7));
+        approved.Item2.ShouldBeNull();
+    }
+
+    [Fact]
+    public async Task EditWithApprovalResetWithoutMoneyRightsLeavesExpenseProposed()
+    {
+        var mock = new MockedProject();
+        var masterWithoutMoney = mock.CreateMaster("Безденежный");
+        mock.Project.ProjectAcls.Single(acl => acl.UserId == masterWithoutMoney.UserId).CanManageMoney = false;
+        mock.ReInitProjectInfo();
+        var service = new FakeExpenseService() { EditApprovalReset = true };
+        var controller = CreateController(
+            service: service,
+            metadataRepository: new FakeProjectMetadataRepository(mock.ProjectInfo),
+            currentUserId: new UserIdentification(masterWithoutMoney.UserId));
+
+        _ = await controller.Edit(ProjectId, new ExpenseIdentification(ProjectId, 7), CreateForm());
+
+        service.Approved.ShouldBeNull();
+    }
+
+    [Fact]
+    public async Task EditWithoutApprovalResetDoesNotReapproveEvenWithMoneyRights()
+    {
+        // Переход Rejected → Proposed (и любой без сброса Approved) автоматически не одобряется
+        var mock = new MockedProject();
+        var service = new FakeExpenseService() { EditApprovalReset = false };
+        var controller = CreateController(
+            service: service,
+            metadataRepository: new FakeProjectMetadataRepository(mock.ProjectInfo),
+            currentUserId: new UserIdentification(mock.Master.UserId));
+
+        _ = await controller.Edit(ProjectId, new ExpenseIdentification(ProjectId, 7), CreateForm());
+
+        service.Approved.ShouldBeNull();
+    }
+
+    [Fact]
     public async Task SetActualPassesRequestToService()
     {
         var service = new FakeExpenseService();
@@ -376,10 +429,13 @@ public class ExpensesControllerTest
             return Task.FromResult(new ExpenseIdentification(projectId, 42));
         }
 
-        public Task EditExpense(ExpenseIdentification expenseId, EditExpenseRequest request)
+        /// <summary>Что сервис возвращает как факт сброса одобрения в EditExpense.</summary>
+        public bool EditApprovalReset { get; set; }
+
+        public Task<bool> EditExpense(ExpenseIdentification expenseId, EditExpenseRequest request)
         {
             Edited = (expenseId, request);
-            return Task.CompletedTask;
+            return Task.FromResult(EditApprovalReset);
         }
 
         public Task SetExpenseActual(ExpenseIdentification expenseId, ExpenseActualRequest request)

@@ -111,7 +111,7 @@ public class ExpensesController(
     [HttpPost]
     public async Task<ActionResult> Edit(ProjectIdentification projectId, [FromQuery] ExpenseIdentification expenseId, ExpenseEditViewModel model)
     {
-        await expenseService.EditExpense(expenseId, new EditExpenseRequest(
+        var approvalReset = await expenseService.EditExpense(expenseId, new EditExpenseRequest(
             model.MasterId!,
             model.Name,
             model.CategoryPath,
@@ -121,6 +121,16 @@ public class ExpensesController(
             ToMarkdown(model.Description),
             model.ActualQuantity,
             model.ActualPrice));
+        // Одобрение сброшено правкой, а редактирующий — финансовый администратор:
+        // восстанавливаем одобрение отдельным вызовом (отдельная транзакция), как при создании
+        if (approvalReset)
+        {
+            var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId);
+            if (projectInfo.HasMasterAccess(currentUserAccessor, Permission.CanManageMoney))
+            {
+                await expenseService.ApproveExpense(expenseId, comment: null);
+            }
+        }
         return Ok();
     }
 
