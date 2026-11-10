@@ -42,16 +42,66 @@ public class ExpenseSummaryViewModelTest
 
         var summary = ExpenseSummaryBuilder.Build(expenses);
 
-        summary.Rows.Count.ShouldBe(2);
+        summary.Rows.Count.ShouldBe(3);
         var rent = summary.Rows.First(r => r.CategoryPath == "Аренда базы\\Жилые корпуса");
         rent.ApprovedPlannedCost.ShouldBe(200);
         rent.ApprovedActualCost.ShouldBe(180);
         rent.ProposedCost.ShouldBe(50);
+        var rentTotal = summary.Rows.First(r => r.CategoryPath == "Аренда базы");
+        rentTotal.ApprovedPlannedCost.ShouldBe(200);
+        rentTotal.ApprovedActualCost.ShouldBe(180);
+        rentTotal.ProposedCost.ShouldBe(50);
         var transport = summary.Rows.First(r => r.CategoryPath == "Транспорт");
         transport.ApprovedPlannedCost.ShouldBe(30);
         transport.ApprovedActualCost.ShouldBe(0);
         transport.ProposedCost.ShouldBe(0);
         summary.TotalSpent.ShouldBe(180);
+    }
+
+    [Fact]
+    public void Build_ParentCategoryWithoutDirectExpenses_AppearsWithSubtreeSums()
+    {
+        ExpenseInfo[] expenses =
+        [
+            Expense(1, ExpenseState.Approved, 1, 100, 1, 100, "Аренда базы", "Жилые корпуса"),
+        ];
+
+        var summary = ExpenseSummaryBuilder.Build(expenses);
+
+        summary.Rows.Count.ShouldBe(2);
+        var rentTotal = summary.Rows.First(r => r.CategoryPath == "Аренда базы");
+        rentTotal.ApprovedPlannedCost.ShouldBe(100);
+        rentTotal.ApprovedActualCost.ShouldBe(100);
+        var rent = summary.Rows.First(r => r.CategoryPath == "Аренда базы\\Жилые корпуса");
+        rent.ApprovedPlannedCost.ShouldBe(100);
+        rent.ApprovedActualCost.ShouldBe(100);
+    }
+
+    [Fact]
+    public void Build_RejectedOnlySubtree_DoesNotCreateParentRow()
+    {
+        ExpenseInfo[] expenses =
+        [
+            Expense(1, ExpenseState.Rejected, 1, 100, 1, 100, "Аренда базы", "Жилые корпуса"),
+        ];
+
+        var summary = ExpenseSummaryBuilder.Build(expenses);
+
+        summary.Rows.ShouldBeEmpty();
+        summary.TotalSpent.ShouldBe(0);
+    }
+
+    [Fact]
+    public void Build_EmptyCategoryPath_DoesNotCreateRow()
+    {
+        ExpenseInfo[] expenses =
+        [
+            Expense(1, ExpenseState.Approved, 1, 100, 1, 100, categoryPath: []),
+        ];
+
+        var summary = ExpenseSummaryBuilder.Build(expenses);
+
+        summary.Rows.ShouldBeEmpty();
     }
 
     [Fact]
