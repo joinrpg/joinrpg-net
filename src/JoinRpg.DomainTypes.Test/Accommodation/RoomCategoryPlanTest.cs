@@ -33,6 +33,11 @@ public class RoomCategoryPlanTest
         => ProjectInfoFixture.MakeAccommodationType(
             11, capacity, roomCategoryId: roomCategoryId ?? CategoryIntId, name: "Люкс на одного");
 
+    /// <summary>Тип «Гостевое поселение»: бесконечное, селится из категории <see cref="CategoryId"/>.</summary>
+    private static AccommodationTypeInfo MakeGuest()
+        => ProjectInfoFixture.MakeAccommodationType(
+            12, capacity: 1, roomCategoryId: CategoryIntId, name: "Гостевое поселение", isInfinite: true);
+
     private static ProjectInfo MakeProject(params AccommodationTypeInfo[] types)
         => ProjectInfoFixture.Build(
             accommodationSettings: ProjectInfoFixture.MakeAccommodationSettings(types));
@@ -493,6 +498,32 @@ public class RoomCategoryPlanTest
         var plan = MakePlan(MakeProject(lux), [lux], [], [empty]);
 
         plan.GetFreeSpaceForGroup(empty.Id).ShouldBe(3);
+    }
+
+    /// <summary>
+    /// Гостевой тип (IsInfinite): свободное место не ограничено вместимостью типа, сколько бы
+    /// человек в группе ни было. <c>int.MaxValue</c> — «бесконечность», с которой сравнивают
+    /// все вызывающие (issue #1945).
+    /// </summary>
+    [Fact]
+    public void GetFreeSpaceForGroup_GuestGroup_IsUnlimited()
+    {
+        var guest = MakeGuest();
+        var group = MakeGroup(1, guest, persons: 100);
+        var plan = MakePlan(MakeProject(guest), [guest], [], [group]);
+
+        plan.GetFreeSpaceForGroup(group.Id).ShouldBe(int.MaxValue);
+    }
+
+    /// <summary>Гостевой тип, группа которого почему-то расселена в комнату: тоже без лимита.</summary>
+    [Fact]
+    public void GetFreeSpaceForGroup_PlacedGuestGroup_IsUnlimited()
+    {
+        var guest = MakeGuest();
+        var group = MakeGroup(1, guest, roomId: 1, persons: 5);
+        var plan = MakePlan(MakeProject(guest), [guest], [MakeRoom(1, group)], [group]);
+
+        plan.GetFreeSpaceForGroup(group.Id).ShouldBe(int.MaxValue);
     }
 
     [Fact]

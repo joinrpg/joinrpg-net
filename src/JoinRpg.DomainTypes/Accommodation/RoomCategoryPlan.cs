@@ -239,6 +239,8 @@ public record class RoomCategoryPlan
     /// <summary>
     /// Сколько ещё человек влезет к группе: у расселённой — по правилу свободного места её комнаты
     /// (<see cref="GetFreeSpace"/>) под её типом, у нерасселённой — вместимость её типа минус состав.
+    /// Группа гостевого типа (IsInfinite) не ограничена: ответ <c>int.MaxValue</c> — «бесконечность»,
+    /// с которой сравнивают все вызывающие (issue #1945).
     /// </summary>
     /// <remarks>
     /// Это то, что спрашивает приглашение к совместному проживанию: переезжают к группе, а не в
@@ -249,6 +251,11 @@ public record class RoomCategoryPlan
     public int GetFreeSpaceForGroup(AccommodationRequestIdentification groupId)
     {
         var group = GetGroup(groupId);
+        if (GetAccommodationType(group.AccommodationTypeId).IsInfinite)
+        {
+            return int.MaxValue;
+        }
+
         if (group.RoomId is { } roomId)
         {
             return GetFreeSpace(roomId, group.AccommodationTypeId);
