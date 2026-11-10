@@ -1,7 +1,8 @@
-<span class="price-value price-RUR">@Price</span>
+@using System.Globalization
+<span class="price-value price-RUR">@Price.ToString("0.##", CultureInfo.GetCultureInfo("ru-RU"))</span>
 
 @code {
     [Parameter]
     [EditorRequired]
-    public int Price { get; set; }
+    public decimal Price { get; set; }
 }

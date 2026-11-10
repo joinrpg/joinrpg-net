@@ -137,7 +137,7 @@ internal class ExpenseService(
     }
 
     /// <summary>Факт задаётся только парой «количество + цена»: оба поля или ни одного.</summary>
-    private static void ValidateActualPair(int? actualQuantity, int? actualPrice)
+    private static void ValidateActualPair(int? actualQuantity, decimal? actualPrice)
     {
         if ((actualQuantity is null) != (actualPrice is null))
         {
@@ -149,7 +149,7 @@ internal class ExpenseService(
     /// не выросла — меньше прежнего факта или в пределах плана (при совмещённой правке —
     /// результирующего нового плана). Равная прежнему факту сумма одобрение не сохраняет,
     /// когда она не ниже плана. Применяется только если факт реально изменился.</summary>
-    private static bool ActualChangeKeepsApproval(int plannedCost, int? previousActualCost, int newActualCost)
+    private static bool ActualChangeKeepsApproval(decimal plannedCost, decimal? previousActualCost, decimal newActualCost)
         => (previousActualCost is { } previous && newActualCost < previous) || newActualCost < plannedCost;
 
     /// <summary>Мастер без <see cref="Permission.CanManageMoney"/> может править только свои

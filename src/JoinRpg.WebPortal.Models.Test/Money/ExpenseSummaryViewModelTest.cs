@@ -11,9 +11,9 @@ public class ExpenseSummaryViewModelTest
         int id,
         ExpenseState state,
         int plannedQuantity,
-        int plannedPrice,
+        decimal plannedPrice,
         int? actualQuantity = null,
-        int? actualPrice = null,
+        decimal? actualPrice = null,
         params string[] categoryPath)
         => new(
             new ExpenseIdentification(ProjectId, id),
@@ -97,5 +97,21 @@ public class ExpenseSummaryViewModelTest
         summary.Rows.Single().ApprovedPlannedCost.ShouldBe(30);
         summary.Rows.Single().ApprovedActualCost.ShouldBe(0);
         summary.TotalSpent.ShouldBe(0);
+    }
+
+    [Fact]
+    public void Build_SumsKopeckCostsAcrossExpenses()
+    {
+        ExpenseInfo[] expenses =
+        [
+            Expense(1, ExpenseState.Approved, 1, 49.90m, categoryPath: ["Аренда базы"]),
+            Expense(2, ExpenseState.Approved, 1, 100.10m, categoryPath: ["Аренда базы"]),
+        ];
+
+        var summary = ExpenseSummaryBuilder.Build(expenses);
+
+        // 49,90 + 100,10 = 150,00 — копейки не теряются при суммировании
+        summary.Rows.Single().ApprovedPlannedCost.ShouldBe(150.00m);
+        summary.TotalSpent.ShouldBe(0m);
     }
 }

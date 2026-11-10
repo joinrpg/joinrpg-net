@@ -26,13 +26,13 @@
                     <JoinInputNumber @bind-Value="Model.PlannedQuantity" Min="0" />
                 </FormRowFor>
                 <FormRowFor For="@(() => Model.PlannedPrice)">
-                    <JoinInputNumber @bind-Value="Model.PlannedPrice" Min="0" />
+                    <JoinInputNumber @bind-Value="Model.PlannedPrice" Min="0" step="0.01" />
                 </FormRowFor>
                 <FormRowFor For="@(() => Model.ActualQuantity)">
                     <JoinInputNumber @bind-Value="Model.ActualQuantity" Min="0" />
                 </FormRowFor>
                 <FormRowFor For="@(() => Model.ActualPrice)">
-                    <JoinInputNumber @bind-Value="Model.ActualPrice" Min="0" />
+                    <JoinInputNumber @bind-Value="Model.ActualPrice" Min="0" step="0.01" />
                 </FormRowFor>
                 <FormRowFor For="@(() => Model.SpentAt)">
                     <JoinRpgDatePicker Name="@nameof(Model.SpentAt)" @bind-Value="Model.SpentAt" />

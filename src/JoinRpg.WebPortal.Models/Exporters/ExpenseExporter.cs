@@ -16,9 +16,9 @@ public class ExpenseExporter(IUriService uriService) : CustomExporter<ExpenseExp
         yield return StringColumn(x => x.Name);
         yield return StringColumn(x => x.MasterName);
         yield return IntColumn(x => x.PlannedQuantity);
-        yield return IntColumn(x => x.PlannedPrice);
+        yield return DecimalColumn(x => x.PlannedPrice);
         yield return NullableIntColumn(x => x.ActualQuantity);
-        yield return NullableIntColumn(x => x.ActualPrice);
+        yield return NullableDecimalColumn(x => x.ActualPrice);
         yield return StringColumn(x => x.State);
         yield return DateOnlyColumn(x => x.SpentAt);
         yield return ComplexElementMemberColumn(x => x.Description, (MarkdownString description) => description.ToPlainTextWithoutHtmlEscape(), "Описание");
@@ -32,9 +32,9 @@ public record ExpenseExportItem(
     [property: Display(Name = "Название")] string Name,
     [property: Display(Name = "Мастер")] string MasterName,
     [property: Display(Name = "Количество (план)")] int PlannedQuantity,
-    [property: Display(Name = "Цена (план)")] int PlannedPrice,
+    [property: Display(Name = "Цена (план)")] decimal PlannedPrice,
     [property: Display(Name = "Количество (факт)")] int? ActualQuantity,
-    [property: Display(Name = "Цена (факт)")] int? ActualPrice,
+    [property: Display(Name = "Цена (факт)")] decimal? ActualPrice,
     [property: Display(Name = "Состояние")] string State,
     [property: Display(Name = "Дата траты")] DateOnly? SpentAt,
     [property: Display(Name = "Описание")] MarkdownString? Description);

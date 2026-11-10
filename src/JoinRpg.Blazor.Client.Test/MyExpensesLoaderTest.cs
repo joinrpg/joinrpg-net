@@ -30,9 +30,8 @@ public class MyExpensesLoaderTest : BunitContext
 
         // 2×1500 + 10×100 = 4000; Rejected (5×1000) не учитывается ни в одной сумме.
         cut.Markup.ShouldContain("Запланировано:");
-        cut.Markup.ShouldContain("<b>4000 ₽</b>");
         cut.Markup.ShouldContain("Одобрено:");
-        cut.Markup.ShouldContain("<b>3000 ₽</b>");
+        cut.FindAll("b").Select(e => e.TextContent.Trim()).ToArray().ShouldBe(["4000", "3000"]);
     }
 
     [Fact]

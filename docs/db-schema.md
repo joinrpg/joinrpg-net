@@ -654,9 +654,9 @@ erDiagram
         int CategoryId FK
         string CategoryPathImpl_ListIds "снапшот пути категорий (IntList), id от корня до листа"
         int PlannedQuantity
-        int PlannedPrice "цена за единицу в рублях"
+        decimal(18,2) PlannedPrice "цена за единицу в рублях"
         int ActualQuantity "null = расход только спланирован"
-        int ActualPrice
+        decimal(18,2) ActualPrice
         datetime SpentAt "null = факт не заполнен"
         enum State "ExpenseState: Proposed / Approved / Rejected"
         datetime CreatedAt

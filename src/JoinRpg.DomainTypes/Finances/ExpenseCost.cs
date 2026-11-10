@@ -7,9 +7,9 @@ namespace JoinRpg.DomainTypes.Finances;
 public static class ExpenseCost
 {
     /// <summary>Плановая стоимость: количество × цена.</summary>
-    public static int Planned(int quantity, int price) => quantity * price;
+    public static decimal Planned(int quantity, decimal price) => quantity * price;
 
     /// <summary>Фактическая стоимость, если факт заполнен, иначе null.</summary>
-    public static int? Actual(int? quantity, int? price)
+    public static decimal? Actual(int? quantity, decimal? price)
         => quantity is { } q && price is { } p ? q * p : null;
 }

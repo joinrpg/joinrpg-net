@@ -64,6 +64,24 @@ public class CsvBackendTests
         DecodeText(bytes).ShouldBe(Line("Назначение", "Сумма") + Line("Зимняя игра", "1500"));
     }
 
+    /// <summary>
+    /// Decimal форматируется явно и не зависит от культуры сервера — иначе разделитель
+    /// («49.9» vs «49,9») менялся бы между окружениями.
+    /// </summary>
+    [Fact]
+    public void Decimal_UsesExplicitFormatIndependentOfServerCulture()
+    {
+        var backend = new CsvBackend();
+        backend.WriteHeaders([new TestColumn("Сумма")]);
+        backend.WriteRow([new Cell(49.90m)]);
+        backend.WriteRow([new Cell(1500.00m)]);
+
+        DecodeText(backend.Generate()).ShouldBe(
+            Line("Сумма")
+            + Line("49.9")
+            + Line("1500"));
+    }
+
     private static string DecodeText(byte[] bytes) => Encoding.UTF8.GetString(bytes, Utf8Preamble.Length, bytes.Length - Utf8Preamble.Length);
 
     /// <summary>

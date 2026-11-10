@@ -25,8 +25,8 @@
 </JoinBorderedTable>
 
 <p>
-    <b>Потрачено (одобрено)</b>: -@TotalSpent&nbsp;₽
-    <b>Осталось у мастеров</b>: @MastersTotal&nbsp;₽
+    <b>Потрачено (одобрено)</b>: -<PriceElement Price="TotalSpent" />
+    <b>Осталось у мастеров</b>: <PriceElement Price="MastersTotal" />
 </p>
 
 @code {
@@ -38,10 +38,10 @@
     /// <summary>Потрачено (одобрено): сумма фактических списаний со счёта проекта.</summary>
     [Parameter]
     [EditorRequired]
-    public int TotalSpent { get; set; }
+    public decimal TotalSpent { get; set; }
 
     /// <summary>Осталось у мастеров: Σ балансов мастеров, считает вызывающая страница.</summary>
     [Parameter]
     [EditorRequired]
-    public int MastersTotal { get; set; }
+    public decimal MastersTotal { get; set; }
 }

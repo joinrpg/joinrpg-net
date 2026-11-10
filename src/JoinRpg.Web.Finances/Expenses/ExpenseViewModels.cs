@@ -7,9 +7,9 @@ namespace JoinRpg.Web.Finances.Expenses;
 /// <summary>Строка сводки расходов по категории: суммы в разрезе состояний согласования.</summary>
 public record ExpenseSummaryRowViewModel(
     string CategoryPath,
-    int ApprovedPlannedCost,
-    int ApprovedActualCost,
-    int ProposedCost);
+    decimal ApprovedPlannedCost,
+    decimal ApprovedActualCost,
+    decimal ProposedCost);
 
 /// <summary>Мастер для выбора в форме расхода: идентификатор и отображаемое имя.</summary>
 public record ExpenseMasterViewModel(
@@ -27,9 +27,9 @@ public record ExpenseViewModel(
     string Name,
     string CategoryPath,
     int PlannedQuantity,
-    int PlannedPrice,
+    decimal PlannedPrice,
     int? ActualQuantity,
-    int? ActualPrice,
+    decimal? ActualPrice,
     DateOnly? SpentAt,
     ExpenseStateView State,
     string MasterName,
@@ -37,9 +37,9 @@ public record ExpenseViewModel(
     string? Description = null,
     UserIdentification? MasterId = null)
 {
-    public int PlannedCost => ExpenseCost.Planned(PlannedQuantity, PlannedPrice);
+    public decimal PlannedCost => ExpenseCost.Planned(PlannedQuantity, PlannedPrice);
 
-    public int? ActualCost => ExpenseCost.Actual(ActualQuantity, ActualPrice);
+    public decimal? ActualCost => ExpenseCost.Actual(ActualQuantity, ActualPrice);
 
     /// <summary>Ссылка на профиль мастера для колонки «Мастер» грида.</summary>
     public UserLinkViewModel MasterLink => new(MasterId, MasterName, ViewMode.Show);
@@ -47,8 +47,10 @@ public record ExpenseViewModel(
 
 /// <summary>
 /// Модель формы создания/редактирования расхода. Description — сырой markdown-текст.
+/// Границы цен — в <see cref="Validate"/>: RangeAttribute с decimal парсит границы
+/// в текущей культуре и падает под не-инвариантной локалью.
 /// </summary>
-public class ExpenseEditViewModel
+public class ExpenseEditViewModel : IValidatableObject
 {
     /// <summary>Редактируемый расход; <c>null</c> — создание нового.</summary>
     public ExpenseIdentification? ExpenseId { get; set; }
@@ -71,20 +73,43 @@ public class ExpenseEditViewModel
     public int PlannedQuantity { get; set; } = 1;
 
     [Display(Name = "Цена (план)")]
-    [Range(1, int.MaxValue, ErrorMessage = "Плановая цена должна быть больше нуля")]
-    public int PlannedPrice { get; set; }
+    public decimal PlannedPrice { get; set; }
 
     [Display(Name = "Количество (факт)")]
     [Range(1, int.MaxValue, ErrorMessage = "Фактическое количество должно быть больше нуля")]
     public int? ActualQuantity { get; set; }
 
     [Display(Name = "Цена (факт)")]
-    [Range(1, int.MaxValue, ErrorMessage = "Фактическая цена должна быть больше нуля")]
-    public int? ActualPrice { get; set; }
+    public decimal? ActualPrice { get; set; }
 
     [Display(Name = "Дата")]
     public DateOnly? SpentAt { get; set; }
 
     [Display(Name = "Описание")]
     public string? Description { get; set; }
+
+    public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+    {
+        if (PlannedPrice <= 0)
+        {
+            yield return new ValidationResult("Плановая цена должна быть больше нуля", [nameof(PlannedPrice)]);
+        }
+        if (!FitsMoneyColumn(PlannedPrice))
+        {
+            yield return new ValidationResult("Плановая цена — не больше двух знаков после запятой", [nameof(PlannedPrice)]);
+        }
+        if (ActualPrice is <= 0)
+        {
+            yield return new ValidationResult("Фактическая цена должна быть больше нуля", [nameof(ActualPrice)]);
+        }
+        if (ActualPrice is { } actualPrice && !FitsMoneyColumn(actualPrice))
+        {
+            yield return new ValidationResult("Фактическая цена — не больше двух знаков после запятой", [nameof(ActualPrice)]);
+        }
+    }
+
+    /// <summary>Цена должна влезать в decimal(18,2) без округления: иначе SQL Server молча
+    /// округлит лишние знаки или убьёт запрос arithmetic overflow.</summary>
+    private static bool FitsMoneyColumn(decimal price)
+        => price <= 9999999999999999.99m && price == decimal.Round(price, 2);
 }

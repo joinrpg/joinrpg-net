@@ -27,11 +27,11 @@
             {
                 <td><UserLink Model="expense.MasterLink" /></td>
             }
-            <td>@FormatCost(expense.PlannedQuantity, expense.PlannedPrice, expense.PlannedCost)</td>
+            <td>@expense.PlannedQuantity × <PriceElement Price="expense.PlannedPrice" /> = <PriceElement Price="expense.PlannedCost" /></td>
             <td>
                 @if (expense.ActualCost is { } actualCost)
                 {
-                    @FormatCost(expense.ActualQuantity!.Value, expense.ActualPrice!.Value, actualCost)
+                    <text>@(expense.ActualQuantity!.Value) × <PriceElement Price="expense.ActualPrice!.Value" /> = <PriceElement Price="actualCost" /></text>
                 }
                 else
                 {
@@ -67,6 +67,4 @@
     /// <summary>Колонка «Мастер»; <c>false</c> — для списка расходов одного мастера.</summary>
     [Parameter]
     public bool ShowMaster { get; set; } = true;
-
-    private static string FormatCost(int quantity, int price, int cost) => $"{quantity} × {price} ₽ = {cost} ₽";
 }

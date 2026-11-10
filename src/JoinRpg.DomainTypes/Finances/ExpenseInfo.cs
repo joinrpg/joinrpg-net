@@ -41,23 +41,23 @@ public record ExpenseInfo(
     MarkdownString? Description,
     IReadOnlyCollection<ExpenseCategoryBriefInfo> CategoryPath,
     int PlannedQuantity,
-    int PlannedPrice,
+    decimal PlannedPrice,
     int? ActualQuantity,
-    int? ActualPrice,
+    decimal? ActualPrice,
     DateOnly? SpentAt,
     ExpenseState State,
     UserIdentification MasterId,
     UserIdentification CreatedById)
 {
-    public int PlannedCost => ExpenseCost.Planned(PlannedQuantity, PlannedPrice);
+    public decimal PlannedCost => ExpenseCost.Planned(PlannedQuantity, PlannedPrice);
 
-    public int? ActualCost => ExpenseCost.Actual(ActualQuantity, ActualPrice);
+    public decimal? ActualCost => ExpenseCost.Actual(ActualQuantity, ActualPrice);
 
     /// <summary>
     /// Влияние расхода на «Деньги на руках» мастера: фактическая сумма, если расход одобрен,
     /// иначе 0 (в том числе одобренный без факта и отклонённый).
     /// </summary>
-    public int ActualBalanceEffect => State switch
+    public decimal ActualBalanceEffect => State switch
     {
         ExpenseState.Approved => ActualCost ?? 0,
         _ => 0,
@@ -68,7 +68,7 @@ public record ExpenseInfo(
     /// одобренные с фактом (уже учтены в <see cref="ActualBalanceEffect"/>) — 0,
     /// остальные (одобренные без факта, на рассмотрении) — факт, если он есть, иначе план.
     /// </summary>
-    public int PlannedBalanceEffect => State switch
+    public decimal PlannedBalanceEffect => State switch
     {
         ExpenseState.Rejected => 0,
         ExpenseState.Approved when ActualCost is not null => 0,

@@ -36,4 +36,4 @@ public interface IExpensesClient
 }
 
 /// <summary>Фактическая трата по расходу; имена полей совпадают с сервисным <c>ExpenseActualRequest</c>.</summary>
-public sealed record ExpenseActualDto(int ActualQuantity, int ActualPrice, DateOnly SpentAt);
+public sealed record ExpenseActualDto(int ActualQuantity, decimal ActualPrice, DateOnly SpentAt);

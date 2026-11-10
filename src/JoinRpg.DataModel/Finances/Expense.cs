@@ -49,12 +49,12 @@ public class Expense : IProjectEntity, ICreatedUpdatedTrackedForEntity, IValidat
 
     public int PlannedQuantity { get; set; }
 
-    /// <summary>Цена за единицу в рублях (int), как в FinanceOperation.MoneyAmount.</summary>
-    public int PlannedPrice { get; set; }
+    /// <summary>Цена за единицу в рублях (decimal, копейки); количество — <see cref="int"/>.</summary>
+    public decimal PlannedPrice { get; set; }
 
     public int? ActualQuantity { get; set; }
 
-    public int? ActualPrice { get; set; }
+    public decimal? ActualPrice { get; set; }
 
     /// <summary>Дата (без времени) расхода; может быть указана и у планового расхода (без факта).
     /// Хранилище — datetime: EF6 не умеет DateOnly, доменный тип — <see cref="DateOnly"/>.</summary>
@@ -88,6 +88,10 @@ public class Expense : IProjectEntity, ICreatedUpdatedTrackedForEntity, IValidat
         {
             yield return new ValidationResult("Planned price should be positive", [nameof(PlannedPrice)]);
         }
+        if (!FitsMoneyColumn(PlannedPrice))
+        {
+            yield return new ValidationResult("Planned price should fit decimal(18,2): at most 2 decimal places", [nameof(PlannedPrice)]);
+        }
         if ((ActualQuantity is null) != (ActualPrice is null))
         {
             yield return new ValidationResult("Actual quantity and actual price should be filled together",
@@ -101,7 +105,16 @@ public class Expense : IProjectEntity, ICreatedUpdatedTrackedForEntity, IValidat
         {
             yield return new ValidationResult("Actual price should be positive", [nameof(ActualPrice)]);
         }
+        if (ActualPrice is { } actualPrice && !FitsMoneyColumn(actualPrice))
+        {
+            yield return new ValidationResult("Actual price should fit decimal(18,2): at most 2 decimal places", [nameof(ActualPrice)]);
+        }
     }
+
+    /// <summary>Цена должна влезать в decimal(18,2) без округления: иначе SQL Server молча
+    /// округлит лишние знаки или убьёт запрос arithmetic overflow.</summary>
+    private static bool FitsMoneyColumn(decimal price)
+        => price <= 9999999999999999.99m && price == decimal.Round(price, 2);
 
     #endregion
 

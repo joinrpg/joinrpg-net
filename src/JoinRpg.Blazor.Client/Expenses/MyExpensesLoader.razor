@@ -17,7 +17,7 @@ else
 {
     @* «Одобрено» — сумма PlannedCost по Approved (факт может отсутствовать); Rejected не учитывается ни в одной сумме. *@
     <p>
-        Запланировано: <b>@PlannedTotal ₽</b> / Одобрено: <b>@ApprovedTotal ₽</b>
+        Запланировано: <b><PriceElement Price="PlannedTotal" /></b> / Одобрено: <b><PriceElement Price="ApprovedTotal" /></b>
     </p>
     <ExpensesGrid Expenses="expenses" ShowMaster="false" />
 }
@@ -29,9 +29,9 @@ else
     private IReadOnlyList<ExpenseViewModel>? expenses;
     private string? error;
 
-    private int PlannedTotal => expenses?.Where(expense => expense.State != ExpenseStateView.Rejected).Sum(expense => expense.PlannedCost) ?? 0;
+    private decimal PlannedTotal => expenses?.Where(expense => expense.State != ExpenseStateView.Rejected).Sum(expense => expense.PlannedCost) ?? 0;
 
-    private int ApprovedTotal => expenses?.Where(expense => expense.State == ExpenseStateView.Approved).Sum(expense => expense.PlannedCost) ?? 0;
+    private decimal ApprovedTotal => expenses?.Where(expense => expense.State == ExpenseStateView.Approved).Sum(expense => expense.PlannedCost) ?? 0;
 
     protected override async Task OnInitializedAsync()
     {

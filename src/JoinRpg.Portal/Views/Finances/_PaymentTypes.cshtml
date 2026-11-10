@@ -24,10 +24,10 @@
         </td>
         <td><component type="typeof(UserLink)" render-mode="Static" param-Model="@(new UserLinkViewModel(item.Master))" /></td>
         <td>
-            @(await Html.RenderComponentAsync<PriceElement>(RenderMode.Static, new { Price = item.Total }))
+            @(await Html.RenderComponentAsync<PriceElement>(RenderMode.Static, new { Price = (decimal)item.Total }))
         </td>
         <td>
-            @(await Html.RenderComponentAsync<PriceElement>(RenderMode.Static, new { Price = item.Moderation }))
+            @(await Html.RenderComponentAsync<PriceElement>(RenderMode.Static, new { Price = (decimal)item.Moderation }))
         </td>
     </tr>
 }
