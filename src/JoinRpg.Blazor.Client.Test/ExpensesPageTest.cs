@@ -90,6 +90,23 @@ public class ExpensesPageTest : BunitContext
         cut.FindAll("div[role=group]").ShouldBeEmpty();
     }
 
+    [Fact]
+    public void ExportLinkPresentAndStaysVisibleWhenFormOpened()
+    {
+        var cut = Render<ExpensesPage>(p => p.Add(x => x.ProjectId, ProjectId));
+
+        FindExportLink(cut).GetAttribute("href").ShouldBe("/webapi/1/expenses/export?export=xlsx");
+
+        ClickEditButton(cut);
+
+        // Форма открылась, кнопка «Новый расход» спряталась — ссылка на выгрузку остаётся
+        cut.Markup.ShouldContain("Редактирование расхода");
+        FindExportLink(cut);
+    }
+
+    private static AngleSharp.Dom.IElement FindExportLink(IRenderedComponent<ExpensesPage> cut)
+        => cut.FindAll("a").Single(a => a.TextContent.Trim() == "Скачать Excel");
+
     private static void ClickEditButton(IRenderedComponent<ExpensesPage> cut)
         => FindEditButton(cut).Click();
 

@@ -66,6 +66,14 @@ public abstract class CustomExporter<TRow>(IUriService uriService) : IGeneratorF
     }
 
     [Pure]
+    protected ITableColumn NullableIntColumn(Expression<Func<TRow, int?>> func)
+    {
+        var member = func.AsPropertyAccess();
+        var compiledFunc = func.Compile();
+        return new TableColumn<int?>(member, r => compiledFunc(r));
+    }
+
+    [Pure]
     protected ITableColumn BoolColumn(Expression<Func<TRow, bool>> func)
     {
         var memberName = func.AsPropertyAccess()?.GetDisplayName() ?? "1";

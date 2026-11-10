@@ -1,10 +1,13 @@
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Domain;
 using JoinRpg.DomainTypes.Finances;
+using JoinRpg.Helpers;
 using JoinRpg.Interfaces;
+using JoinRpg.Portal.Helpers;
 using JoinRpg.Portal.Infrastructure.Authorization;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Finances.Expenses;
+using JoinRpg.Web.Models.Exporters;
 using Microsoft.AspNetCore.Mvc;
 
 namespace JoinRpg.Portal.Controllers.WebApi;
@@ -21,7 +24,9 @@ public class ExpensesController(
     IExpenseRepository expenseRepository,
     IExpenseService expenseService,
     ICurrentUserAccessor currentUserAccessor,
-    IProjectMetadataRepository projectMetadataRepository) : ControllerBase
+    IProjectMetadataRepository projectMetadataRepository,
+    IExportDataService exportDataService,
+    IUriService uriService) : ControllerBase
 {
     [HttpGet]
     public async Task<ActionResult<IReadOnlyList<ExpenseViewModel>>> List(ProjectIdentification projectId)
@@ -49,6 +54,30 @@ public class ExpensesController(
     [HttpGet]
     public async Task<ActionResult<IReadOnlyCollection<string>>> CategoryPathSuggestions(ProjectIdentification projectId)
         => Ok(await expenseService.LoadCategoryPathSuggestions(projectId));
+
+    /// <summary>Выгрузка расходов проекта в Excel/CSV — зеркало грида страницы «Расходы».</summary>
+    [HttpGet]
+    public async Task<ActionResult> Export(ProjectIdentification projectId, string? export)
+    {
+        var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId);
+        var expenses = await expenseRepository.GetExpenses(projectId);
+        var exportType = ExportTypeNameParserHelper.ToExportType(export) ?? ExportType.ExcelXml;
+        var masterNames = MasterNames(projectInfo);
+        var items = expenses.Select(expense => new ExpenseExportItem(
+            expense.ExpenseId.ExpenseId,
+            string.Join("\\", expense.CategoryPath.Select(segment => segment.Name)),
+            expense.Name,
+            masterNames[expense.MasterId],
+            expense.PlannedQuantity,
+            expense.PlannedPrice,
+            expense.ActualQuantity,
+            expense.ActualPrice,
+            expense.State.ToView().GetDisplayName(),
+            expense.SpentAt,
+            expense.Description)).ToArray();
+        var generator = exportDataService.GetGenerator(exportType, items, new ExpenseExporter(uriService));
+        return GeneratorResultHelper.Result(projectInfo.ProjectName.Value + ": Расходы", generator);
+    }
 
     [HttpPost]
     public async Task<ActionResult<ExpenseIdentification>> Create(ProjectIdentification projectId, ExpenseEditViewModel model)
@@ -128,12 +157,15 @@ public class ExpensesController(
             expense.Description?.Value,
             expense.MasterId);
 
-    private static ExpenseViewModel[] ToDtos(ProjectInfo projectInfo, IReadOnlyCollection<ExpenseInfo> expenses)
-    {
+    private static Dictionary<UserIdentification, string> MasterNames(ProjectInfo projectInfo)
         // Имена — из метаданных проекта: UserInfoHeader есть у каждого мастера, включая бывших.
-        var masterNames = projectInfo.Masters
+        => projectInfo.Masters
             .Concat(projectInfo.FormerMasters)
             .ToDictionary(master => master.UserId, master => master.UserInfo.DisplayName.DisplayName);
+
+    private static ExpenseViewModel[] ToDtos(ProjectInfo projectInfo, IReadOnlyCollection<ExpenseInfo> expenses)
+    {
+        var masterNames = MasterNames(projectInfo);
         return expenses.Select(expense => ToDto(expense, masterNames)).ToArray();
     }
 }
