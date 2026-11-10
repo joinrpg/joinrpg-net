@@ -5,7 +5,7 @@
 @inject IExpensesClient Client
 @inject ILogger<ExpensesPage> Logger
 
-@* Страница «Расходы»: грид всех расходов проекта с действиями в строках и форма
+@* Страница «Расходы»: грид всех расходов проекта с действиями в строках и диалог
    создания/правки. Править можно свои расходы (или любые, с правом на деньги),
    одобрять/отклонять — только с правом на деньги. *@
 @if (loadError is not null)
@@ -24,17 +24,11 @@ else
     }
     <p>
         <JoinButtonGroup>
-            @if (editing is null)
-            {
-                <JoinButton Preset="ButtonPreset.Add" Label="Новый расход" AutoProgress="false" OnClick="@StartCreate" />
-            }
+            <JoinButton Preset="ButtonPreset.Add" Label="Новый расход" AutoProgress="false" OnClick="@StartCreate" />
             <JoinButton Link="@($"/webapi/{ProjectId.Value}/expenses/export?export=xlsx")" Preset="ButtonPreset.Download" Label="Скачать Excel" />
         </JoinButtonGroup>
     </p>
-    @if (editing is not null)
-    {
-        <ExpenseEditForm @key="editing.Model" Model="editing.Model" ProjectId="ProjectId" State="editing.State" CategorySuggestions="categorySuggestions" OnSave="Save" OnCancel="CancelEdit" />
-    }
+    <ExpenseEditDialog @ref="editDialog" ProjectId="ProjectId" CategorySuggestions="categorySuggestions" />
 
     <ExpensesGrid Expenses="expenses">
         <RowActions Context="expense">
@@ -43,11 +37,11 @@ else
                 <JoinButtonGroup Size="SizeStyleEnum.Small">
                     @if (CanEdit(expense))
                     {
-                        <JoinButton Preset="ButtonPreset.Edit" AutoProgress="false" Disabled="@(editing is not null)" OnClick="@(args => StartEdit(expense))" />
+                        <JoinButton Preset="ButtonPreset.Edit" AutoProgress="false" OnClick="@(args => StartEdit(expense))" />
                         @if (expense.ActualCost is null)
                         {
-                            @* «Потратил»: факта ещё нет — форма открывается с фактом, предзаполненным из плана *@
-                            <JoinButton Label="Потратил" AutoProgress="false" Disabled="@(editing is not null)" OnClick="@(args => StartEdit(expense, fillActualFromPlan: true))" />
+                            @* «Потратил»: факта ещё нет — диалог открывается с фактом, предзаполненным из плана *@
+                            <JoinButton Label="Потратил" AutoProgress="false" OnClick="@(args => StartEdit(expense, fillActualFromPlan: true))" />
                         }
                     }
                     @if (CanDecide(expense))
@@ -74,7 +68,7 @@ else
     private IReadOnlyCollection<string>? categorySuggestions;
     private UserIdentification? currentUser;
     private bool canManageMoney;
-    private EditingExpense? editing;
+    private ExpenseEditDialog editDialog = null!;
     private string? loadError;
     private string? actionError;
 
@@ -115,21 +109,20 @@ else
     private bool CanDecide(ExpenseViewModel expense)
         => canManageMoney && expense.State == ExpenseStateView.Proposed;
 
-    private void StartCreate()
+    private async Task StartCreate()
     {
         actionError = null;
         // Мастер по умолчанию — текущий пользователь; дата — последний известный расход
-        // (пустой список или расходы без дат — форма сама подставит сегодня)
-        editing = new(
-            new ExpenseEditViewModel
-            {
-                MasterId = currentUser,
-                SpentAt = expenses is { Count: > 0 } ? expenses.MaxBy(expense => expense.SpentAt)?.SpentAt : null,
-            },
-            State: null);
+        // (пустой список или расходы без дат — сегодня)
+        var model = new ExpenseEditViewModel
+        {
+            MasterId = currentUser,
+            SpentAt = expenses?.MaxBy(expense => expense.SpentAt)?.SpentAt ?? DateOnly.FromDateTime(DateTime.Today),
+        };
+        await EditAsync(model, state: null);
     }
 
-    private void StartEdit(ExpenseViewModel expense, bool fillActualFromPlan = false)
+    private async Task StartEdit(ExpenseViewModel expense, bool fillActualFromPlan = false)
     {
         actionError = null;
         var model = new ExpenseEditViewModel
@@ -146,10 +139,33 @@ else
             SpentAt = expense.SpentAt,
             Description = expense.Description,
         };
-        editing = new(model, expense.State);
+        await EditAsync(model, expense.State);
     }
 
-    private void CancelEdit() => editing = null;
+    private async Task EditAsync(ExpenseEditViewModel model, ExpenseStateView? state)
+    {
+        var result = await editDialog.ShowAsync(model, state);
+        if (result is null)
+        {
+            return;
+        }
+        FillPlannedFromActual(result);
+        await Save(result);
+    }
+
+    // Факт ввели, а план пустой — подставляем план из факта. Страховка от потерянного
+    // change-события; в живом диалоге то же делает ValueChanged полей факта.
+    private static void FillPlannedFromActual(ExpenseEditViewModel model)
+    {
+        if (model.PlannedQuantity is null && model.ActualQuantity is > 0)
+        {
+            model.PlannedQuantity = model.ActualQuantity;
+        }
+        if (model.PlannedPrice is null && model.ActualPrice is > 0)
+        {
+            model.PlannedPrice = model.ActualPrice;
+        }
+    }
 
     private async Task Save(ExpenseEditViewModel model)
     {
@@ -165,7 +181,6 @@ else
                 await Client.CreateExpense(ProjectId, model);
             }
 
-            editing = null;
             await LoadAll();
         }
         catch (ServerProblemException exception)
@@ -200,6 +215,4 @@ else
             args.ExitProgressState = true;
         }
     }
-
-    private sealed record EditingExpense(ExpenseEditViewModel Model, ExpenseStateView? State);
 }
