@@ -59,7 +59,8 @@ internal class AccommodationTypeService(
                     ctx.Request.Request.Description,
                     ctx.Request.Request.Cost,
                     ctx.Request.Request.Capacity,
-                    ctx.Request.Request.IsPlayerSelectable);
+                    ctx.Request.Request.IsPlayerSelectable,
+                    ctx.Request.Request.IsInfinite);
                 ctx.Project.ProjectAccommodationTypes.Add(entity);
                 return entity;
             });
@@ -137,7 +138,8 @@ internal class AccommodationTypeService(
                     ctx.Request.Request.Description,
                     ctx.Request.Request.Cost,
                     ctx.Request.Request.Capacity,
-                    ctx.Request.Request.IsPlayerSelectable);
+                    ctx.Request.Request.IsPlayerSelectable,
+                    ctx.Request.Request.IsInfinite);
             });
 
     /// <inheritdoc />
@@ -304,12 +306,14 @@ internal class AccommodationTypeService(
         MarkdownString description,
         int cost,
         int capacity,
-        bool isPlayerSelectable)
+        bool isPlayerSelectable,
+        bool isInfinite)
     {
         entity.Name = ServiceValidation.Required(name);
         entity.Description = new MarkdownDbValue(description.Value);
         entity.Cost = cost;
-        entity.Capacity = capacity;
+        entity.Capacity = isInfinite ? 1 : capacity;
         entity.IsPlayerSelectable = isPlayerSelectable;
+        entity.IsInfinite = isInfinite;
     }
 }
