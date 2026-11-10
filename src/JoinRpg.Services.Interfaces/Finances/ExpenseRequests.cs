@@ -11,11 +11,11 @@ public record CreateExpenseRequest(
     string Name,
     string CategoryPath,
     int PlannedQuantity,
-    int PlannedPrice,
+    decimal PlannedPrice,
     DateOnly? SpentAt,
     MarkdownString? Description,
     int? ActualQuantity = null,
-    int? ActualPrice = null);
+    decimal? ActualPrice = null);
 
 /// <param name="SpentAt">Дата расхода; может быть указана и у планового расхода (без факта)</param>
 /// <param name="Description">Описание (markdown)</param>
@@ -26,13 +26,13 @@ public record EditExpenseRequest(
     string Name,
     string CategoryPath,
     int PlannedQuantity,
-    int PlannedPrice,
+    decimal PlannedPrice,
     DateOnly? SpentAt,
     MarkdownString? Description,
     int? ActualQuantity = null,
-    int? ActualPrice = null);
+    decimal? ActualPrice = null);
 
 public record ExpenseActualRequest(
     int ActualQuantity,
-    int ActualPrice,
+    decimal ActualPrice,
     DateOnly SpentAt);

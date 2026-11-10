@@ -52,20 +52,28 @@ public class ExpenseServiceTest
         UserIdentification masterId,
         string categoryPath = "Аренда базы\\Жилые корпуса",
         int plannedQuantity = 2,
-        int plannedPrice = 5000,
+    private static CreateExpenseRequest CreateRequest(
+        UserIdentification masterId,
+        string categoryPath = "Аренда базы\\Жилые корпуса",
+        int plannedQuantity = 2,
+        decimal plannedPrice = 5000,
         DateOnly? spentAt = null,
         int? actualQuantity = null,
-        int? actualPrice = null)
+        decimal? actualPrice = null)
         => new(masterId, "Аренда домика", categoryPath, plannedQuantity, plannedPrice, spentAt, new MarkdownString("Предоплата за август"), actualQuantity, actualPrice);
 
     private static EditExpenseRequest EditRequest(
         UserIdentification masterId,
         string name = "Аренда домика (уточнено)",
         int plannedQuantity = 3,
-        int plannedPrice = 4500,
+    private static EditExpenseRequest EditRequest(
+        UserIdentification masterId,
+        string name = "Аренда домика (уточнено)",
+        int plannedQuantity = 3,
+        decimal plannedPrice = 4500,
         DateOnly? spentAt = null,
         int? actualQuantity = null,
-        int? actualPrice = null)
+        decimal? actualPrice = null)
         => new(masterId, name, "Аренда базы\\Жилые корпуса", plannedQuantity, plannedPrice, spentAt, new MarkdownString("Уточнено"), actualQuantity, actualPrice);
 
     /// <summary>Ещё один мастер проекта; метаданные пересобираем, чтобы ACL увидел его.</summary>
@@ -85,7 +93,7 @@ public class ExpenseServiceTest
         return master;
     }
 
-    private async Task<ExpenseIdentification> CreateExpenseAsMaster(int currentUserId = 0, int plannedQuantity = 2, int plannedPrice = 5000)
+    private async Task<ExpenseIdentification> CreateExpenseAsMaster(int currentUserId = 0, int plannedQuantity = 2, decimal plannedPrice = 5000)
     {
         var masterId = currentUserId == 0 ? mock.Master.UserId : currentUserId;
         return await CreateService(masterId).CreateExpense(
@@ -830,7 +838,6 @@ public class ExpenseServiceTest
         var service = CreateService(mock.Master.UserId);
         var expenseId = await CreateExpenseAsMaster(plannedQuantity: 1, plannedPrice: 100);
         await service.ApproveExpense(expenseId, null);
-
         // 5×100=500 больше плана 1×100=100 — одобрение сбрасывается, план не меняем
         await service.EditExpense(
             expenseId,
@@ -936,5 +943,37 @@ public class ExpenseServiceTest
         expense.State.ShouldBe(ExpenseState.Proposed);
         expense.ActualQuantity.ShouldBe(2);
         expense.ActualPrice.ShouldBe(100);
+    }
+
+    [Fact]
+    public async Task SetExpenseActual_KopeckExceedOfPlannedCost_ResetsToProposed()
+    {
+        // План 1×100 = 100; факт 1×100,10 = 100,10 больше плана на копейку — одобрение сбрасывается.
+        // С целыми рублями такой случай был невозможен.
+        var service = CreateService(mock.Master.UserId);
+        var expenseId = await CreateExpenseAsMaster(plannedQuantity: 1, plannedPrice: 100);
+        await service.ApproveExpense(expenseId, null);
+        await service.SetExpenseActual(expenseId, new ExpenseActualRequest(1, 100.10m, new DateOnly(2026, 8, 20)));
+
+        var expense = expenses.ShouldHaveSingleItem();
+        expense.State.ShouldBe(ExpenseState.Proposed);
+        expense.ActualPrice.ShouldBe(100.10m);
+    }
+
+    [Fact]
+    public async Task EditExpense_SameKopeckPlannedCost_KeepsApproved()
+    {
+        var service = CreateService(mock.Master.UserId);
+        var expenseId = await CreateExpenseAsMaster(plannedQuantity: 3, plannedPrice: 49.90m);
+        await service.ApproveExpense(expenseId, null);
+
+        // Тот же план с копейками (149,70) — денежная сторона не изменилась, одобрение сохраняется
+        await service.EditExpense(
+            expenseId,
+            EditRequest(new UserIdentification(mock.Master.UserId), plannedQuantity: 3, plannedPrice: 49.90m));
+
+        var expense = expenses.ShouldHaveSingleItem();
+        expense.State.ShouldBe(ExpenseState.Approved);
+        expense.PlannedPrice.ShouldBe(49.90m);
     }
 }
