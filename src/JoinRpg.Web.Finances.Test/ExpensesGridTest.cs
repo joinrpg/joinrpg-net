@@ -73,6 +73,28 @@ public class ExpensesGridTest : BunitContext
     }
 
     [Fact]
+    public void RejectedExpenseStruckThrough()
+    {
+        var cut = RenderGrid();
+
+        // 3 ячейки (категория, название, стоимость) × 2 отклонённых расхода
+        cut.FindAll(".expense-rejected-strike").Count.ShouldBe(6);
+    }
+
+    [Fact]
+    public void NonRejectedExpensesNotStruckThrough()
+    {
+        var cut = RenderGrid();
+
+        var struckText = string.Join(" ", cut.FindAll(".expense-rejected-strike").Select(span => span.TextContent));
+        struckText.ShouldContain("Отклонённая аренда");
+        struckText.ShouldContain("Отклонённые расходники");
+        struckText.ShouldNotContain("Аренда зала");
+        struckText.ShouldNotContain("Канцелярия");
+        struckText.ShouldNotContain("Транспорт");
+    }
+
+    [Fact]
     public void SpentAtColumnHeaderIsDate()
     {
         var cut = RenderGrid();
@@ -162,6 +184,30 @@ public class ExpensesGridTest : BunitContext
             ActualPrice: 200,
             SpentAt: null,
             State: ExpenseStateView.Approved,
+            MasterName: "Иван Мастеров",
+            CreatedByName: "Иван Мастеров"),
+        new(
+            new ExpenseIdentification(new ProjectIdentification(1), 4),
+            "Отклонённая аренда",
+            "Аренда базы\\Поле",
+            PlannedQuantity: 1,
+            PlannedPrice: 5000,
+            ActualQuantity: 1,
+            ActualPrice: 5200,
+            SpentAt: null,
+            State: ExpenseStateView.Rejected,
+            MasterName: "Иван Мастеров",
+            CreatedByName: "Иван Мастеров"),
+        new(
+            new ExpenseIdentification(new ProjectIdentification(1), 5),
+            "Отклонённые расходники",
+            "Оргвзнос\\Расходники",
+            PlannedQuantity: 5,
+            PlannedPrice: 80,
+            ActualQuantity: null,
+            ActualPrice: null,
+            SpentAt: null,
+            State: ExpenseStateView.Rejected,
             MasterName: "Иван Мастеров",
             CreatedByName: "Иван Мастеров"),
     ];

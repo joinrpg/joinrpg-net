@@ -20,14 +20,14 @@
     </HeadContent>
     <ItemTemplate>
         <tr>
-            <td>@expense.CategoryPath</td>
-            <td>@expense.Name</td>
+            <td><span class="@StrikeClass(expense)">@expense.CategoryPath</span></td>
+            <td><span class="@StrikeClass(expense)">@expense.Name</span></td>
             @if (ShowMaster)
             {
                 <td><UserLink Model="expense.MasterLink" /></td>
             }
             <td class="expense-cost">
-                <span>
+                <span class="@StrikeClass(expense)">
                     @if (expense.ActualCost is not { } actualCost)
                     {
                         <text>@expense.PlannedQuantity × <PriceElement Price="expense.PlannedPrice" /> = <PriceElement Price="expense.PlannedCost" /></text>
@@ -81,4 +81,7 @@
 
     private static string FormatPrice(decimal price)
         => price.ToString("0.##", CultureInfo.GetCultureInfo("ru-RU"));
+
+    private static string? StrikeClass(ExpenseViewModel expense)
+        => expense.State == ExpenseStateView.Rejected ? "expense-rejected-strike" : null;
 }
