@@ -94,7 +94,9 @@ public class ExpensesController(
             model.PlannedQuantity,
             model.PlannedPrice,
             model.SpentAt,
-            ToMarkdown(model.Description)));
+            ToMarkdown(model.Description),
+            model.ActualQuantity,
+            model.ActualPrice));
         // Финансовый администратор одобряет свой расход молча — отдельным вызовом (отдельная транзакция)
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId);
         if (projectInfo.HasMasterAccess(currentUserAccessor, Permission.CanManageMoney))
@@ -116,7 +118,9 @@ public class ExpensesController(
             model.PlannedQuantity,
             model.PlannedPrice,
             model.SpentAt,
-            ToMarkdown(model.Description)));
+            ToMarkdown(model.Description),
+            model.ActualQuantity,
+            model.ActualPrice));
         return Ok();
     }
 

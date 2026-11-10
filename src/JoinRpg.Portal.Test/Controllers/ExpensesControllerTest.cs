@@ -95,6 +95,8 @@ public class ExpensesControllerTest
             PlannedQuantity = 10,
             PlannedPrice = 300,
             SpentAt = spentAt,
+            ActualQuantity = 2,
+            ActualPrice = 280,
             Description = "описание",
         };
 
@@ -110,6 +112,8 @@ public class ExpensesControllerTest
         request.Item2.PlannedQuantity.ShouldBe(10);
         request.Item2.PlannedPrice.ShouldBe(300);
         request.Item2.SpentAt.ShouldBe(spentAt);
+        request.Item2.ActualQuantity.ShouldBe(2);
+        request.Item2.ActualPrice.ShouldBe(280);
         request.Item2.Description.ShouldBe(new MarkdownString("описание"));
     }
 
@@ -178,6 +182,8 @@ public class ExpensesControllerTest
             PlannedQuantity = 12,
             PlannedPrice = 350,
             SpentAt = spentAt,
+            ActualQuantity = 3,
+            ActualPrice = 340,
             Description = "новое описание",
         };
 
@@ -192,6 +198,8 @@ public class ExpensesControllerTest
         edited.Request.PlannedQuantity.ShouldBe(12);
         edited.Request.PlannedPrice.ShouldBe(350);
         edited.Request.SpentAt.ShouldBe(spentAt);
+        edited.Request.ActualQuantity.ShouldBe(3);
+        edited.Request.ActualPrice.ShouldBe(340);
         edited.Request.Description.ShouldBe(new MarkdownString("новое описание"));
     }
 
