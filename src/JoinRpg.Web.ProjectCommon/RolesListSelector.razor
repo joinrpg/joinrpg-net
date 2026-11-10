@@ -1,3 +1,4 @@
+@using System.Linq.Expressions
 @inject IRolesListSelectorClient client
 @inject SelectorListCache cache
 
@@ -15,7 +16,10 @@
 
 @code {
 
+    [CascadingParameter] public EditContext? EditContext { get; set; }
     [Parameter] public string? Name { get; set; } = null;
+    /// <summary>Поле модели формы: EditContext узнаёт об изменении выбора по этому выражению.</summary>
+    [Parameter] public Expression<Func<ProjectRolesListIdentification[]?>>? SelectedIdsExpression { get; set; }
     [Parameter][EditorRequired] public ProjectIdentification ProjectId { get; set; } = null!;
     [Parameter] public ProjectRolesListIdentification? SelectedId { get; set; }
     [Parameter] public EventCallback<ProjectRolesListIdentification[]> SelectedIdsChanged { get; set; }
@@ -23,11 +27,31 @@
 
     private ProjectRolesListDto[]? rolesLists;
     private ProjectRolesListIdentification[] initial => SelectedId is not null ? [SelectedId] : [];
+    private FieldIdentifier? fieldIdentifier;
 
     private async Task HandleSelectedItemsChanged(ProjectRolesListDto[] selectedItems)
     {
         await SelectedIdsChanged.InvokeAsync(selectedItems.Select(x => x.ProjectRolesListId).ToArray());
         await SelectedChanged.InvokeAsync(selectedItems);
+        if (EditContext is not null && fieldIdentifier is not null)
+        {
+            EditContext.NotifyFieldChanged(fieldIdentifier.Value);
+        }
+    }
+
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+        if (SelectedIdsExpression is not null)
+        {
+            // Как в CharacterGroupSelector: пересоздаём при каждом рендере — модель формы может быть заменена.
+            fieldIdentifier = FieldIdentifier.Create(SelectedIdsExpression);
+            Name ??= fieldIdentifier.Value.FieldName;
+        }
+        else
+        {
+            fieldIdentifier = null;
+        }
     }
 
     protected override async Task OnInitializedAsync()

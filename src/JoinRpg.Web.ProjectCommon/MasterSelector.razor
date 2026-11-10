@@ -1,3 +1,4 @@
+@using System.Linq.Expressions
 @using JoinRpg.Common.PrimitiveTypes
 @using JoinRpg.Common.PrimitiveTypes.Users
 @inject IMasterClient client
@@ -21,7 +22,10 @@
 
 @code {
 
+    [CascadingParameter] public EditContext? EditContext { get; set; }
     [Parameter] public string? Name { get; set; } = null;
+    /// <summary>Поле модели формы: EditContext узнаёт об изменении выбора по этому выражению.</summary>
+    [Parameter] public Expression<Func<UserIdentification?>>? MasterIdExpression { get; set; }
     /// <summary>Пустой пункт «любой» — для фильтров, где отсутствие выбора тоже значение.</summary>
     [Parameter] public bool AllowEmpty { get; set; } = false;
     [Parameter] public string EmptyText { get; set; } = "Любой мастер";
@@ -37,6 +41,7 @@
 
     private UserIdentification[] Selected { get; set; } = [];
     private UserInfoHeader[]? items;
+    private FieldIdentifier? fieldIdentifier;
 
     protected override async Task OnInitializedAsync()
     {
@@ -56,6 +61,17 @@
         {
             Selected = [Master.UserId];
         }
+
+        if (MasterIdExpression is not null)
+        {
+            // Как в CharacterGroupSelector: пересоздаём при каждом рендере — модель формы может быть заменена.
+            fieldIdentifier = FieldIdentifier.Create(MasterIdExpression);
+            Name ??= fieldIdentifier.Value.FieldName;
+        }
+        else
+        {
+            fieldIdentifier = null;
+        }
     }
 
     private async Task HandleSelectedChanged(UserInfoHeader[] values)
@@ -63,5 +79,9 @@
         var master = values.Length == 0 ? null : values.Single();
         await MasterIdChanged.InvokeAsync(master?.UserId);
         await MasterChanged.InvokeAsync(master);
+        if (EditContext is not null && fieldIdentifier is not null)
+        {
+            EditContext.NotifyFieldChanged(fieldIdentifier.Value);
+        }
     }
 }

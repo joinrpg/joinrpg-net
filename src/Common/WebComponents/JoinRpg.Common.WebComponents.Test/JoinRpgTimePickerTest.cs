@@ -1,7 +1,14 @@
+using Microsoft.AspNetCore.Components.Forms;
+
 namespace JoinRpg.Common.WebComponents.Test;
 
 public class JoinRpgTimePickerTest
 {
+    private sealed class FormModel
+    {
+        public TimeOnly? StartTime { get; set; }
+    }
+
     [Fact]
     public void RendersTimeInputWithNameValue()
     {
@@ -45,5 +52,32 @@ public class JoinRpgTimePickerTest
         cut.Find("input").Change("");
 
         captured.ShouldBeNull();
+    }
+
+    /// <summary>
+    /// В <c>EditForm</c> валидация перерисовывает сообщение об ошибке и состояние кнопки по событию
+    /// <c>OnFieldChanged</c>. Без уведомления ввод времени не гасит ошибку — выглядит как «валидация
+    /// не отпускает, хотя время ввёл».
+    /// </summary>
+    [Fact]
+    public void Change_NotifiesEditContextThatFieldChanged()
+    {
+        using var ctx = new BunitContext();
+        var model = new FormModel();
+        var editContext = new EditContext(model);
+        var changedFields = new List<string>();
+        editContext.OnFieldChanged += (_, args) => changedFields.Add(args.FieldIdentifier.FieldName);
+
+        var cut = ctx.Render<JoinRpgTimePicker>(p => p
+            .AddCascadingValue(editContext)
+            .Add(x => x.Name, nameof(FormModel.StartTime))
+            .Add(x => x.Value, model.StartTime)
+            .Add(x => x.ValueChanged, v => model.StartTime = v)
+            .Add(x => x.ValueExpression, () => model.StartTime));
+
+        cut.Find("input").Change("10:30");
+
+        model.StartTime.ShouldBe(new TimeOnly(10, 30));
+        changedFields.ShouldBe([nameof(FormModel.StartTime)]);
     }
 }

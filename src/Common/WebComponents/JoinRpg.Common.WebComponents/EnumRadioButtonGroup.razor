@@ -15,8 +15,8 @@
 }
 
 @code {
-    private FieldIdentifier fieldIdentifier = default!;
-    private string name = default!;
+    private FieldIdentifier? fieldIdentifier;
+    private string? name;
 
     [CascadingParameter]
     public EditContext? EditContext { get; set; } = default!;
@@ -28,7 +28,7 @@
 
 
     [Parameter]
-    public System.Linq.Expressions.Expression<Func<TValue>> SelectedValueExpression { get; set; } = default!;
+    public System.Linq.Expressions.Expression<Func<TValue>>? SelectedValueExpression { get; set; }
 
     [Parameter]
     public string Name { get; set; } = null!;
@@ -42,20 +42,27 @@
     protected override void OnInitialized()
     {
         base.OnInitialized();
-        fieldIdentifier = FieldIdentifier.Create(SelectedValueExpression);
-        logger.LogTrace("FieldName = {fieldName}", fieldIdentifier.FieldName);
-        name ??= fieldIdentifier.FieldName;
+        // Override зашиплен в публичном API пакета; состояние полностью выставляется в OnParametersSet.
+        if (SelectedValueExpression is not null)
+        {
+            logger.LogTrace("FieldName = {fieldName}", FieldIdentifier.Create(SelectedValueExpression).FieldName);
+        }
     }
 
     protected override void OnParametersSet()
     {
         base.OnParametersSet();
-        name = Name ?? fieldIdentifier.FieldName;
+        // Как в CharacterGroupSelector: пересоздаём при каждом вызове — модель формы может быть заменена.
+        fieldIdentifier = SelectedValueExpression is not null ? FieldIdentifier.Create(SelectedValueExpression) : null;
+        name = Name ?? fieldIdentifier?.FieldName;
     }
 
     private async Task UpdateSelected(ChangeEventArgs eventArgs)
     {
         await SelectedValueChanged.InvokeAsync(Enum.Parse<TValue>(eventArgs.Value!.ToString ()!));
-        EditContext?.NotifyFieldChanged(fieldIdentifier);
+        if (EditContext is not null && fieldIdentifier is not null)
+        {
+            EditContext.NotifyFieldChanged(fieldIdentifier.Value);
+        }
     }
 }

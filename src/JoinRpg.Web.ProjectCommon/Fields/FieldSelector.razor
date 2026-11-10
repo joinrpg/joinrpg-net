@@ -1,3 +1,4 @@
+@using System.Linq.Expressions
 @inject IProjectFieldsClient fieldsClient
 @inject SelectorListCache cache
 
@@ -8,13 +9,14 @@
         Value: f.FieldId,
         Text: f.Name,
         Subtext: f.BoundTo == FieldBoundTo.Character ? "Персонаж" : "Заявка"))"
-    SelectedValues="SelectedFieldIds"
-    SelectedValuesChanged="SelectedFieldIdsChanged"
+    SelectedValues="@SelectedFieldIds"
+    SelectedValuesChanged="@HandleSelectedValuesChanged"
     Multiple="@Multiple"
     AllowEmpty="@AllowEmpty"
     EmptyText="@EmptyText" />
 
 @code {
+    [CascadingParameter] public EditContext? EditContext { get; set; }
     [Parameter] [EditorRequired] public ProjectIdentification ProjectId { get; set; } = null!;
     /// <summary>
     /// Выбранные поля. В списке только активные поля проекта: неактивное поле отсюда не отображается выбранным
@@ -23,6 +25,8 @@
     /// </summary>
     [Parameter] public ProjectFieldIdentification[] SelectedFieldIds { get; set; } = [];
     [Parameter] public EventCallback<ProjectFieldIdentification[]> SelectedFieldIdsChanged { get; set; }
+    /// <summary>Поле модели для мульти-выбора: EditContext узнаёт об изменении по этому выражению.</summary>
+    [Parameter] public Expression<Func<ProjectFieldIdentification[]?>>? SelectedFieldIdsExpression { get; set; }
     [Parameter] public bool Multiple { get; set; } = true;
     [Parameter] public bool AllowEmpty { get; set; } = false;
     [Parameter] public string EmptyText { get; set; } = "(нет)";
@@ -35,6 +39,7 @@
     private ProjectFieldDto[]? _items;
     /// <summary>Для какого проекта список уже загружен: пока он тот же, в сеть не ходим.</summary>
     private ProjectIdentification? _loadedFor;
+    private FieldIdentifier? fieldIdentifier = null;
 
     protected override async Task OnParametersSetAsync()
     {
@@ -50,5 +55,19 @@
         _items = _loaded?
             .Where(f => (FieldType is null || f.FieldType == FieldType) && (BoundTo is null || f.BoundTo == BoundTo))
             .ToArray();
+
+        // Пересоздаём при каждом выставлении параметров — модель формы может быть заменена.
+        fieldIdentifier = SelectedFieldIdsExpression is not null
+            ? FieldIdentifier.Create(SelectedFieldIdsExpression)
+            : null;
+    }
+
+    private async Task HandleSelectedValuesChanged(ProjectFieldIdentification[] selection)
+    {
+        await SelectedFieldIdsChanged.InvokeAsync(selection);
+        if (EditContext is not null && fieldIdentifier is not null)
+        {
+            EditContext.NotifyFieldChanged(fieldIdentifier.Value);
+        }
     }
 }

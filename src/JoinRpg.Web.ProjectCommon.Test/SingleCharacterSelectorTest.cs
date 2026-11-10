@@ -1,5 +1,6 @@
 using JoinRpg.Common.WebComponents;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace JoinRpg.Web.ProjectCommon.Test;
@@ -108,5 +109,36 @@ public class SingleCharacterSelectorTest
         cut.Find($"input[value='{firstValue}']").Change(true);
 
         reported.ShouldBe([null, FirstId]);
+    }
+
+    private sealed class FormModel
+    {
+        public CharacterIdentification? CharacterId { get; set; }
+    }
+
+    /// <summary>
+    /// В <c>EditForm</c> валидация перерисовывает сообщение об ошибке по событию <c>OnFieldChanged</c>.
+    /// Без уведомления выбор персонажа не гасит ошибку до отправки формы — выглядит как «валидация не
+    /// отпускает, хотя персонажа выбрал».
+    /// </summary>
+    [Fact]
+    public void Selecting_NotifiesEditContextThatFieldChanged()
+    {
+        using var ctx = CreateInteractiveContext();
+        var model = new FormModel();
+        var editContext = new EditContext(model);
+        var changedFields = new List<string>();
+        editContext.OnFieldChanged += (_, args) => changedFields.Add(args.FieldIdentifier.FieldName);
+
+        var cut = ctx.Render<SingleCharacterSelector>(p => p
+            .AddCascadingValue(editContext)
+            .Add(x => x.ProjectId, ProjectId)
+            .Add(x => x.SelectedCharacterIdExpression, () => model.CharacterId)
+            .Add(x => x.SelectedCharacterIdChanged, (CharacterIdentification? id) => model.CharacterId = id));
+
+        cut.FindAll(".join-select__list input")[1].Change(true);
+
+        model.CharacterId.ShouldBe(new CharacterIdentification(ProjectId, 20));
+        changedFields.ShouldBe([nameof(FormModel.CharacterId)]);
     }
 }

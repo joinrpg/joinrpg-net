@@ -1,8 +1,11 @@
+@using System.Linq.Expressions
+
 <CharacterGroupSelector
   Name="@Name"
   ProjectId="@ProjectId"
   SelectedGroupIds="@selectedGroupIds"
   SelectedGroupsChanged="HandleSelectedGroupChanged"
+  SelectedGroupIdsExpression="@passThroughIdsExpression"
   IncludeSpecial="@IncludeSpecial"
   Multiple="false"
   Mode="@Mode"
@@ -11,10 +14,15 @@
 
 @code {
 
+    [CascadingParameter] public EditContext? EditContext { get; set; }
     [Parameter] public string? Name { get; set; } = null;
     [Parameter] public int ProjectId { get; set; }
     [Parameter] public CharacterGroupIdentification? SelectedGroupId { get; set; }
     [Parameter] public EventCallback<CharacterGroupIdentification?> SelectedGroupIdChanged { get; set; }
+    /// <summary>Поле модели для одиночного выбора: EditContext узнаёт об изменении по этому выражению.</summary>
+    [Parameter] public Expression<Func<CharacterGroupIdentification?>>? SelectedGroupIdExpression { get; set; }
+    /// <summary>Поле модели для мульти-выбора: пробрасывается во внутренний <see cref="CharacterGroupSelector"/>, который уведомляет EditContext сам.</summary>
+    [Parameter] public Expression<Func<CharacterGroupIdentification[]?>>? SelectedGroupIdsExpression { get; set; }
     [Parameter] public CharacterGroupDto? SelectedGroup { get; set; }
     [Parameter] public EventCallback<CharacterGroupDto> SelectedGroupChanged { get; set; }
     [Parameter] public bool IncludeSpecial { get; set; } = true;
@@ -24,6 +32,8 @@
     [Parameter] public string EmptyText { get; set; } = "Все группы";
 
     private CharacterGroupIdentification[] selectedGroupIds = [];
+    private Expression<Func<CharacterGroupIdentification[]?>>? passThroughIdsExpression = null;
+    private FieldIdentifier? fieldIdentifier = null;
 
     protected override void OnParametersSet()
     {
@@ -36,6 +46,21 @@
         {
             selectedGroupIds = [SelectedGroup.CharacterGroupId ];
         }
+
+        // Пересоздаём при каждом выставлении параметров — модель формы может быть заменена.
+        // Собственное выражение и проброс во внутренний селектор взаимоисключающи: иначе EditContext
+        // получит два уведомления по разным FieldIdentifier за одно изменение.
+        if (SelectedGroupIdExpression is not null)
+        {
+            fieldIdentifier = FieldIdentifier.Create(SelectedGroupIdExpression);
+            Name ??= fieldIdentifier.Value.FieldName;
+            passThroughIdsExpression = null;
+        }
+        else
+        {
+            fieldIdentifier = null;
+            passThroughIdsExpression = SelectedGroupIdsExpression;
+        }
     }
 
     private async Task HandleSelectedGroupChanged(CharacterGroupDto[] values)
@@ -43,5 +68,10 @@
         CharacterGroupDto? selected = values.Length == 0 ? null : values.Single();
         await SelectedGroupIdChanged.InvokeAsync(selected?.CharacterGroupId);
         await SelectedGroupChanged.InvokeAsync(selected);
+
+        if (EditContext is not null && fieldIdentifier is not null)
+        {
+            EditContext.NotifyFieldChanged(fieldIdentifier.Value);
+        }
     }
 }

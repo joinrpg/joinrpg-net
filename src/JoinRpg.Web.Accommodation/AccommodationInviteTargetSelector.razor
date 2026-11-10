@@ -1,5 +1,7 @@
 @* Выбор цели приглашения к совместному проживанию (или того, кого мастер поселит вместе, #5656): *@
 @* игрок либо целая группа проживающих. *@
+@using System.Linq.Expressions
+@using Microsoft.AspNetCore.Components.Forms
 @inject IAccommodationInviteClient Client
 
 @if (model is null)
@@ -36,6 +38,8 @@ else
     [PersistentState]
     public AccommodationInviteTargetsViewModel? model { get; set; }
 
+    [CascadingParameter] public EditContext? EditContext { get; set; }
+
     [Parameter, EditorRequired] public ClaimIdentification ClaimId { get; set; } = null!;
 
     [Parameter] public string? Name { get; set; }
@@ -45,11 +49,16 @@ else
 
     [Parameter] public EventCallback<AccommodationGroupIdentification?> ValueChanged { get; set; }
 
+    /// <summary>Поле модели для <see cref="EditContext"/>: форма узнаёт об изменении по этому выражению.</summary>
+    [Parameter] public Expression<Func<AccommodationGroupIdentification?>>? ValueExpression { get; set; }
+
     /// <summary>
     /// Сообщает наружу, что можно сделать: <see cref="AccommodationInviteMode.None"/>, если некого
     /// выбирать, — чтобы спрятать кнопку; иначе приглашать или поселять вместе — чтобы подписать её.
     /// </summary>
     [Parameter] public EventCallback<AccommodationInviteMode> ModeChanged { get; set; }
+
+    private FieldIdentifier? fieldIdentifier;
 
     private bool HasTargets => model!.Mode != AccommodationInviteMode.None
         && model.RoomFreeSpace > 0
@@ -68,6 +77,21 @@ else
     private AccommodationGroupIdentification[] SelectedValues
         => Value is null ? [] : [Value];
 
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+        if (ValueExpression is not null)
+        {
+            // Как в CharacterGroupSelector: пересоздаём при каждом вызове — модель формы может быть заменена.
+            fieldIdentifier = FieldIdentifier.Create(ValueExpression);
+            Name ??= fieldIdentifier.Value.FieldName;
+        }
+        else
+        {
+            fieldIdentifier = null;
+        }
+    }
+
     protected override async Task OnInitializedAsync()
     {
         model ??= await Client.GetInviteTargets(ClaimId);
@@ -75,5 +99,11 @@ else
     }
 
     private async Task HandleSelectedChanged(AccommodationGroupIdentification[] values)
-        => await ValueChanged.InvokeAsync(values.SingleOrDefault());
+    {
+        await ValueChanged.InvokeAsync(values.SingleOrDefault());
+        if (EditContext is not null && fieldIdentifier is not null)
+        {
+            EditContext.NotifyFieldChanged(fieldIdentifier.Value);
+        }
+    }
 }

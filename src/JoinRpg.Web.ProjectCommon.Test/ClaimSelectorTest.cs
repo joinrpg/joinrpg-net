@@ -3,6 +3,7 @@ using JoinRpg.Common.WebComponents;
 using JoinRpg.DomainTypes.Characters.Claims;
 using JoinRpg.Web.ProjectCommon.Claims;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace JoinRpg.Web.ProjectCommon.Test;
@@ -16,6 +17,11 @@ public class ClaimSelectorTest
     private static readonly ProjectIdentification ProjectId = new(1);
     private static readonly ClaimIdentification FirstClaimId = new(ProjectId, 10);
     private static readonly ClaimIdentification SecondClaimId = new(ProjectId, 20);
+
+    private sealed class FormModel
+    {
+        public ClaimIdentification? ClaimId { get; set; }
+    }
 
     private sealed class FakeClaimListClient : IClaimListClient
     {
@@ -116,5 +122,32 @@ public class ClaimSelectorTest
             .Add(x => x.ExceptClaimId, FirstClaimId));
 
         cut.FindAll(".join-select__list input").Select(o => o.GetAttribute("value")).ShouldBe([SecondClaimId.ToString()]);
+    }
+
+    /// <summary>
+    /// В <c>EditForm</c> валидация перерисовывает сообщение об ошибке и состояние кнопки по событию
+    /// <c>OnFieldChanged</c>. Без уведомления выбор заявки не гасит ошибку — выглядит как «валидация
+    /// не отпускает, хотя заявку выбрал».
+    /// </summary>
+    [Fact]
+    public void Selecting_NotifiesEditContextThatFieldChanged()
+    {
+        using var ctx = CreateContext();
+        ctx.SetRendererInfo(new RendererInfo("WebAssembly", isInteractive: true));
+        var model = new FormModel();
+        var editContext = new EditContext(model);
+        var changedFields = new List<string>();
+        editContext.OnFieldChanged += (_, args) => changedFields.Add(args.FieldIdentifier.FieldName);
+
+        var cut = ctx.Render<ClaimSelector>(p => p
+            .AddCascadingValue(editContext)
+            .Add(x => x.ProjectId, ProjectId)
+            .Add(x => x.ClaimIdExpression, () => model.ClaimId)
+            .Add(x => x.ClaimIdChanged, id => model.ClaimId = id));
+
+        cut.FindAll(".join-select__list input")[1].Change(true);
+
+        model.ClaimId.ShouldBe(SecondClaimId);
+        changedFields.ShouldBe([nameof(FormModel.ClaimId)]);
     }
 }

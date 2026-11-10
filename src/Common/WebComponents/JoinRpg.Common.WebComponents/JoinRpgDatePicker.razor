@@ -1,13 +1,21 @@
+@using System.Linq.Expressions
 <input type="date" id="@inputId" @onchange="UpdateValue" name="@Name" value="@Format(Value)" min="@Format(Min)" max="@Format(Max)" />
 
 @code {
     private const string IsoDateFormat = "yyyy-MM-dd";
+
+    [CascadingParameter]
+    public EditContext? EditContext { get; set; }
 
     [Parameter]
     public DateOnly? Value { get; set; }
 
     [Parameter]
     public EventCallback<DateOnly?> ValueChanged { get; set; }
+
+    /// <summary>Поле модели для <see cref="EditContext"/>: форма узнаёт об изменении по этому выражению.</summary>
+    [Parameter]
+    public Expression<Func<DateOnly?>>? ValueExpression { get; set; }
 
     [Parameter, EditorRequired]
     public string Name { get; set; } = null!;
@@ -22,8 +30,14 @@
     private FormRowLabelTarget? LabelTarget { get; set; }
 
     private string? inputId;
+    private FieldIdentifier? fieldIdentifier;
 
-    protected override void OnParametersSet() => inputId = LabelTarget?.Claim(this);
+    protected override void OnParametersSet()
+    {
+        inputId = LabelTarget?.Claim(this);
+        // Как в CharacterGroupSelector: пересоздаём при каждом вызове — модель формы может быть заменена.
+        fieldIdentifier = ValueExpression is not null ? FieldIdentifier.Create(ValueExpression) : null;
+    }
 
     private static string? Format(DateOnly? date) => date?.ToString(IsoDateFormat, System.Globalization.CultureInfo.InvariantCulture);
 
@@ -35,5 +49,9 @@
                 System.Globalization.DateTimeStyles.None, out var parsed)
                 ? parsed
                 : null);
+        if (EditContext is not null && fieldIdentifier is not null)
+        {
+            EditContext.NotifyFieldChanged(fieldIdentifier.Value);
+        }
     }
 }
