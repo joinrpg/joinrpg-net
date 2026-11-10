@@ -602,6 +602,7 @@ public class MockedProject
         int capacity = 4,
         int cost = 0,
         bool isPlayerSelectable = true,
+        bool isInfinite = false,
         ProjectRoomCategory? roomCategory = null)
     {
         roomCategory ??= CreateRoomCategory(name);
@@ -614,6 +615,7 @@ public class MockedProject
             Capacity = capacity,
             Cost = cost,
             IsPlayerSelectable = isPlayerSelectable,
+            IsInfinite = isInfinite,
             RoomCategory = roomCategory,
             RoomCategoryId = roomCategory.Id,
             Desirous = [],
