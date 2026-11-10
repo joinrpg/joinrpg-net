@@ -92,10 +92,11 @@ internal static class RoomTypeEditViewModelBuilder
             model.IsInfinite);
 
     /// <summary>
-    /// Пустое название новой категории — категория получит имя типа.
+    /// Пустое название новой категории — категория получит имя типа. Гостевой тип одиночный:
+    /// выбранный общий пул игнорируется — иначе его группы попали бы в чужую доску расселения (#1945).
     /// </summary>
     public static RoomCategorySelection ToRoomCategorySelection(ProjectIdentification projectId, RoomTypeEditViewModel model)
-        => model.RoomCategoryChoice == RoomCategoryChoice.Existing && model.ExistingRoomCategoryId is int categoryId
+        => !model.IsInfinite && model.RoomCategoryChoice == RoomCategoryChoice.Existing && model.ExistingRoomCategoryId is int categoryId
             ? new ExistingRoomCategory(new RoomCategoryIdentification(projectId, categoryId))
             : new NewRoomCategory(string.IsNullOrWhiteSpace(model.NewRoomCategoryName) ? model.Name : model.NewRoomCategoryName.Trim());
 }

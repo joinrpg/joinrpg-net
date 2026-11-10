@@ -86,6 +86,27 @@ public class RoomTypeEditViewServiceTest
             .ShouldBe(new ExistingRoomCategory(new RoomCategoryIdentification(projectId, 101)));
     }
 
+    /// <summary>
+    /// Гостевой тип одиночный: даже если в форме был выбран общий пул, заводится в своей категории —
+    /// иначе его группы попали бы в чужую доску расселения (#1945).
+    /// </summary>
+    [Fact]
+    public async Task CreateRoomType_GuestType_IgnoresExistingCategoryChoice()
+    {
+        var projectId = Mock.ProjectInfo.ProjectId;
+
+        await CreateService().CreateRoomType(projectId, new RoomTypeEditViewModel
+        {
+            Name = "Гостевое поселение",
+            IsInfinite = true,
+            RoomCategoryChoice = RoomCategoryChoice.Existing,
+            ExistingRoomCategoryId = 101,
+        });
+
+        typeService.Created.ShouldHaveSingleItem().RoomCategory
+            .ShouldBe(new NewRoomCategory("Гостевое поселение"));
+    }
+
     [Fact]
     public async Task CreateRoomType_WithNamedNewCategory_PassesName()
     {

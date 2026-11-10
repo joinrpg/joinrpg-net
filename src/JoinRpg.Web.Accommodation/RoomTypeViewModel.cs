@@ -13,15 +13,14 @@ public abstract class RoomTypeViewModelBase
     public int Capacity { get; set; }
 
     /// <summary>
-    /// Бесконечное поселение. Значение приходит из метаданных проекта
-    /// (<see cref="AccommodationTypeInfo.IsInfinite"/>), где функциональность объявлена
-    /// нереализованной.
+    /// Бесконечное поселение (гостевой тип). Значение приходит из метаданных проекта
+    /// (<see cref="AccommodationTypeInfo.IsInfinite"/>), где флаг — настройка типа (#1945).
     /// </summary>
     /// <remarks>
     /// Сеттер закрыт: флаг ставят только конструкторы наследников из
     /// <see cref="AccommodationTypeInfo"/>. Это вью-модель только для показа: форма
     /// редактирования типа (<see cref="JoinRpg.Web.Accommodation.RoomTypeEditForm"/>) работает
-    /// со своей моделью, где нереализованных флагов нет вовсе.
+    /// со своей моделью <c>RoomTypeEditViewModel</c>, где флаг есть.
     /// </remarks>
     [DisplayName("Бесконечное поселение")]
     public bool IsInfinite { get; private protected init; } = false;
@@ -108,9 +107,9 @@ public class RoomTypeViewModel : RoomTypeViewModelBase
         Name = typeInfo.Name;
         Capacity = typeInfo.Capacity;
         IsPlayerSelectable = typeInfo.IsPlayerSelectable;
-        // Нереализованные флаги берём из метаданных явно, а не оставляем в дефолте вью-модели:
-        // в метаданных они всегда false (см. AccommodationTypeInfo.IsInfinite), и форма должна
-        // показывать именно это значение, а не совпадающий с ним по случайности дефолт.
+        // Флаги берём из метаданных явно, а не оставляем в дефолте вью-модели: форма должна
+        // показывать именно значение настройки (IsInfinite — настоящий, #1945;
+        // IsAutoFilledAccommodation пока всегда false).
         IsInfinite = typeInfo.IsInfinite;
         IsAutoFilledAccommodation = typeInfo.IsAutoFilledAccommodation;
         DescriptionHtml = descriptionView.Value;

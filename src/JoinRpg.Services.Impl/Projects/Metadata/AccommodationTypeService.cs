@@ -108,16 +108,29 @@ internal class AccommodationTypeService(
     }
 
     /// <inheritdoc />
-    public Task UpdateAccommodationType(
+    public async Task UpdateAccommodationType(
         AccommodationTypeIdentification accommodationTypeId,
         AccommodationTypeRequest request)
-        => projectPropsService.ChangeProjectProperties(
+    {
+        // Гостевому типу комнаты не нужны, а категория с ними — обязательна (ADR020): включение
+        // «бесконечности» типу, чьи комнаты никому больше не принадлежат, запрещено — страница
+        // «Комнаты» для гостевого типа скрыта, и комнаты стали бы недостижимы (#1945). Проверка —
+        // отдельным запросом, вне ctx.Project: комнаты в граф метаданных не входят (ADR015).
+        var hasExclusiveRooms = request.IsInfinite
+            && await accommodationRepository.HasExclusiveRoomsOfType(accommodationTypeId);
+
+        await projectPropsService.ChangeProjectProperties(
             accommodationTypeId.ProjectId,
             Permission.CanManageAccommodation,
             ProjectActiveRequirement.AllowBlocked, // настройки проекта разрешены и на время восстановления (ADR023)
-            (AccommodationTypeId: accommodationTypeId, Request: request),
+            (AccommodationTypeId: accommodationTypeId, Request: request, HasExclusiveRooms: hasExclusiveRooms),
             ctx =>
             {
+                if (ctx.Request.HasExclusiveRooms)
+                {
+                    throw new AccommodationTypeHasRoomsException(ctx.Request.AccommodationTypeId);
+                }
+
                 var entity = ctx.GetAccommodationTypeForChange(ctx.Request.AccommodationTypeId);
 
                 // Категория, созданная вместе с типом, носит его имя (ADR020): пока имена совпадают,
@@ -141,6 +154,7 @@ internal class AccommodationTypeService(
                     ctx.Request.Request.IsPlayerSelectable,
                     ctx.Request.Request.IsInfinite);
             });
+    }
 
     /// <inheritdoc />
     /// <remarks>

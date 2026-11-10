@@ -1,6 +1,11 @@
 @* Не «вместимость × комнаты»: полную комнату может заполнить и тип с меньшей вместимостью (ADR020),
-   так что выводим само число жильцов полных комнат. *@
-@if (Occupancy.PoolOccupied == 0)
+   так что выводим само число жильцов полных комнат. У гостевого типа комнат нет — «занято» это
+   просто все купившие (#1945). *@
+@if (IsInfinite)
+{
+    <div>Занято: @Occupancy.Occupied</div>
+}
+else if (Occupancy.PoolOccupied == 0)
 {
     <div>Занято: нет</div>
 }
@@ -18,4 +23,8 @@ else
 
 @code {
     [Parameter, EditorRequired] public RoomTypeOccupancySummary Occupancy { get; set; } = null!;
+
+    /// <summary>Гостевой тип: комнат нет, формула по комнатам неприменима (#1945)</summary>
+    [Parameter]
+    public bool IsInfinite { get; set; }
 }

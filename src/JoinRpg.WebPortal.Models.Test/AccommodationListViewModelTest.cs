@@ -103,4 +103,26 @@ public class AccommodationListViewModelTest
         model.TotalPaid.ShouldBe(2);
         model.TotalAcceptedNotPaid.ShouldBe(1);
     }
+
+    /// <summary>
+    /// Все типы гостевые: понятия «свободных мест в поселении» нет — итог не показывается (#1945).
+    /// </summary>
+    [Fact]
+    public async Task AllGuestTypes_FreeCapacityIsNotShown()
+    {
+        mock.AccommodationTypes.Remove(tent);
+        var guest = mock.CreateAccommodationType("Гостевое поселение", capacity: 1, isInfinite: true);
+        mock.ReInitProjectInfo();
+        var claim = CreatePaidClaim("Палаточник", BaseFee);
+        _ = mock.CreateAccommodationRequest(guest, claim);
+
+        var model = await Build(claim);
+
+        model.FreeCapacity.ShouldBeNull();
+        // Жилец гостевого типа — заселён: не висит ни в нерасселённых, ни в ожидающих.
+        var row = model.RoomTypes.ShouldHaveSingleItem();
+        row.Occupancy.Occupied.ShouldBe(1);
+        row.Occupancy.PendingRequests.ShouldBe(0);
+        model.TotalPending.ShouldBe(0);
+    }
 }

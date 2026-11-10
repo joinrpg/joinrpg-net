@@ -75,4 +75,34 @@ public class RoomTypeOccupancySummaryTest
             roomId is null ? null : new AccommodationRoomIdentification(projectId, roomId.Value),
             [.. Enumerable.Range(1, persons).Select(i => new ClaimIdentification(projectId, id * 100 + i))]);
     }
+
+    /// <summary>
+    /// Гостевой тип: комнат нет, поэтому каждый купивший считается заселённым — «нерасселённых»
+    /// и ждущих оплаты не остаётся (#1945). Иначе строка врала бы: «Занято: нет, N нерасселённых».
+    /// </summary>
+    [Fact]
+    public void GuestType_OccupiedIsAllApprovedAndPendingIsZero()
+    {
+        var guestEntity = mock.CreateAccommodationType("Гостевое поселение", capacity: 1, isInfinite: true);
+        mock.ReInitProjectInfo();
+        var projectInfo = mock.ProjectInfo;
+        var guest = projectInfo.AccommodationSettings.GetTypeById(new(projectInfo.ProjectId, guestEntity.Id));
+
+        var group = Group(1, guest, roomId: null, persons: 3);
+        var plan = new RoomCategoryPlan(
+            guest.RoomCategoryId,
+            projectInfo,
+            [guest],
+            [],
+            [group]);
+
+        var summary = RoomTypeOccupancySummary.FromPlan(plan, guest.Id, paidCount: 2);
+
+        summary.Occupied.ShouldBe(3);
+        summary.ApprovedClaims.ShouldBe(3);
+        summary.PendingRequests.ShouldBe(0);
+        // Оплаченность нерасселённых не считается: нерасселённых нет, иначе AcceptedNotPaid ушёл бы в минус.
+        summary.PaidCount.ShouldBe(0);
+        summary.AcceptedNotPaidCount.ShouldBe(0);
+    }
 }

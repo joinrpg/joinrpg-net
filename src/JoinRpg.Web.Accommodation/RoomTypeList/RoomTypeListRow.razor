@@ -33,13 +33,14 @@
     <td class="price-value">
         @if (Model.IsInfinite)
         {
-            <div>@Model.Capacity ✕ ∞ = ∞</div>
+            @* Мест бесконечно: вместимость номера ни о чём не говорит (#1945). *@
+            <div>∞</div>
         }
         else
         {
             <FreeSeatsFormula Occupancy="Model.Occupancy" />
         }
-        <OccupiedSeatsFormula Occupancy="Model.Occupancy" />
+        <OccupiedSeatsFormula Occupancy="Model.Occupancy" IsInfinite="Model.IsInfinite" />
     </td>
     <td class="price-value">
         <PendingRequestsFormula Paid="Model.Occupancy.PaidCount"

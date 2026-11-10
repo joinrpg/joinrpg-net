@@ -10,6 +10,12 @@ public interface IAccommodationRepository
     Task<bool> HasOccupiedRoomOfType(AccommodationTypeIdentification accommodationTypeId);
 
     /// <summary>
+    /// Остались ли комнаты в категории, где этот тип — единственный: гостевому типу они не нужны,
+    /// а общий пул с ними никто не управлял бы (#1945).
+    /// </summary>
+    Task<bool> HasExclusiveRoomsOfType(AccommodationTypeIdentification accommodationTypeId);
+
+    /// <summary>
     /// Заявки, состоящие в группах проживания (<c>AccommodationRequest</c>) этого типа, — и
     /// расселённых, и нет.
     /// </summary>
