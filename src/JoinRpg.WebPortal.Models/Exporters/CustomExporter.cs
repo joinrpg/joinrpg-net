@@ -66,6 +66,22 @@ public abstract class CustomExporter<TRow>(IUriService uriService) : IGeneratorF
     }
 
     [Pure]
+    protected ITableColumn DecimalColumn(Expression<Func<TRow, decimal>> func)
+    {
+        var member = func.AsPropertyAccess();
+        var compiledFunc = func.Compile();
+        return new TableColumn<decimal>(member, r => compiledFunc(r));
+    }
+
+    [Pure]
+    protected ITableColumn NullableDecimalColumn(Expression<Func<TRow, decimal?>> func)
+    {
+        var member = func.AsPropertyAccess();
+        var compiledFunc = func.Compile();
+        return new TableColumn<decimal?>(member, r => compiledFunc(r));
+    }
+
+    [Pure]
     protected ITableColumn NullableIntColumn(Expression<Func<TRow, int?>> func)
     {
         var member = func.AsPropertyAccess();

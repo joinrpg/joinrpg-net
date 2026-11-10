@@ -4,9 +4,9 @@ namespace JoinRpg.Web.Models;
 
 public record ExpenseSummaryRow(
     [property: Display(Name = "Категория")] string CategoryPath,
-    [property: Display(Name = "План (одобрено)")] int ApprovedPlannedCost,
-    [property: Display(Name = "Факт (одобрено)")] int ApprovedActualCost,
-    [property: Display(Name = "На рассмотрении")] int ProposedCost);
+    [property: Display(Name = "План (одобрено)")] decimal ApprovedPlannedCost,
+    [property: Display(Name = "Факт (одобрено)")] decimal ApprovedActualCost,
+    [property: Display(Name = "На рассмотрении")] decimal ProposedCost);
 
 /// <summary>
 /// Блок расходов в финансовой сводке проекта (ADR030): суммы по категориям в разрезе
@@ -17,9 +17,9 @@ public class ExpenseSummaryViewModel
     public IReadOnlyCollection<ExpenseSummaryRow> Rows { get; }
 
     [Display(Name = "Потрачено (одобрено)")]
-    public int TotalSpent { get; }
+    public decimal TotalSpent { get; }
 
-    internal ExpenseSummaryViewModel(IReadOnlyCollection<ExpenseSummaryRow> rows, int totalSpent)
+    internal ExpenseSummaryViewModel(IReadOnlyCollection<ExpenseSummaryRow> rows, decimal totalSpent)
     {
         Rows = rows;
         TotalSpent = totalSpent;

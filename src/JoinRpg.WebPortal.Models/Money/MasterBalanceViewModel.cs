@@ -11,7 +11,7 @@ public class MasterBalanceViewModel
     public UserInfo Master { get; }
 
     [Display(Name = "Денег на руках")]
-    public int Total { get; }
+    public decimal Total { get; }
 
     [Display(Name = "Получено от других мастеров")]
     public int ReceiveBalance { get; }
@@ -23,9 +23,9 @@ public class MasterBalanceViewModel
     public int ModerationBalance { get; }
 
     [Display(Name = "Расходы")]
-    public int ExpensesBalance { get; }
+    public decimal ExpensesBalance { get; }
     [Display(Name = "Запланировано")]
-    public int PlannedExpenses { get; }
+    public decimal PlannedExpenses { get; }
 
     public int ProjectId { get; }
 

@@ -13,13 +13,13 @@ public class MoneySummaryByMasterExporter(IUriService uriService) : CustomExport
         yield return ComplexElementMemberColumn(x => x.Master, x => x.Social,
             s => s.Telegram == null ? null : s.Telegram.ToString(), "Telegram");
         // Выше должно быть ровно 4 поля с какими-то данными профиля мастера
-        yield return IntColumn(x => x.Total);
+        yield return DecimalColumn(x => x.Total);
         yield return IntColumn(x => x.ReceiveBalance);
         yield return IntColumn(x => x.SendBalance);
         yield return IntColumn(x => x.FeeBalance);
         yield return IntColumn(x => x.ModerationBalance);
-        yield return IntColumn(x => x.ExpensesBalance);
-        yield return IntColumn(x => x.PlannedExpenses);
+        yield return DecimalColumn(x => x.ExpensesBalance);
+        yield return DecimalColumn(x => x.PlannedExpenses);
         // выше должно быть 7 полей с цифирками ровно в таком порядке
     }
 }
