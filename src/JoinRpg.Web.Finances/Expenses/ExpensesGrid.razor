@@ -9,8 +9,7 @@
             {
                 <th>Мастер</th>
             }
-            <th>План</th>
-            <th>Факт</th>
+            <th>Стоимость</th>
             <th>Состояние</th>
             <th>Дата</th>
             @if (RowActions is not null)
@@ -21,21 +20,26 @@
     </HeadContent>
     <ItemTemplate>
         <tr>
-            <td>@expense.CategoryPath</td>
-            <td>@expense.Name</td>
+            <td><span class="@StrikeClass(expense)">@expense.CategoryPath</span></td>
+            <td><span class="@StrikeClass(expense)">@expense.Name</span></td>
             @if (ShowMaster)
             {
                 <td><UserLink Model="expense.MasterLink" /></td>
             }
-            <td>@expense.PlannedQuantity × <PriceElement Price="expense.PlannedPrice" /> = <PriceElement Price="expense.PlannedCost" /></td>
-            <td>
-                @if (expense.ActualCost is { } actualCost)
+            <td class="expense-cost">
+                <span class="@StrikeClass(expense)">
+                    @if (expense.ActualCost is not { } actualCost)
+                    {
+                        <text>@expense.PlannedQuantity × <PriceElement Price="expense.PlannedPrice" /> = <PriceElement Price="expense.PlannedCost" /></text>
+                    }
+                    else
+                    {
+                        <text>@(expense.ActualQuantity!.Value) × <PriceElement Price="expense.ActualPrice!.Value" /> = <PriceElement Price="actualCost" /></text>
+                    }
+                </span>
+                @if (expense.ActualCost is not null && !MatchesPlan(expense))
                 {
-                    <text>@(expense.ActualQuantity!.Value) × <PriceElement Price="expense.ActualPrice!.Value" /> = <PriceElement Price="actualCost" /></text>
-                }
-                else
-                {
-                    <text>—</text>
+                    <JoinIcon Icon="JoinIconType.Info" Title="@PlanTooltip(expense)" />
                 }
             </td>
             <td><ExpenseStateBadge Status="expense.State.ToStatus(expense.ActualCost is not null)" /></td>
@@ -48,7 +52,7 @@
     </ItemTemplate>
     <EmptyContent>
         <tr>
-            <td colspan="@(6 + (ShowMaster ? 1 : 0) + (RowActions is null ? 0 : 1))">Расходов пока нет</td>
+            <td colspan="@(5 + (ShowMaster ? 1 : 0) + (RowActions is null ? 0 : 1))">Расходов пока нет</td>
         </tr>
     </EmptyContent>
 </JoinBorderedTable>
@@ -67,4 +71,17 @@
     /// <summary>Колонка «Мастер»; <c>false</c> — для списка расходов одного мастера.</summary>
     [Parameter]
     public bool ShowMaster { get; set; } = true;
+
+    /// <summary>Факт совпадает с планом по количеству и цене (не только по итоговой сумме).</summary>
+    private static bool MatchesPlan(ExpenseViewModel expense)
+        => expense.ActualQuantity == expense.PlannedQuantity && expense.ActualPrice == expense.PlannedPrice;
+
+    private static string PlanTooltip(ExpenseViewModel expense)
+        => $"Ранее планировалось {expense.PlannedQuantity} × {FormatPrice(expense.PlannedPrice)} ₽ = {FormatPrice(expense.PlannedCost)} ₽";
+
+    private static string FormatPrice(decimal price)
+        => price.ToString("0.##", CultureInfo.GetCultureInfo("ru-RU"));
+
+    private static string? StrikeClass(ExpenseViewModel expense)
+        => expense.State == ExpenseStateView.Rejected ? "expense-rejected-strike" : null;
 }

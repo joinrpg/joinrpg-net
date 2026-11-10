@@ -32,12 +32,66 @@ public class ExpensesGridTest : BunitContext
         cut.Markup.ShouldContain("Аренда зала");
         cut.Markup.ShouldContain("Иван Мастеров");
         // ₽ — псевдоэлемент PriceElement (CSS), в разметке только числа
-        cut.FindAll("td").Select(e => e.TextContent.Trim()).ShouldContain("2 × 1500 = 3000");
-        cut.FindAll("td").Select(e => e.TextContent.Trim()).ShouldContain("2 × 1400 = 2800");
+        cut.FindAll(".expense-cost > span").Select(e => e.TextContent.Trim()).ShouldContain("2 × 1400 = 2800");
+        cut.Markup.ShouldContain("Ранее планировалось 2 × 1500 ₽ = 3000 ₽");
         cut.Markup.ShouldContain("Потрачен");
         cut.Markup.ShouldContain("Запрошен");
-        cut.FindAll("td").Select(e => e.TextContent.Trim()).ShouldContain("10 × 100 = 1000");
+        cut.FindAll(".expense-cost > span").Select(e => e.TextContent.Trim()).ShouldContain("10 × 100 = 1000");
+        cut.FindAll(".expense-cost > span").Select(e => e.TextContent.Trim()).ShouldContain("3 × 200 = 600");
         cut.Markup.ShouldContain("15.02.2026");
+    }
+
+    [Fact]
+    public void SingleCostColumnHeader()
+    {
+        var cut = RenderGrid();
+
+        var headers = cut.FindAll("th").Select(header => header.TextContent.Trim());
+        headers.ShouldContain("Стоимость");
+        headers.ShouldNotContain("План");
+        headers.ShouldNotContain("Факт");
+    }
+
+    [Fact]
+    public void MatchingPlanAndFactShowsSingleValueWithoutTooltip()
+    {
+        var cut = RenderGrid();
+
+        cut.FindAll(".expense-cost > span").Select(e => e.TextContent.Trim()).ShouldContain("3 × 200 = 600");
+        cut.Markup.ShouldNotContain("Ранее планировалось 3 × 200");
+    }
+
+    [Fact]
+    public void DifferentPlanAndFactShowsActualWithPlanTooltip()
+    {
+        var cut = RenderGrid();
+
+        cut.FindAll(".expense-cost > span").Select(e => e.TextContent.Trim()).ShouldContain("2 × 1400 = 2800");
+        cut.Markup.ShouldContain("Ранее планировалось 2 × 1500 ₽ = 3000 ₽");
+        // use href символа иконки Info
+        cut.Markup.ShouldContain("info-circle");
+    }
+
+    [Fact]
+    public void RejectedExpenseStruckThrough()
+    {
+        var cut = RenderGrid();
+
+        // 3 ячейки (категория, название, стоимость) × 2 отклонённых расхода
+        cut.FindAll(".expense-rejected-strike").Count.ShouldBe(6);
+    }
+
+    [Fact]
+    public void NonRejectedExpensesNotStruckThrough()
+    {
+        var cut = RenderGrid();
+
+        var struckText = string.Join(" ", cut.FindAll(".expense-rejected-strike").Select(span => span.TextContent));
+        struckText.ShouldContain("Отклонённая аренда");
+        struckText.ShouldContain("Отклонённые расходники");
+        struckText.ShouldNotContain("Аренда зала");
+        struckText.ShouldNotContain("Канцелярия");
+        struckText.ShouldNotContain("Транспорт");
     }
 
     [Fact]
@@ -75,7 +129,7 @@ public class ExpensesGridTest : BunitContext
         cut.FindAll("th").ShouldNotContain(header => header.TextContent.Trim() == "Мастер");
         cut.Markup.ShouldNotContain("Иван Мастеров");
         cut.Markup.ShouldContain("Аренда зала");
-        cut.FindAll("td").Select(e => e.TextContent.Trim()).ShouldContain("2 × 1500 = 3000");
+        cut.FindAll(".expense-cost > span").Select(e => e.TextContent.Trim()).ShouldContain("2 × 1400 = 2800");
     }
 
     [Fact]
@@ -118,6 +172,42 @@ public class ExpensesGridTest : BunitContext
             ActualPrice: null,
             SpentAt: null,
             State: ExpenseStateView.Proposed,
+            MasterName: "Иван Мастеров",
+            CreatedByName: "Иван Мастеров"),
+        new(
+            new ExpenseIdentification(new ProjectIdentification(1), 3),
+            "Транспорт",
+            "Оргвзнос\\Логистика",
+            PlannedQuantity: 3,
+            PlannedPrice: 200,
+            ActualQuantity: 3,
+            ActualPrice: 200,
+            SpentAt: null,
+            State: ExpenseStateView.Approved,
+            MasterName: "Иван Мастеров",
+            CreatedByName: "Иван Мастеров"),
+        new(
+            new ExpenseIdentification(new ProjectIdentification(1), 4),
+            "Отклонённая аренда",
+            "Аренда базы\\Поле",
+            PlannedQuantity: 1,
+            PlannedPrice: 5000,
+            ActualQuantity: 1,
+            ActualPrice: 5200,
+            SpentAt: null,
+            State: ExpenseStateView.Rejected,
+            MasterName: "Иван Мастеров",
+            CreatedByName: "Иван Мастеров"),
+        new(
+            new ExpenseIdentification(new ProjectIdentification(1), 5),
+            "Отклонённые расходники",
+            "Оргвзнос\\Расходники",
+            PlannedQuantity: 5,
+            PlannedPrice: 80,
+            ActualQuantity: null,
+            ActualPrice: null,
+            SpentAt: null,
+            State: ExpenseStateView.Rejected,
             MasterName: "Иван Мастеров",
             CreatedByName: "Иван Мастеров"),
     ];
