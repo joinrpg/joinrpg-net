@@ -768,7 +768,7 @@ JoinRpg.Common.WebComponents.PhoneLink.Contact.get -> JoinRpg.Common.PrimitiveTy
 JoinRpg.Common.WebComponents.PhoneLink.Contact.set -> void
 JoinRpg.Common.WebComponents.PhoneLink.PhoneLink() -> void
 JoinRpg.Common.WebComponents.PriceElement
-JoinRpg.Common.WebComponents.PriceElement.Price.get -> int
+JoinRpg.Common.WebComponents.PriceElement.Price.get -> decimal
 JoinRpg.Common.WebComponents.PriceElement.Price.set -> void
 JoinRpg.Common.WebComponents.PriceElement.PriceElement() -> void
 JoinRpg.Common.WebComponents.SelectorListCache

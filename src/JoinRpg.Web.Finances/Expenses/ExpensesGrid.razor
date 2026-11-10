@@ -68,5 +68,9 @@
     [Parameter]
     public bool ShowMaster { get; set; } = true;
 
-    private static string FormatCost(int quantity, int price, int cost) => $"{quantity} × {price} ₽ = {cost} ₽";
+    private static string FormatCost(int quantity, decimal price, decimal cost)
+        => $"{quantity} × {FormatMoney(price)} ₽ = {FormatMoney(cost)} ₽";
+
+    /// <summary>Копейки показываем только если они есть: «1500 ₽», а не «1500,00 ₽».</summary>
+    private static string FormatMoney(decimal value) => value.ToString("0.##", RussianCulture);
 }

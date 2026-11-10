@@ -25,7 +25,7 @@
 </JoinBorderedTable>
 
 <p>
-    <b>Потрачено (одобрено)</b>: -@TotalSpent&nbsp;₽
+    <b>Потрачено (одобрено)</b>: -@TotalSpent.ToString("0.##", System.Globalization.CultureInfo.GetCultureInfo("ru-RU"))&nbsp;₽
     <b>Осталось у мастеров</b>: @MastersTotal&nbsp;₽
 </p>
 
@@ -38,7 +38,7 @@
     /// <summary>Потрачено (одобрено): сумма фактических списаний со счёта проекта.</summary>
     [Parameter]
     [EditorRequired]
-    public int TotalSpent { get; set; }
+    public decimal TotalSpent { get; set; }
 
     /// <summary>Осталось у мастеров: Σ балансов мастеров, считает вызывающая страница.</summary>
     [Parameter]
