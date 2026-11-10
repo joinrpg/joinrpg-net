@@ -50,7 +50,8 @@
         <JoinButtonGroup Size="SizeStyleEnum.Small">
             <JoinButton Icon="JoinIconType.MenuHorizontal" Title="@($"Показать список заявок на тип поселения «{Model.Name}»")"
                         Link="@UriLocator.GetRoomTypeClaimListUri(RoomTypeId).ToString()" />
-            @if (Model.CanAssignRooms)
+            @* Гостевому типу расселение не требуется — комнат у него нет (#1945). *@
+            @if (Model.CanAssignRooms && !Model.IsInfinite)
             {
                 <JoinButton Icon="JoinIconType.Accommodation" Title="Расселение"
                             Link="@UriLocator.GetRoomTypeDetailsUri(RoomTypeId).ToString()" />

@@ -107,6 +107,25 @@ public class AccommodationInviteViewServiceTest
     }
 
     /// <summary>
+    /// Гостевой тип одиночный: приглашать некого и незачем — селектор целей не показываем,
+    /// сервис приглашений всё равно откажет (#1945).
+    /// </summary>
+    [Fact]
+    public async Task Mode_GuestType_IsNone()
+    {
+        var guest = Mock.CreateAccommodationType("Гостевое поселение", capacity: 1, isInfinite: true);
+        Mock.ReInitProjectInfo();
+        _ = Group(guest, Sender);
+        _ = Approved("Одиночка");
+
+        var result = await CreateService().GetInviteTargets(SenderId);
+
+        result.Mode.ShouldBe(AccommodationInviteMode.None);
+        result.SenderRequestId.ShouldBeNull();
+        result.Targets.ShouldBeEmpty();
+    }
+
+    /// <summary>
     /// #952: приглашения игрокам могут быть выключены настройкой проекта — тогда селектор целей
     /// не показывается вовсе, а не отказывает при нажатии.
     /// </summary>

@@ -43,7 +43,9 @@ public class ClaimAccommodationViewModel
             // Тип задан — значит, заявка в группе (инвариант CharacterClaimInfo, ADR022).
             var group = plan.GetGroupOrDefault(claim.AccommodationGroupId)!;
             RoomName = group.RoomId is { } roomId ? plan.GetRoom(roomId).Name : null;
-            RoomFreeSpace = plan.GetFreeSpaceForGroup(group.Id);
+            // Гостевой тип: понятия «свободных мест» нет — план для него отвечает int.MaxValue,
+            // показывать его в панели нельзя (#1945).
+            RoomFreeSpace = AccommodationType.IsInfinite ? 0 : plan.GetFreeSpaceForGroup(group.Id);
         }
     }
 

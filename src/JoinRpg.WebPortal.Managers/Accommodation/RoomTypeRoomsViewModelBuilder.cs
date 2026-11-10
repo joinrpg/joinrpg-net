@@ -55,7 +55,8 @@ internal static class RoomTypeRoomsViewModelBuilder
             rooms,
             unassigned,
             CanManageRooms: projectInfo.HasMasterAccess(currentUserId, Permission.CanManageAccommodation),
-            CanAssignRooms: projectInfo.HasMasterAccess(currentUserId, Permission.CanSetPlayersAccommodations));
+            CanAssignRooms: projectInfo.HasMasterAccess(currentUserId, Permission.CanSetPlayersAccommodations),
+            IsInfinite: type.IsInfinite);
     }
 
     private static AccommodationGroupViewModel BuildGroup(

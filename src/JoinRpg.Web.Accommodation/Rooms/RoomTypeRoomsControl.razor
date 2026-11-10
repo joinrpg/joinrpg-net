@@ -3,6 +3,16 @@
 @inject ILogger<RoomTypeRoomsControl> Logger
 
 <div class="rooms-control">
+    @if (Model.IsInfinite)
+    {
+        @* Гостевой тип: комнат нет и не будет — доска расселения ему ни к чему (#1945). *@
+        <p class="text-muted rooms-guest-note" style="margin-top: 1em;">
+            Гостевое поселение: мест не ограничено, комнаты не используются, расселение не требуется.
+            Участники с этим типом проживания отмечены в списке заявок на тип поселения.
+        </p>
+    }
+    else
+    {
     @if (Model.SiblingTypeNames.Count > 0)
     {
         <p class="text-muted rooms-shared-pool" style="margin-top: 1em;">
@@ -100,6 +110,7 @@
     <RoomOccupationDialog @ref="occupationDialog" Board="board" />
     <JoinMessageDialog @ref="confirmDialog" Type="MessageDialogType.Confirmation"><span class="rooms-confirm">@confirmMessage</span></JoinMessageDialog>
     <JoinMessageDialog @ref="messageDialog" Type="@messageType"><span class="rooms-message">@message</span></JoinMessageDialog>
+    }
 </div>
 
 @code {
@@ -137,7 +148,8 @@
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         // Как и раньше: у типа ещё нет ни одной комнаты — сразу предлагаем их добавить.
-        if (firstRender && Model.CanManageRooms && board.Rooms.Count == 0)
+        // Гостевой тип — исключение: у него комнат не бывает (#1945).
+        if (firstRender && !Model.IsInfinite && Model.CanManageRooms && board.Rooms.Count == 0)
         {
             await AddRooms();
             StateHasChanged();
