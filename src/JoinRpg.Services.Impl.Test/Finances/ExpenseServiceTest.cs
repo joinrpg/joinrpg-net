@@ -713,19 +713,33 @@ public class ExpenseServiceTest
     }
 
     [Fact]
-    public async Task SetExpenseActual_SameCostAsApprovedActual_ResetsToProposed()
+    public async Task SetExpenseActual_SameCostAsApprovedActual_KeepsApproved()
     {
         var service = CreateService(mock.Master.UserId);
         var expenseId = await CreateExpenseAsMaster(plannedQuantity: 1, plannedPrice: 500);
         await service.ApproveExpense(expenseId, null);
+        // 5×200=1000 выше плана 500 — согласование сбросилось, одобряем повторно
         await service.SetExpenseActual(expenseId, new ExpenseActualRequest(5, 200, new DateOnly(2026, 8, 20)));
         expenses.ShouldHaveSingleItem().State.ShouldBe(ExpenseState.Proposed);
         await service.ApproveExpense(expenseId, null);
 
-        // Сравнение строгое «меньше»: равная сумма одобрение не сохраняет
+        // Та же сумма, не выше прежнего факта — одобрение сохраняется
         await service.SetExpenseActual(expenseId, new ExpenseActualRequest(5, 200, new DateOnly(2026, 8, 21)));
 
-        expenses.ShouldHaveSingleItem().State.ShouldBe(ExpenseState.Proposed);
+        expenses.ShouldHaveSingleItem().State.ShouldBe(ExpenseState.Approved);
+    }
+
+    [Fact]
+    public async Task SetExpenseActual_EqualsPlannedCost_KeepsApproved()
+    {
+        var service = CreateService(mock.Master.UserId);
+        var expenseId = await CreateExpenseAsMaster();
+        await service.ApproveExpense(expenseId, null);
+
+        // Факт, равный плану (2×5000 = 2×5000), сброса не требует
+        await service.SetExpenseActual(expenseId, new ExpenseActualRequest(2, 5000, new DateOnly(2026, 8, 20)));
+
+        expenses.ShouldHaveSingleItem().State.ShouldBe(ExpenseState.Approved);
     }
 
     [Fact]
@@ -886,6 +900,7 @@ public class ExpenseServiceTest
         var service = CreateService(mock.Master.UserId);
         var expenseId = await CreateExpenseAsMaster();
         await service.SetExpenseActual(expenseId, new ExpenseActualRequest(2, 5000, new DateOnly(2026, 8, 20)));
+        // Факт, равный плану, сброса не требует; одобряем, чтобы проверить правку текста
         expenses.ShouldHaveSingleItem().State.ShouldBe(ExpenseState.Proposed);
         await service.ApproveExpense(expenseId, null);
 
@@ -899,23 +914,39 @@ public class ExpenseServiceTest
     }
 
     [Fact]
-    public async Task EditExpense_SameCostAsApprovedActual_ResetsToProposed()
+    public async Task EditExpense_SameCostAsApprovedActual_KeepsApproved()
     {
-        // Сумма нового факта равна прежнему одобренному, но сам факт реально изменился
-        // (значения полей другие) — сравнение строгое «меньше», одобрение не сохраняет
+        // Сумма нового факта равна прежнему одобренному и выше плана, но сам факт не вырос
+        // (пара изменилась, сумма прежняя) — одобрение сохраняется
         var service = CreateService(mock.Master.UserId);
         var expenseId = await CreateExpenseAsMaster(plannedQuantity: 1, plannedPrice: 500);
         await service.ApproveExpense(expenseId, null);
+        // 5×200=1000 выше плана 500 — согласование сбросилось, одобряем повторно
         await service.SetExpenseActual(expenseId, new ExpenseActualRequest(5, 200, new DateOnly(2026, 8, 20)));
         expenses.ShouldHaveSingleItem().State.ShouldBe(ExpenseState.Proposed);
         await service.ApproveExpense(expenseId, null);
 
-        // 2×500=1000 — ровно прежний факт 5×200=1000, но пара изменилась
+        // 2×500=1000 — ровно прежний факт 5×200=1000, но выше плана не поднялись
         await service.EditExpense(
             expenseId,
             EditRequest(new UserIdentification(mock.Master.UserId), plannedQuantity: 1, plannedPrice: 500, actualQuantity: 2, actualPrice: 500));
 
-        expenses.ShouldHaveSingleItem().State.ShouldBe(ExpenseState.Proposed);
+        expenses.ShouldHaveSingleItem().State.ShouldBe(ExpenseState.Approved);
+    }
+
+    [Fact]
+    public async Task EditExpense_ActualEqualsPlan_KeepsApproved()
+    {
+        var service = CreateService(mock.Master.UserId);
+        var expenseId = await CreateExpenseAsMaster();
+        await service.ApproveExpense(expenseId, null);
+
+        // Факт, появившийся через общую форму и равный плану (2×5000), сброса не требует
+        await service.EditExpense(
+            expenseId,
+            EditRequest(new UserIdentification(mock.Master.UserId), plannedQuantity: 2, plannedPrice: 5000, actualQuantity: 2, actualPrice: 5000));
+
+        expenses.ShouldHaveSingleItem().State.ShouldBe(ExpenseState.Approved);
     }
 
     [Fact]
@@ -967,5 +998,69 @@ public class ExpenseServiceTest
         var expense = expenses.ShouldHaveSingleItem();
         expense.State.ShouldBe(ExpenseState.Approved);
         expense.PlannedPrice.ShouldBe(49.90m);
+    }
+
+    [Fact]
+    public async Task EditExpense_PlannedCostGrows_ReturnsApprovalReset()
+    {
+        var service = CreateService(mock.Master.UserId);
+        var expenseId = await CreateExpenseAsMaster();
+        await service.ApproveExpense(expenseId, null);
+
+        // 3×4500=13500 больше прежнего плана 2×5000=10000 — одобрение сброшено, флаг выставлен
+        var approvalReset = await service.EditExpense(
+            expenseId,
+            EditRequest(new UserIdentification(mock.Master.UserId)));
+
+        approvalReset.ShouldBeTrue();
+        expenses.ShouldHaveSingleItem().State.ShouldBe(ExpenseState.Proposed);
+    }
+
+    [Fact]
+    public async Task EditExpense_ActualAppearsAbovePlan_ReturnsApprovalReset()
+    {
+        var service = CreateService(mock.Master.UserId);
+        var expenseId = await CreateExpenseAsMaster(plannedQuantity: 1, plannedPrice: 100);
+        await service.ApproveExpense(expenseId, null);
+
+        // Факта не было; 5×100=500 выше плана 1×100=100 — одобрение сброшено
+        var approvalReset = await service.EditExpense(
+            expenseId,
+            EditRequest(new UserIdentification(mock.Master.UserId), plannedQuantity: 1, plannedPrice: 100, actualQuantity: 5, actualPrice: 100));
+
+        approvalReset.ShouldBeTrue();
+        expenses.ShouldHaveSingleItem().State.ShouldBe(ExpenseState.Proposed);
+    }
+
+    [Fact]
+    public async Task EditExpense_OnlyTextChanged_ReturnsNoApprovalReset()
+    {
+        var service = CreateService(mock.Master.UserId);
+        var expenseId = await CreateExpenseAsMaster();
+        await service.ApproveExpense(expenseId, null);
+
+        // План и факт (отсутствующий) не менялись — одобрение сохранилось, флаг не выставлен
+        var approvalReset = await service.EditExpense(
+            expenseId,
+            EditRequest(new UserIdentification(mock.Master.UserId), plannedQuantity: 2, plannedPrice: 5000));
+
+        approvalReset.ShouldBeFalse();
+        expenses.ShouldHaveSingleItem().State.ShouldBe(ExpenseState.Approved);
+    }
+
+    [Fact]
+    public async Task EditExpense_RejectedExpense_ReturnsNoApprovalReset()
+    {
+        // Переход Rejected → Proposed — не сброс Approved, флаг не выставляется
+        var service = CreateService(mock.Master.UserId);
+        var expenseId = await CreateExpenseAsMaster();
+        await service.RejectExpense(expenseId, new MarkdownString("Не по смете"));
+
+        var approvalReset = await service.EditExpense(
+            expenseId,
+            EditRequest(new UserIdentification(mock.Master.UserId), plannedQuantity: 2, plannedPrice: 5000));
+
+        approvalReset.ShouldBeFalse();
+        expenses.ShouldHaveSingleItem().State.ShouldBe(ExpenseState.Proposed);
     }
 }

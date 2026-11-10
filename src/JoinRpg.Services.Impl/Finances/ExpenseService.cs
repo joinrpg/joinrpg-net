@@ -50,7 +50,7 @@ internal class ExpenseService(
         return new ExpenseIdentification(projectId, expense.ExpenseId);
     }
 
-    public async Task EditExpense(ExpenseIdentification expenseId, EditExpenseRequest request)
+    public async Task<bool> EditExpense(ExpenseIdentification expenseId, EditExpenseRequest request)
     {
         var projectInfo = await RequestMasterAccess(expenseId.ProjectId);
         var expense = await LoadExpense(expenseId);
@@ -94,8 +94,9 @@ internal class ExpenseService(
         expense.ActualPrice = request.ActualPrice;
         expense.SpentAt = request.SpentAt?.ToDateTime(TimeOnly.MinValue);
         // Одобрение сохраняем, только если не вырос ни план, ни факт (правила #6180):
-        // уменьшение или та же сумма денежную сторону не меняют, иначе согласование требуется заново.
-        expense.State = expense.State == ExpenseState.Approved && planKeepsApproval && actualKeepsApproval
+        // равенство допустимо, сброс — только при росте выше прежнего уровня или плана.
+        var wasApproved = expense.State == ExpenseState.Approved;
+        expense.State = wasApproved && planKeepsApproval && actualKeepsApproval
             ? ExpenseState.Approved
             : ExpenseState.Proposed;
         EntityAudit.MarkChanged(expense, DateTime.UtcNow, currentUserAccessor.UserId);
@@ -105,6 +106,8 @@ internal class ExpenseService(
             expense.ExpenseId,
             expenseId.ProjectId.Value,
             expense.Name);
+        // Сообщаем вызывающему коду, что в этой правке одобрение сброшено (Approved → Proposed)
+        return wasApproved && !(planKeepsApproval && actualKeepsApproval);
     }
 
     public async Task SetExpenseActual(ExpenseIdentification expenseId, ExpenseActualRequest request)
@@ -120,8 +123,8 @@ internal class ExpenseService(
         expense.ActualQuantity = request.ActualQuantity;
         expense.ActualPrice = request.ActualPrice;
         expense.SpentAt = request.SpentAt.ToDateTime(TimeOnly.MinValue);
-        // Одобрение сохраняем, только если факт не вырос: меньше предыдущего одобренного
-        // факта или в пределах плана. Иначе согласование требуется заново.
+        // Одобрение сохраняем, только если факт не вырос: не выше прежнего факта или не выше
+        // плана (равенство плану допустимо). Иначе согласование требуется заново.
         expense.State = expense.State == ExpenseState.Approved
             && ActualChangeKeepsApproval(plannedCost, previousActual, newCost)
             ? ExpenseState.Approved
@@ -145,12 +148,11 @@ internal class ExpenseService(
         }
     }
 
-    /// <summary>Правило #6180 для факта: одобрение сохраняется, только если фактическая стоимость
-    /// не выросла — меньше прежнего факта или в пределах плана (при совмещённой правке —
-    /// результирующего нового плана). Равная прежнему факту сумма одобрение не сохраняет,
-    /// когда она не ниже плана. Применяется только если факт реально изменился.</summary>
+    /// <summary>Правило согласования факта: одобрение сохраняется, если факт не вырос — не выше
+    /// плана (равенство плану допустимо) или не выше прежнего факта. Сброс — только когда факт
+    /// вырос и оказался выше плана. Применяется только если факт реально изменился.</summary>
     private static bool ActualChangeKeepsApproval(decimal plannedCost, decimal? previousActualCost, decimal newActualCost)
-        => (previousActualCost is { } previous && newActualCost < previous) || newActualCost < plannedCost;
+        => newActualCost <= plannedCost || (previousActualCost is { } previous && newActualCost <= previous);
 
     /// <summary>Мастер без <see cref="Permission.CanManageMoney"/> может править только свои
     /// расходы (понёс сам) или созданные собой.</summary>
