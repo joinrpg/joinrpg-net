@@ -1,5 +1,6 @@
 using Bunit;
 using JoinRpg.Web.Finances.Expenses;
+using Microsoft.Extensions.DependencyInjection;
 using Shouldly;
 using Xunit;
 
@@ -7,6 +8,14 @@ namespace JoinRpg.Web.Finances.Test;
 
 public class ExpenseSummaryTableTest : BunitContext
 {
+    private sealed class StubExpensesUriLocator : IExpensesUriLocator
+    {
+        public Uri GetExpensesUri(ProjectIdentification projectId) =>
+            new($"/{projectId.Value}/money/expenses", UriKind.Relative);
+    }
+
+    public ExpenseSummaryTableTest() => Services.AddSingleton<IExpensesUriLocator>(new StubExpensesUriLocator());
+
     [Fact]
     public void RendersRowsAndTotals()
     {
@@ -51,7 +60,8 @@ public class ExpenseSummaryTableTest : BunitContext
                 new ExpenseSummaryRowViewModel("Расходники", ApprovedPlannedCost: 49.90m, ApprovedActualCost: 149.70m, ProposedCost: 0),
             ])
             .Add(x => x.TotalSpent, 149.70m)
-            .Add(x => x.MastersTotal, 1500.50m));
+            .Add(x => x.MastersTotal, 1500.50m)
+            .Add(x => x.ProjectId, 7));
 
         // Копейки показываются только если есть — и в строках, и в итогах
         cut.FindAll(".price-value").Select(e => e.TextContent.Trim()).ToArray()

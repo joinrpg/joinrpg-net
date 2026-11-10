@@ -14,13 +14,14 @@ public class ExpenseSummaryViewModelTest
         decimal plannedPrice,
         int? actualQuantity = null,
         decimal? actualPrice = null,
+        int[]? categoryIds = null,
         params string[] categoryPath)
         => new(
             new ExpenseIdentification(ProjectId, id),
             $"Расход {id}",
             Description: null,
             [.. categoryPath.Select((name, index) => new ExpenseCategoryBriefInfo(
-                new ExpenseCategoryIdentification(ProjectId, 100 + index), name))],
+                new ExpenseCategoryIdentification(ProjectId, categoryIds?[index] ?? 100 + index), name))],
             plannedQuantity,
             plannedPrice,
             actualQuantity,
@@ -35,9 +36,9 @@ public class ExpenseSummaryViewModelTest
     {
         ExpenseInfo[] expenses =
         [
-            Expense(1, ExpenseState.Approved, 2, 100, 2, 90, "Аренда базы", "Жилые корпуса"),
-            Expense(2, ExpenseState.Proposed, 1, 50, categoryPath: ["Аренда базы", "Жилые корпуса"]),
-            Expense(3, ExpenseState.Approved, 3, 10, categoryPath: ["Транспорт"]),
+            Expense(1, ExpenseState.Approved, 2, 100, 2, 90, categoryIds: [100, 101], categoryPath: ["Аренда базы", "Жилые корпуса"]),
+            Expense(2, ExpenseState.Proposed, 1, 50, categoryIds: [100, 101], categoryPath: ["Аренда базы", "Жилые корпуса"]),
+            Expense(3, ExpenseState.Approved, 3, 10, categoryIds: [300], categoryPath: ["Транспорт"]),
         ];
 
         var summary = ExpenseSummaryBuilder.Build(expenses);
@@ -73,7 +74,7 @@ public class ExpenseSummaryViewModelTest
     {
         ExpenseInfo[] expenses =
         [
-            Expense(1, ExpenseState.Approved, 1, 100, 1, 100, "Аренда базы", "Жилые корпуса"),
+            Expense(1, ExpenseState.Approved, 1, 100, 1, 100, categoryPath: ["Аренда базы", "Жилые корпуса"]),
         ];
 
         var summary = ExpenseSummaryBuilder.Build(expenses);
@@ -98,7 +99,7 @@ public class ExpenseSummaryViewModelTest
     {
         ExpenseInfo[] expenses =
         [
-            Expense(1, ExpenseState.Rejected, 1, 100, 1, 100, "Аренда базы", "Жилые корпуса"),
+            Expense(1, ExpenseState.Rejected, 1, 100, 1, 100, categoryPath: ["Аренда базы", "Жилые корпуса"]),
         ];
 
         var summary = ExpenseSummaryBuilder.Build(expenses);
@@ -136,8 +137,8 @@ public class ExpenseSummaryViewModelTest
     {
         ExpenseInfo[] expenses =
         [
-            Expense(1, ExpenseState.Rejected, 1, 100, 1, 100, "Аренда базы"),
-            Expense(2, ExpenseState.Proposed, 2, 20, categoryPath: ["Транспорт"]),
+            Expense(1, ExpenseState.Rejected, 1, 100, 1, 100, categoryIds: [100], categoryPath: ["Аренда базы"]),
+            Expense(2, ExpenseState.Proposed, 2, 20, categoryIds: [300], categoryPath: ["Транспорт"]),
         ];
 
         var summary = ExpenseSummaryBuilder.Build(expenses);
@@ -151,11 +152,29 @@ public class ExpenseSummaryViewModelTest
     }
 
     [Fact]
+    public void Build_SameNameDifferentIds_AreSeparateRows()
+    {
+        ExpenseInfo[] expenses =
+        [
+            Expense(1, ExpenseState.Approved, 1, 100, categoryIds: [100], categoryPath: ["Прочее"]),
+            Expense(2, ExpenseState.Approved, 1, 200, categoryIds: [200], categoryPath: ["Прочее"]),
+        ];
+
+        var summary = ExpenseSummaryBuilder.Build(expenses);
+
+        // Категории зовутся одинаково, но id разные — строки должны быть раздельными.
+        var categories = summary.Rows.Where(r => !r.IsTotal).ToArray();
+        categories.Length.ShouldBe(2);
+        categories.Sum(r => r.ApprovedPlannedCost).ShouldBe(300);
+        summary.Rows.Last().ApprovedPlannedCost.ShouldBe(300);
+    }
+
+    [Fact]
     public void Build_ProposedWithActual_UsesActualCost()
     {
         ExpenseInfo[] expenses =
         [
-            Expense(1, ExpenseState.Proposed, 2, 50, 2, 45, "Аренда базы"),
+            Expense(1, ExpenseState.Proposed, 2, 50, 2, 45, categoryPath: ["Аренда базы"]),
         ];
 
         var summary = ExpenseSummaryBuilder.Build(expenses);
@@ -184,8 +203,8 @@ public class ExpenseSummaryViewModelTest
     {
         ExpenseInfo[] expenses =
         [
-            Expense(1, ExpenseState.Approved, 1, 49.90m, categoryPath: ["Аренда базы"]),
-            Expense(2, ExpenseState.Approved, 1, 100.10m, categoryPath: ["Аренда базы"]),
+            Expense(1, ExpenseState.Approved, 1, 49.90m, categoryIds: [100], categoryPath: ["Аренда базы"]),
+            Expense(2, ExpenseState.Approved, 1, 100.10m, categoryIds: [100], categoryPath: ["Аренда базы"]),
         ];
 
         var summary = ExpenseSummaryBuilder.Build(expenses);

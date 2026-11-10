@@ -47,9 +47,11 @@
 
 ### 3. Заголовок «Расходы» со ссылкой
 
-`ExpenseSummaryTable.razor` получает новый параметр `ProjectId`; заголовок
-`Расходы (подробнее)` со ссылкой на `/{projectId}/money/expenses` (роут страницы
-расходов после #6206; в момент написания спеки был `/{projectId}/expenses`). Вызов в
+`ExpenseSummaryTable.razor` получает новый параметр `ProjectId` и через внедрённый
+`IExpensesUriLocator` строит ссылку «(подробнее)» на страницу расходов (роут
+`/{projectId}/money/expenses` после #6206; в момент написания спеки был
+`/{projectId}/expenses`). Локатор реализован дважды — в `UriServiceImpl` (сервер)
+и в `JoinRpg.Blazor.Client` — и сверяется `UriLocatorConsistencyTests`. Вызов в
 `MoneySummary.cshtml` передаёт `Model.ProjectId`.
 
 ### 4. Заголовок «Взносы» со ссылкой

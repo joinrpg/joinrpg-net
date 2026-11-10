@@ -11,6 +11,7 @@ using JoinRpg.Interfaces.Notifications;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Accommodation;
 using JoinRpg.Web.Comments;
+using JoinRpg.Web.Finances.Expenses;
 using JoinRpg.Web.Plots;
 using JoinRpg.Web.ProjectCommon;
 using JoinRpg.Web.ProjectCommon.Projects;
@@ -64,6 +65,7 @@ internal class UriServiceImpl(
     IUriLocator<AccommodationGroupIdentification>,
     IUriLocator<MyClaimInProjectIdentification>,
     ICommentUriLocator,
+    IExpensesUriLocator,
     INotificationEntityLinkRenderer
 {
     public Uri GetUri(ILinkable linkable)
@@ -256,6 +258,8 @@ internal class UriServiceImpl(
 
     private Uri GetExpensesUri(ProjectIdentification projectId) =>
         new(GetBaseDomain(), linkGenerator.GetPathByPage("/GamePages/Expenses", values: new { ProjectId = projectId.Value }));
+
+    Uri IExpensesUriLocator.GetExpensesUri(ProjectIdentification projectId) => GetExpensesUri(projectId);
 
     public Uri GetUri(ForumCommentIdentification target) =>
         new(GetUri(target.ThreadId).AbsoluteUri + $"#comment{target.CommentId}");

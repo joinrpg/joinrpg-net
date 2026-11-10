@@ -3,6 +3,7 @@ using JoinRpg.DomainTypes.Plots;
 using JoinRpg.DomainTypes.ProjectMetadata;
 using JoinRpg.DomainTypes.ProjectMetadata.Badges;
 using JoinRpg.Web.Accommodation;
+using JoinRpg.Web.Finances.Expenses;
 using JoinRpg.Web.Plots;
 using JoinRpg.Web.ProjectCommon;
 using JoinRpg.Web.ProjectCommon.Projects;
@@ -21,13 +22,16 @@ public static class UriLocatorExtensions
         IUriLocator<ProjectRolesListIdentification>,
         ICharacterUriLocator, ICharacterGroupUriLocator, IProjectFieldUriLocator,
         IScheduleUriLocator, IProjectUriLocator, IPlotUriLocator, IAccommodationUriLocator, IBadgeTemplateUriLocator,
-        IFinanceSettingsUriLocator
+        IFinanceSettingsUriLocator, IExpensesUriLocator
     {
         Uri IUriLocator<ProjectRolesListIdentification>.GetUri(ProjectRolesListIdentification target)
             => new($"/{target.ProjectId.Value}/roleslist/{target.ProjectRolesListId}", UriKind.Relative);
 
         Uri IFinanceSettingsUriLocator.GetMasterSummaryExportUri(ProjectIdentification projectId, string token) =>
             new($"/{projectId.Value}/money/SummaryByMaster?token={token}", UriKind.Relative);
+
+        Uri IExpensesUriLocator.GetExpensesUri(ProjectIdentification projectId) =>
+            new($"/{projectId.Value}/money/expenses", UriKind.Relative);
 
         Uri IBadgeTemplateUriLocator.GetListUri(ProjectIdentification projectId) =>
             new($"/{projectId.Value}/tools/badges", UriKind.Relative);
@@ -210,6 +214,7 @@ public static class UriLocatorExtensions
             .AddSingleton<IAccommodationUriLocator>(locator)
             .AddSingleton<IBadgeTemplateUriLocator>(locator)
             .AddSingleton<IFinanceSettingsUriLocator>(locator)
+            .AddSingleton<IExpensesUriLocator>(locator)
             ;
     }
 }

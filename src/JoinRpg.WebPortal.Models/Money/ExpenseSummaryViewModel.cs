@@ -39,14 +39,18 @@ public static class ExpenseSummaryBuilder
         // весь подкатегорный поддерево, поэтому «входит» — в любую подкатегорию. Отклонённые
         // расходы не дают ни одной суммы (эффекты состояний — в доменном типе ExpenseInfo),
         // поэтому категории только из них отсекаются общим фильтром строк, где все суммы нулевые.
-        var sums = new Dictionary<string, (decimal Planned, decimal Actual, decimal Proposed)>();
+        // Ключ — CategoryId листа префикса: категории с одинаковым именем, но разными id
+        // — разные строки.
+        var sums = new Dictionary<ExpenseCategoryIdentification, (string Path, decimal Planned, decimal Actual, decimal Proposed)>();
         foreach (var expense in expenses)
         {
-            var names = expense.CategoryPath.Select(c => c.Name).ToArray();
-            for (var length = 1; length <= names.Length; length++)
+            var segments = expense.CategoryPath.ToArray();
+            for (var length = 1; length <= segments.Length; length++)
             {
-                var key = string.Join("\\", names.Take(length));
-                var sum = sums.TryGetValue(key, out var existing) ? existing : default;
+                var key = segments[length - 1].CategoryId;
+                var sum = sums.TryGetValue(key, out var existing)
+                    ? existing
+                    : (Path: string.Join("\\", segments.Take(length).Select(s => s.Name)), Planned: 0m, Actual: 0m, Proposed: 0m);
                 sum.Actual += expense.ActualBalanceEffect;
                 if (expense.State == ExpenseState.Approved)
                 {
@@ -64,7 +68,7 @@ public static class ExpenseSummaryBuilder
 
         var rows = sums
             .Select(s => new ExpenseSummaryRow(
-                s.Key,
+                s.Value.Path,
                 ApprovedPlannedCost: s.Value.Planned,
                 ApprovedActualCost: s.Value.Actual,
                 ProposedCost: s.Value.Proposed))
@@ -76,13 +80,13 @@ public static class ExpenseSummaryBuilder
 
         // «Итого» считаем по расходам напрямую, а не суммируя строки: суммы строк включают
         // поддерево, и сумма строк дала бы двойной счёт.
-        var totalRow = new ExpenseSummaryRow(
-            "Итого",
-            ApprovedPlannedCost: expenses.Where(e => e.State == ExpenseState.Approved).Sum(e => e.PlannedCost),
-            ApprovedActualCost: totalSpent,
-            ProposedCost: expenses.Where(e => e.State == ExpenseState.Proposed).Sum(e => e.PlannedBalanceEffect),
-            IsTotal: true);
-
-        return new ExpenseSummaryViewModel([.. rows, totalRow], totalSpent);
+        return new ExpenseSummaryViewModel(
+            [.. rows, new ExpenseSummaryRow(
+                "Итого",
+                ApprovedPlannedCost: expenses.Where(e => e.State == ExpenseState.Approved).Sum(e => e.PlannedCost),
+                ApprovedActualCost: totalSpent,
+                ProposedCost: expenses.Where(e => e.State == ExpenseState.Proposed).Sum(e => e.PlannedBalanceEffect),
+                IsTotal: true)],
+            totalSpent);
     }
 }

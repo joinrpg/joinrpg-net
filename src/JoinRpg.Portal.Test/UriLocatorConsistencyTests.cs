@@ -6,6 +6,7 @@ using JoinRpg.DomainTypes.Plots;
 using JoinRpg.DomainTypes.ProjectMetadata;
 using JoinRpg.DomainTypes.ProjectMetadata.Badges;
 using JoinRpg.Web.Accommodation;
+using JoinRpg.Web.Finances.Expenses;
 using JoinRpg.Web.Plots;
 using JoinRpg.Web.ProjectCommon;
 using JoinRpg.Web.ProjectCommon.Projects;
@@ -134,6 +135,21 @@ public class UriLocatorConsistencyTests(IntegrationTestPortalFactory factory)
         _ = caseName;
         var server = call(factory.Services.GetRequiredService<IFinanceSettingsUriLocator>());
         var client = call(_clientServices.GetRequiredService<IFinanceSettingsUriLocator>());
+        NormalizePathAndQuery(client).ShouldBe(NormalizePathAndQuery(server), StringCompareShould.IgnoreCase);
+    }
+
+    public static IEnumerable<object[]> ExpensesCases() =>
+    [
+        ["GetExpensesUri", (Func<IExpensesUriLocator, Uri>)(l => l.GetExpensesUri(ProjectId))],
+    ];
+
+    [Theory]
+    [MemberData(nameof(ExpensesCases))]
+    public void ExpensesLocatorsShouldAgree(string caseName, Func<IExpensesUriLocator, Uri> call)
+    {
+        _ = caseName;
+        var server = call(factory.Services.GetRequiredService<IExpensesUriLocator>());
+        var client = call(_clientServices.GetRequiredService<IExpensesUriLocator>());
         NormalizePathAndQuery(client).ShouldBe(NormalizePathAndQuery(server), StringCompareShould.IgnoreCase);
     }
 

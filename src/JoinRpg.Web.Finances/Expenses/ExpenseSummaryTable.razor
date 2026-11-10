@@ -1,4 +1,6 @@
-<h3>Расходы <a href="/@ProjectId/money/expenses">(подробнее)</a></h3>
+@inject IExpensesUriLocator ExpensesUriLocator
+
+<h3>Расходы <a href="@ExpensesUriLocator.GetExpensesUri(new ProjectIdentification(ProjectId))">(подробнее)</a></h3>
 
 <JoinBorderedTable Items="Rows" Context="row">
     <HeadContent>
