@@ -1,4 +1,5 @@
 @using JoinRpg.Blazor.Client.ApiClients
+@using JoinRpg.Common.PrimitiveTypes
 @using JoinRpg.DomainTypes.Finances
 @using JoinRpg.Web.Finances.Expenses
 @inject IExpensesClient Client
@@ -66,6 +67,7 @@ else
     private IReadOnlyList<ExpenseViewModel>? expenses;
     private HashSet<ExpenseIdentification>? myExpenseIds;
     private IReadOnlyCollection<string>? categorySuggestions;
+    private UserIdentification? currentUser;
     private bool canManageMoney;
     private EditingExpense? editing;
     private string? loadError;
@@ -90,11 +92,13 @@ else
         var myExpensesTask = Client.GetMyExpenses(ProjectId);
         var accessTask = Client.CanManageMoney(ProjectId);
         var suggestionsTask = Client.GetCategoryPathSuggestions(ProjectId);
-        await Task.WhenAll(expensesTask, myExpensesTask, accessTask, suggestionsTask);
+        var currentUserTask = Client.GetCurrentUser(ProjectId);
+        await Task.WhenAll(expensesTask, myExpensesTask, accessTask, suggestionsTask, currentUserTask);
         expenses = expensesTask.Result;
         myExpenseIds = [.. myExpensesTask.Result.Select(expense => expense.ExpenseId)];
         canManageMoney = accessTask.Result;
         categorySuggestions = suggestionsTask.Result;
+        currentUser = currentUserTask.Result;
     }
 
     // Сервис разрешает править также расходы, созданные текущим пользователем, но понёсшие другого
@@ -109,7 +113,8 @@ else
     private void StartCreate()
     {
         actionError = null;
-        editing = new(new ExpenseEditViewModel(), State: null);
+        // Мастер по умолчанию — текущий пользователь (не затираем при правке существующего)
+        editing = new(new ExpenseEditViewModel { MasterId = currentUser }, State: null);
     }
 
     private void StartEdit(ExpenseViewModel expense)

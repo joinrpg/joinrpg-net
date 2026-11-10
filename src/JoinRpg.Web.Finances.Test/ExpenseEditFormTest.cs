@@ -135,6 +135,74 @@ public class ExpenseEditFormTest : BunitContext
     }
 
     [Fact]
+    public void ActualPriceFillsEmptyPlannedFields()
+    {
+        ExpenseEditViewModel? saved = null;
+        var cut = RenderForm(new ExpenseEditViewModel(), onSave: savedModel => saved = savedModel);
+        FillRequiredTextFields(cut);
+        SelectMaster(cut, "Марья Мастериха");
+        cut.FindAll("input[type=number]")[2].Change("2"); // факт количество
+        cut.FindAll("input[type=number]")[3].Change("1400"); // факт цена
+
+        cut.Find("form").Submit();
+
+        saved.ShouldNotBeNull();
+        saved.PlannedQuantity.ShouldBe(2);
+        saved.PlannedPrice.ShouldBe(1400);
+    }
+
+    [Fact]
+    public void ActualPriceDoesNotOverwriteFilledPlan()
+    {
+        ExpenseEditViewModel? saved = null;
+        var model = new ExpenseEditViewModel { PlannedQuantity = 3, PlannedPrice = 500 };
+        var cut = RenderForm(model, onSave: savedModel => saved = savedModel);
+        FillRequiredTextFields(cut);
+        SelectMaster(cut, "Марья Мастериха");
+        cut.FindAll("input[type=number]")[2].Change("2");
+        cut.FindAll("input[type=number]")[3].Change("1400");
+
+        cut.Find("form").Submit();
+
+        saved.ShouldNotBeNull();
+        saved.PlannedQuantity.ShouldBe(3);
+        saved.PlannedPrice.ShouldBe(500);
+    }
+
+    [Fact]
+    public void LaterActualChangeDoesNotOverwritePlanFilledFromActual()
+    {
+        ExpenseEditViewModel? saved = null;
+        var cut = RenderForm(new ExpenseEditViewModel(), onSave: savedModel => saved = savedModel);
+        FillRequiredTextFields(cut);
+        SelectMaster(cut, "Марья Мастериха");
+        cut.FindAll("input[type=number]")[3].Change("1400"); // план заполнился из факта
+        cut.FindAll("input[type=number]")[3].Change("2000"); // факт изменили — план не перезаписываем
+
+        cut.Find("form").Submit();
+
+        saved.ShouldNotBeNull();
+        saved.PlannedPrice.ShouldBe(1400);
+    }
+
+    [Fact]
+    public void ActualPriceWithoutActualQuantityKeepsPlannedQuantity()
+    {
+        ExpenseEditViewModel? saved = null;
+        var cut = RenderForm(new ExpenseEditViewModel(), onSave: savedModel => saved = savedModel);
+        FillRequiredTextFields(cut);
+        SelectMaster(cut, "Марья Мастериха");
+        // Только цена факта, без количества: цена плана копируется, количество плана — прежнее
+        cut.FindAll("input[type=number]")[3].Change("1400");
+
+        cut.Find("form").Submit();
+
+        saved.ShouldNotBeNull();
+        saved.PlannedPrice.ShouldBe(1400);
+        saved.PlannedQuantity.ShouldBe(1);
+    }
+
+    [Fact]
     public void SpentAtFieldLabelIsDate()
     {
         var cut = RenderForm(new ExpenseEditViewModel());
@@ -217,6 +285,12 @@ public class ExpenseEditFormTest : BunitContext
         cut.FindAll("button").Single(button => button.TextContent.Trim() == "Отменить").Click();
 
         cancelled.ShouldBeTrue();
+    }
+
+    private static void FillRequiredTextFields(IRenderedComponent<ExpenseEditForm> cut)
+    {
+        cut.FindAll("input[type=text]")[0].Change("Аренда зала");
+        cut.FindAll("input[type=text]")[1].Change("Аренда базы\\Жилые корпуса");
     }
 
     private static void SelectMaster(IRenderedComponent<ExpenseEditForm> cut, string displayName)

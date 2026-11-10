@@ -33,12 +33,17 @@ public class ExpensesPageTest : BunitContext
         MasterName: "Иван Мастеров",
         CreatedByName: "Иван Мастеров");
 
+    private static readonly UserInfoHeader[] Masters =
+    [
+        new(new UserIdentification(42), new UserDisplayName("Иван Мастеров", null), null),
+    ];
+
     private readonly FakeExpensesClient expensesClient = new([Expense]);
 
     public ExpensesPageTest()
     {
         Services.AddSingleton<IExpensesClient>(expensesClient);
-        Services.AddSingleton<IMasterClient>(new FakeMasterClient([]));
+        Services.AddSingleton<IMasterClient>(new FakeMasterClient(Masters));
         Services.AddSingleton<IUriLocator<UserLinkViewModel>>(new FakeUserLinkLocator());
         _ = AddBunitPersistentComponentState();
         Services.AddScoped<SelectorListCache>();
@@ -93,6 +98,18 @@ public class ExpensesPageTest : BunitContext
     }
 
     [Fact]
+    public void NewExpenseFormPrefillsCurrentUserAsMaster()
+    {
+        expensesClient.CurrentUser = new UserIdentification(42);
+        var cut = Render<ExpensesPage>(p => p.Add(x => x.ProjectId, ProjectId));
+
+        cut.FindAll("button").Single(button => button.TextContent.Trim() == "Новый расход").Click();
+
+        // Мастер по умолчанию — текущий пользователь: на переключателе выбрано его имя, а не «(нет)»
+        cut.Find("details.join-select summary .join-select__value").TextContent.Trim().ShouldBe("Иван Мастеров");
+    }
+
+    [Fact]
     public void ExportLinkPresentAndStaysVisibleWhenFormOpened()
     {
         var cut = Render<ExpensesPage>(p => p.Add(x => x.ProjectId, ProjectId));
@@ -120,6 +137,9 @@ public class ExpensesPageTest : BunitContext
         /// <summary>Расходы текущего пользователя; null — совпадают с <c>expenses</c>.</summary>
         public ExpenseViewModel[]? MyExpenses { get; set; }
 
+        /// <summary>Текущий пользователь — предзаполнение мастера в форме создания.</summary>
+        public UserIdentification CurrentUser { get; set; } = new(1);
+
         public Task<IReadOnlyList<ExpenseViewModel>> GetExpenses(ProjectIdentification projectId)
             => Task.FromResult<IReadOnlyList<ExpenseViewModel>>(expenses);
 
@@ -133,6 +153,9 @@ public class ExpensesPageTest : BunitContext
 
         public Task<IReadOnlyCollection<string>> GetCategoryPathSuggestions(ProjectIdentification projectId)
             => Task.FromResult<IReadOnlyCollection<string>>([]);
+
+        public Task<UserIdentification> GetCurrentUser(ProjectIdentification projectId)
+            => Task.FromResult(CurrentUser);
 
         public Task<ExpenseIdentification> CreateExpense(ProjectIdentification projectId, ExpenseEditViewModel model)
             => throw new NotSupportedException();
