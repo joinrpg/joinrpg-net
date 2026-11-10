@@ -55,6 +55,18 @@ internal partial class CreateProjectService
                 Capacity: 1,
                 IsPlayerSelectable: true));
 
+        // Гостевое поселение заводится сразу: большинству конвентов нужен вариант «проживание
+        // с самостоятельным выбором условий» без комнат и лимита мест (#1945).
+        _ = await accommodationTypeService.CreateAccommodationType(
+            projectId,
+            new AccommodationTypeRequest(
+                Name: "Гостевое поселение",
+                Description: new MarkdownString("Бесконечное число мест, без комнат — например, своя палатка"),
+                Cost: 0,
+                Capacity: 1,
+                IsPlayerSelectable: true,
+                IsInfinite: true));
+
         await projectService.SetContactSettings(projectId, ProjectProfileRequirementSettings.AllNotRequired with { RequireTelegram = MandatoryStatus.Recommended, RequireRealName = MandatoryStatus.Required });
 
         // Первая созданная сетка ролей будет дефолтной
