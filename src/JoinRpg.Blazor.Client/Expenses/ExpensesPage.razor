@@ -44,6 +44,11 @@ else
                     @if (CanEdit(expense))
                     {
                         <JoinButton Preset="ButtonPreset.Edit" AutoProgress="false" Disabled="@(editing is not null)" OnClick="@(args => StartEdit(expense))" />
+                        @if (expense.ActualCost is null)
+                        {
+                            @* «Потратил»: факта ещё нет — форма открывается с фактом, предзаполненным из плана *@
+                            <JoinButton Label="Потратил" AutoProgress="false" Disabled="@(editing is not null)" OnClick="@(args => StartEdit(expense, fillActualFromPlan: true))" />
+                        }
                     }
                     @if (CanDecide(expense))
                     {
@@ -113,11 +118,18 @@ else
     private void StartCreate()
     {
         actionError = null;
-        // Мастер по умолчанию — текущий пользователь (не затираем при правке существующего)
-        editing = new(new ExpenseEditViewModel { MasterId = currentUser }, State: null);
+        // Мастер по умолчанию — текущий пользователь; дата — последний известный расход
+        // (пустой список или расходы без дат — форма сама подставит сегодня)
+        editing = new(
+            new ExpenseEditViewModel
+            {
+                MasterId = currentUser,
+                SpentAt = expenses is { Count: > 0 } ? expenses.MaxBy(expense => expense.SpentAt)?.SpentAt : null,
+            },
+            State: null);
     }
 
-    private void StartEdit(ExpenseViewModel expense)
+    private void StartEdit(ExpenseViewModel expense, bool fillActualFromPlan = false)
     {
         actionError = null;
         var model = new ExpenseEditViewModel
@@ -128,8 +140,9 @@ else
             MasterId = expense.MasterId,
             PlannedQuantity = expense.PlannedQuantity,
             PlannedPrice = expense.PlannedPrice,
-            ActualQuantity = expense.ActualQuantity,
-            ActualPrice = expense.ActualPrice,
+            // «Потратил» предзаполняет факт из плана; обычная правка сохраняет введённый факт
+            ActualQuantity = fillActualFromPlan ? expense.PlannedQuantity : expense.ActualQuantity,
+            ActualPrice = fillActualFromPlan ? expense.PlannedPrice : expense.ActualPrice,
             SpentAt = expense.SpentAt,
             Description = expense.Description,
         };

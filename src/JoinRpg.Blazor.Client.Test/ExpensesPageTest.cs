@@ -110,6 +110,74 @@ public class ExpensesPageTest : BunitContext
     }
 
     [Fact]
+    public void NewExpenseFormDefaultsSpentAtToLatestExpenseDate()
+    {
+        expensesClient.Expenses =
+        [
+            Expense with { SpentAt = new DateOnly(2026, 10, 1) },
+            Expense with { ExpenseId = new ExpenseIdentification(ProjectId, 2), Name = "Свежий расход", SpentAt = new DateOnly(2026, 11, 5) },
+            Expense with { ExpenseId = new ExpenseIdentification(ProjectId, 3), Name = "Расход без даты", SpentAt = null },
+        ];
+        var cut = Render<ExpensesPage>(p => p.Add(x => x.ProjectId, ProjectId));
+
+        cut.FindAll("button").Single(button => button.TextContent.Trim() == "Новый расход").Click();
+
+        // Дата по умолчанию — максимальный SpentAt среди расходов (расходы без даты пропускаются)
+        cut.Find("input[name=SpentAt]").GetAttribute("value").ShouldBe("2026-11-05");
+    }
+
+    [Fact]
+    public void NewExpenseFormOnEmptyProjectDefaultsSpentAtToToday()
+    {
+        expensesClient.Expenses = [];
+        var cut = Render<ExpensesPage>(p => p.Add(x => x.ProjectId, ProjectId));
+
+        // Регрессия: на пустом проекте клик «Новый расход» не падает, дата — сегодня
+        cut.FindAll("button").Single(button => button.TextContent.Trim() == "Новый расход").Click();
+
+        cut.Markup.ShouldContain("Новый расход"); // заголовок панели формы — форма открылась
+        var today = DateOnly.FromDateTime(DateTime.Today).ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture);
+        cut.Find("input[name=SpentAt]").GetAttribute("value").ShouldBe(today);
+    }
+
+    [Fact]
+    public void SpendButtonVisibleOnlyForExpenseWithoutActual()
+    {
+        expensesClient.Expenses =
+        [
+            Expense, // факта нет
+            Expense with
+            {
+                ExpenseId = new ExpenseIdentification(ProjectId, 2),
+                Name = "Расход с фактом",
+                ActualQuantity = 1,
+                ActualPrice = 500,
+                SpentAt = new DateOnly(2026, 11, 1),
+            },
+        ];
+        var cut = Render<ExpensesPage>(p => p.Add(x => x.ProjectId, ProjectId));
+
+        var rowWithoutActual = cut.FindAll("tr").Single(row => row.TextContent.Contains("Аренда зала"));
+        rowWithoutActual.QuerySelectorAll("button").Any(button => button.TextContent.Trim() == "Потратил").ShouldBeTrue();
+        var rowWithActual = cut.FindAll("tr").Single(row => row.TextContent.Contains("Расход с фактом"));
+        rowWithActual.QuerySelectorAll("button").Any(button => button.TextContent.Trim() == "Потратил").ShouldBeFalse();
+    }
+
+    [Fact]
+    public void SpendButtonOpensFormWithActualFilledFromPlan()
+    {
+        var cut = Render<ExpensesPage>(p => p.Add(x => x.ProjectId, ProjectId));
+
+        cut.FindAll("button").Single(button => button.TextContent.Trim() == "Потратил").Click();
+
+        cut.Markup.ShouldContain("Редактирование расхода");
+        // Факт предзаполнен из плана (2 × 1500)
+        var numberInputs = cut.FindAll("input[type=number]");
+        numberInputs[2].GetAttribute("value").ShouldBe("2"); // факт количество
+        numberInputs[3].GetAttribute("value").ShouldBe("1500"); // факт цена
+    }
+
+    [Fact]
     public void ExportLinkPresentAndStaysVisibleWhenFormOpened()
     {
         var cut = Render<ExpensesPage>(p => p.Add(x => x.ProjectId, ProjectId));
@@ -134,17 +202,20 @@ public class ExpensesPageTest : BunitContext
 
     private sealed class FakeExpensesClient(ExpenseViewModel[] expenses) : IExpensesClient
     {
-        /// <summary>Расходы текущего пользователя; null — совпадают с <c>expenses</c>.</summary>
+        /// <summary>Все расходы проекта; по умолчанию — из конструктора.</summary>
+        public ExpenseViewModel[] Expenses { get; set; } = expenses;
+
+        /// <summary>Расходы текущего пользователя; null — совпадают с <c>Expenses</c>.</summary>
         public ExpenseViewModel[]? MyExpenses { get; set; }
 
         /// <summary>Текущий пользователь — предзаполнение мастера в форме создания.</summary>
         public UserIdentification CurrentUser { get; set; } = new(1);
 
         public Task<IReadOnlyList<ExpenseViewModel>> GetExpenses(ProjectIdentification projectId)
-            => Task.FromResult<IReadOnlyList<ExpenseViewModel>>(expenses);
+            => Task.FromResult<IReadOnlyList<ExpenseViewModel>>(Expenses);
 
         public Task<IReadOnlyList<ExpenseViewModel>> GetMyExpenses(ProjectIdentification projectId)
-            => Task.FromResult<IReadOnlyList<ExpenseViewModel>>(MyExpenses ?? expenses);
+            => Task.FromResult<IReadOnlyList<ExpenseViewModel>>(MyExpenses ?? Expenses);
 
         public Task<IReadOnlyCollection<ExpenseCategoryInfo>> GetCategories(ProjectIdentification projectId)
             => Task.FromResult<IReadOnlyCollection<ExpenseCategoryInfo>>([]);
