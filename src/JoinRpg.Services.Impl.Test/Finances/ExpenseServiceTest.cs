@@ -52,20 +52,12 @@ public class ExpenseServiceTest
         UserIdentification masterId,
         string categoryPath = "Аренда базы\\Жилые корпуса",
         int plannedQuantity = 2,
-    private static CreateExpenseRequest CreateRequest(
-        UserIdentification masterId,
-        string categoryPath = "Аренда базы\\Жилые корпуса",
-        int plannedQuantity = 2,
         decimal plannedPrice = 5000,
         DateOnly? spentAt = null,
         int? actualQuantity = null,
         decimal? actualPrice = null)
         => new(masterId, "Аренда домика", categoryPath, plannedQuantity, plannedPrice, spentAt, new MarkdownString("Предоплата за август"), actualQuantity, actualPrice);
 
-    private static EditExpenseRequest EditRequest(
-        UserIdentification masterId,
-        string name = "Аренда домика (уточнено)",
-        int plannedQuantity = 3,
     private static EditExpenseRequest EditRequest(
         UserIdentification masterId,
         string name = "Аренда домика (уточнено)",
