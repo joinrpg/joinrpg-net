@@ -8,7 +8,7 @@ namespace JoinRpg.Web.Finances.Test;
 public class ExpenseStateBadgeTest : BunitContext
 {
     [Theory]
-    [InlineData(ExpenseStateView.Proposed, "На рассмотрении", "label label-default")]
+    [InlineData(ExpenseStateView.Proposed, "На рассмотрении", "label label-warning")]
     [InlineData(ExpenseStateView.Approved, "Одобрен", "label label-success")]
     [InlineData(ExpenseStateView.Rejected, "Отклонён", "label label-danger")]
     public void RendersDisplayNameWithStateColor(ExpenseStateView state, string displayName, string cssClass)
