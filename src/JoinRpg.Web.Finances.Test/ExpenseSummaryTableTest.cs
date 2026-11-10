@@ -21,7 +21,7 @@ public class ExpenseSummaryTableTest : BunitContext
             .Add(x => x.ProjectId, 7));
 
         cut.Markup.ShouldContain("Расходы");
-        cut.Markup.ShouldContain("/7/expenses");
+        cut.Markup.ShouldContain("/7/money/expenses");
         cut.Markup.ShouldContain("(подробнее)");
         cut.Markup.ShouldContain("Аренда базы\\Жилые корпуса");
         cut.Markup.ShouldContain("План (одобрено)");

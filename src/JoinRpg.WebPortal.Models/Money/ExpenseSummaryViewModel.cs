@@ -36,7 +36,7 @@ public static class ExpenseSummaryBuilder
         // весь подкатегорный поддерево, поэтому «входит» — в любую подкатегорию. Отклонённые
         // расходы не дают ни одной суммы (эффекты состояний — в доменном типе ExpenseInfo),
         // поэтому категории только из них отсекаются общим фильтром строк, где все суммы нулевые.
-        var sums = new Dictionary<string, (int Planned, int Actual, int Proposed)>();
+        var sums = new Dictionary<string, (decimal Planned, decimal Actual, decimal Proposed)>();
         foreach (var expense in expenses)
         {
             var names = expense.CategoryPath.Select(c => c.Name).ToArray();
