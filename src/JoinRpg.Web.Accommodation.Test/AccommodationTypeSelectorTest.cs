@@ -23,8 +23,8 @@ public class AccommodationTypeSelectorTest : BunitContext
         SetRendererInfo(new RendererInfo("WebAssembly", isInteractive: true));
     }
 
-    private static AccommodationTypeViewModel Type(int id, string name)
-        => new(new AccommodationTypeIdentification(ProjectId, id), name, Capacity: 4, Cost: 1000, "<p>Описание</p>");
+    private static AccommodationTypeViewModel Type(int id, string name, bool isInfinite = false)
+        => new(new AccommodationTypeIdentification(ProjectId, id), name, Capacity: 4, Cost: 1000, "<p>Описание</p>", isInfinite);
 
     private IRenderedComponent<AccommodationTypeSelector> RenderSelector()
         => Render<AccommodationTypeSelector>(parameters => parameters.Add(c => c.ClaimId, ClaimId));
@@ -72,6 +72,26 @@ public class AccommodationTypeSelectorTest : BunitContext
         cut.Markup.ShouldContain("Домик");
         // Описание приходит уже отрисованным из Markdown и вставляется как разметка
         cut.Markup.ShouldContain("<p>Описание</p>");
+    }
+
+    /// <summary>
+    /// Гостевой тип: вместо «N мест в номере» — «мест не ограничено», цена остаётся (#1945).
+    /// </summary>
+    [Fact]
+    public void GuestType_ShowsUnlimitedSeats()
+    {
+        client.NextChoice = new AccommodationTypeChoiceViewModel(
+            [Type(1, "Гостевое поселение", isInfinite: true)],
+            SelectedTypeId: null,
+            RoomAssigned: false,
+            HasNeighbours: false);
+
+        var cut = RenderSelector();
+
+        cut.Find("button").Click();
+        cut.Markup.ShouldContain("мест не ограничено");
+        cut.Markup.ShouldNotContain("4 места в номере");
+        cut.Markup.ShouldContain("1000");
     }
 
     [Fact]

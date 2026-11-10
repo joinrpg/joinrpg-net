@@ -8,12 +8,17 @@ namespace JoinRpg.Services.Interfaces.ProjectMetadata;
 /// <param name="Cost">Стоимость проживания для одного игрока</param>
 /// <param name="Capacity">Сколько игроков помещается в одну комнату этого типа</param>
 /// <param name="IsPlayerSelectable">Может ли игрок сам выбрать этот тип в своей заявке</param>
+/// <param name="IsInfinite">
+/// Бесконечное поселение (гостевой тип): без комнат и лимита мест, вместимость комнаты не
+/// используется (issue #1945). Необязательный, чтобы существующие вызовы не менять.
+/// </param>
 public record AccommodationTypeRequest(
     string Name,
     MarkdownString Description,
     int Cost,
     int Capacity,
-    bool IsPlayerSelectable);
+    bool IsPlayerSelectable,
+    bool IsInfinite = false);
 
 /// <summary>
 /// Из какой категории комнат будет селиться новый тип проживания (ADR020).

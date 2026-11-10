@@ -42,6 +42,13 @@ internal class AccommodationInviteViewService(
 
         var (plan, senderGroup) = sender.Value;
 
+        // Гостевой тип одиночный: приглашать некого и незачем — селектор целей не показываем,
+        // сервис приглашений всё равно откажет (issue #1945).
+        if (plan.GetAccommodationType(senderGroup.AccommodationTypeId).IsInfinite)
+        {
+            return new AccommodationInviteTargetsViewModel(SenderRequestId: null, RoomFreeSpace: 0, Targets: [], AccommodationInviteMode.None);
+        }
+
         // Тот же расчёт, что и при приёме приглашения (AccommodationInviteServiceImpl): иначе
         // список предложил бы место, в котором операция откажет.
         var roomFreeSpace = plan.GetFreeSpaceForGroup(senderGroup.Id);

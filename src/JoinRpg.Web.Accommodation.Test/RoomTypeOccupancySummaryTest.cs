@@ -75,4 +75,34 @@ public class RoomTypeOccupancySummaryTest
             roomId is null ? null : new AccommodationRoomIdentification(projectId, roomId.Value),
             [.. Enumerable.Range(1, persons).Select(i => new ClaimIdentification(projectId, id * 100 + i))]);
     }
+
+    /// <summary>
+    /// Гостевой тип: комнат нет, место занято оплатой — «Занято» это оплаченные, а «нерасселённые»
+    /// это неоплатившие (#1945). Среди неоплативших оплаченных нет, поэтому PaidCount обнуляем:
+    /// иначе AcceptedNotPaid ушёл бы в минус.
+    /// </summary>
+    [Fact]
+    public void GuestType_OccupiedIsPaidAndPendingIsUnpaid()
+    {
+        var guestEntity = mock.CreateAccommodationType("Гостевое поселение", capacity: 1, isInfinite: true);
+        mock.ReInitProjectInfo();
+        var projectInfo = mock.ProjectInfo;
+        var guest = projectInfo.AccommodationSettings.GetTypeById(new(projectInfo.ProjectId, guestEntity.Id));
+
+        var group = Group(1, guest, roomId: null, persons: 3);
+        var plan = new RoomCategoryPlan(
+            guest.RoomCategoryId,
+            projectInfo,
+            [guest],
+            [],
+            [group]);
+
+        var summary = RoomTypeOccupancySummary.FromPlan(plan, guest.Id, paidCount: 2);
+
+        summary.Occupied.ShouldBe(2);
+        summary.ApprovedClaims.ShouldBe(3);
+        summary.PendingRequests.ShouldBe(1);
+        summary.PaidCount.ShouldBe(0);
+        summary.AcceptedNotPaidCount.ShouldBe(1);
+    }
 }

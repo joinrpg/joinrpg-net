@@ -145,6 +145,7 @@ internal static class RoomsModel
         bool canManageRooms = true,
         bool canAssignRooms = true,
         int capacity = 2,
+        bool isInfinite = false,
         IReadOnlyList<string>? siblingTypeNames = null)
         => new(
             TypeId,
@@ -156,5 +157,6 @@ internal static class RoomsModel
             rooms ?? [],
             unassigned ?? [],
             canManageRooms,
-            canAssignRooms);
+            canAssignRooms,
+            isInfinite);
 }

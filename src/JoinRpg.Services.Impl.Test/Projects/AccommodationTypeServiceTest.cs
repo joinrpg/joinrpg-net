@@ -25,6 +25,9 @@ public class AccommodationTypeServiceTest : ProjectMetadataServiceTestBase
     /// <summary>Что репозиторий отвечает про занятость комнат этого типа.</summary>
     private bool hasOccupiedRoom;
 
+    /// <summary>Что репозиторий отвечает про собственные комнаты категории этого типа.</summary>
+    private bool hasExclusiveRooms;
+
     private readonly FakeAccommodationNotificationService accommodationNotifications = new();
 
     private AccommodationTypeService CreateService(int? currentUserId = null, bool isAdmin = false)
@@ -33,7 +36,7 @@ public class AccommodationTypeServiceTest : ProjectMetadataServiceTestBase
         return new AccommodationTypeService(
             CreatePropsService(currentUser),
             CreateCharacterPropsService(currentUser),
-            new FakeAccommodationRepository(mock, () => hasOccupiedRoom));
+            new FakeAccommodationRepository(mock, () => hasOccupiedRoom, () => hasExclusiveRooms));
     }
 
     /// <summary>
@@ -112,6 +115,72 @@ public class AccommodationTypeServiceTest : ProjectMetadataServiceTestBase
             new NewRoomCategory("Люкс"));
 
         Result.AccommodationSettings.RoomCategories.ShouldHaveSingleItem().Name.ShouldBe("Люкс");
+    }
+
+    /// <summary>Гостевой тип (бесконечное поселение): флаг сохраняется, вместимость комнаты не нужна.</summary>
+    [Fact]
+    public async Task CreateAccommodationType_Infinite_SetsFlagAndIgnoresCapacity()
+    {
+        await CreateService().CreateAccommodationType(
+            ProjectId,
+            new AccommodationTypeRequest("Гостевое поселение", new MarkdownString(""), Cost: 500, Capacity: 4, IsPlayerSelectable: true, IsInfinite: true));
+
+        var created = Result.AccommodationSettings.Types.ShouldHaveSingleItem();
+        created.Name.ShouldBe("Гостевое поселение");
+        created.IsInfinite.ShouldBeTrue();
+        created.Cost.ShouldBe(500);
+        // Вместимость комнаты гостевому типу не нужна, но колонка в БД NOT NULL с Range(1,…):
+        // записываем значение по умолчанию, а пришедшее из формы игнорируем.
+        created.Capacity.ShouldBe(1);
+    }
+
+    [Fact]
+    public async Task UpdateAccommodationType_SwitchesInfiniteFlag()
+    {
+        var typeId = AddAccommodationType("Палатка");
+
+        await CreateService().UpdateAccommodationType(
+            typeId,
+            new AccommodationTypeRequest("Палатка", new MarkdownString(""), Cost: 0, Capacity: 2, IsPlayerSelectable: true, IsInfinite: true));
+
+        Result.AccommodationSettings.GetTypeById(typeId).IsInfinite.ShouldBeTrue();
+    }
+
+    /// <summary>
+    /// Гостевому типу комнаты не нужны: включать «бесконечность» типу, у которого есть собственные
+    /// комнаты, нельзя — иначе комнаты станут недостижимы (вкладка скрыта) (#1945).
+    /// </summary>
+    [Fact]
+    public async Task UpdateAccommodationType_MakeInfiniteWithExclusiveRooms_Throws()
+    {
+        var typeId = AddAccommodationType("Палатка");
+        var claim = CreateClaim("Жилец");
+        _ = mock.CreateRoom(mock.CreateAccommodationRequest(mock.AccommodationTypes.Single(), claim), "1");
+        hasExclusiveRooms = true;
+
+        _ = await Should.ThrowAsync<AccommodationTypeHasRoomsException>(
+            () => CreateService().UpdateAccommodationType(
+                typeId,
+                new AccommodationTypeRequest("Палатка", new MarkdownString(""), Cost: 0, Capacity: 2, IsPlayerSelectable: true, IsInfinite: true)));
+    }
+
+    /// <summary>
+    /// Комнаты общего пула гостевому типу не мешат: ими продолжают управлять сестринские типы (ADR020).
+    /// </summary>
+    [Fact]
+    public async Task UpdateAccommodationType_MakeInfiniteWithSharedPoolRooms_Allows()
+    {
+        var typeId = AddAccommodationType("Палатка");
+        var sibling = mock.CreateAccommodationType("Домик", roomCategory: mock.AccommodationTypes.Single().RoomCategory);
+        var claim = CreateClaim("Жилец");
+        _ = mock.CreateRoom(mock.CreateAccommodationRequest(sibling, claim), "1");
+        hasExclusiveRooms = false;
+
+        await CreateService().UpdateAccommodationType(
+            typeId,
+            new AccommodationTypeRequest("Палатка", new MarkdownString(""), Cost: 0, Capacity: 2, IsPlayerSelectable: true, IsInfinite: true));
+
+        Result.AccommodationSettings.GetTypeById(typeId).IsInfinite.ShouldBeTrue();
     }
 
     [Fact]
@@ -615,11 +684,15 @@ public class AccommodationTypeServiceTest : ProjectMetadataServiceTestBase
     private sealed class FakeAccommodationRepository(
         MockedProject mock,
         Func<bool> hasOccupiedRoom,
+        Func<bool>? hasExclusiveRooms = null,
         IReadOnlyCollection<ClaimIdentification>? staleClaims = null)
         : IAccommodationRepository
     {
         public Task<bool> HasOccupiedRoomOfType(AccommodationTypeIdentification accommodationTypeId)
             => Task.FromResult(hasOccupiedRoom());
+
+        public Task<bool> HasExclusiveRoomsOfType(AccommodationTypeIdentification accommodationTypeId)
+            => Task.FromResult(hasExclusiveRooms?.Invoke() ?? false);
 
         public Task<IReadOnlyCollection<ClaimIdentification>> GetClaimsInGroupsOfType(
             AccommodationTypeIdentification accommodationTypeId)

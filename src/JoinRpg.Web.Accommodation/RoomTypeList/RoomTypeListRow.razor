@@ -33,13 +33,14 @@
     <td class="price-value">
         @if (Model.IsInfinite)
         {
-            <div>@Model.Capacity ✕ ∞ = ∞</div>
+            @* Мест бесконечно: вместимость номера ни о чём не говорит (#1945). *@
+            <div>∞</div>
         }
         else
         {
             <FreeSeatsFormula Occupancy="Model.Occupancy" />
         }
-        <OccupiedSeatsFormula Occupancy="Model.Occupancy" />
+        <OccupiedSeatsFormula Occupancy="Model.Occupancy" IsInfinite="Model.IsInfinite" />
     </td>
     <td class="price-value">
         <PendingRequestsFormula Paid="Model.Occupancy.PaidCount"
@@ -50,7 +51,8 @@
         <JoinButtonGroup Size="SizeStyleEnum.Small">
             <JoinButton Icon="JoinIconType.MenuHorizontal" Title="@($"Показать список заявок на тип поселения «{Model.Name}»")"
                         Link="@UriLocator.GetRoomTypeClaimListUri(RoomTypeId).ToString()" />
-            @if (Model.CanAssignRooms)
+            @* Гостевому типу расселение не требуется — комнат у него нет (#1945). *@
+            @if (Model.CanAssignRooms && !Model.IsInfinite)
             {
                 <JoinButton Icon="JoinIconType.Accommodation" Title="Расселение"
                             Link="@UriLocator.GetRoomTypeDetailsUri(RoomTypeId).ToString()" />

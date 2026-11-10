@@ -42,7 +42,14 @@
                            style="margin: 0 0 0 2em; display: block; font-weight: normal;">
                         <div>
                             <strong>@accommodationType.Name</strong>
-                            <text>(@CountHelper.DisplayCount(accommodationType.Capacity, "место", "места", "мест") в номере, @accommodationType.Cost&nbsp;&#8381;)</text>
+                            @if (accommodationType.IsInfinite)
+                            {
+                                <text>(мест не ограничено, @accommodationType.Cost&nbsp;&#8381;)</text>
+                            }
+                            else
+                            {
+                                <text>(@CountHelper.DisplayCount(accommodationType.Capacity, "место", "места", "мест") в номере, @accommodationType.Cost&nbsp;&#8381;)</text>
+                            }
                         </div>
                         <div>@accommodationType.Description</div>
                     </label>

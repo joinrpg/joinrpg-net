@@ -32,8 +32,20 @@ public class RoomTypeEditViewServiceTest
         model.Capacity.ShouldBe(6);
         model.Cost.ShouldBe(1200);
         model.IsPlayerSelectable.ShouldBeFalse();
+        model.IsInfinite.ShouldBeFalse();
         // В форму попадает исходный markdown, а не отрендеренный HTML: иначе сохранение испортит описание.
         model.Description.ShouldBe("**Тепло**");
+    }
+
+    [Fact]
+    public async Task GetRoomType_GuestType_ShowsInfiniteFlag()
+    {
+        var type = Mock.CreateAccommodationType("Гостевое поселение", isInfinite: true);
+        Mock.ReInitProjectInfo();
+
+        var model = await CreateService().GetRoomType(new AccommodationTypeIdentification(Mock.ProjectInfo.ProjectId, type.Id));
+
+        model.IsInfinite.ShouldBeTrue();
     }
 
     [Fact]
@@ -72,6 +84,27 @@ public class RoomTypeEditViewServiceTest
 
         typeService.Created.ShouldHaveSingleItem().RoomCategory
             .ShouldBe(new ExistingRoomCategory(new RoomCategoryIdentification(projectId, 101)));
+    }
+
+    /// <summary>
+    /// Гостевой тип одиночный: даже если в форме был выбран общий пул, заводится в своей категории —
+    /// иначе его группы попали бы в чужую доску расселения (#1945).
+    /// </summary>
+    [Fact]
+    public async Task CreateRoomType_GuestType_IgnoresExistingCategoryChoice()
+    {
+        var projectId = Mock.ProjectInfo.ProjectId;
+
+        await CreateService().CreateRoomType(projectId, new RoomTypeEditViewModel
+        {
+            Name = "Гостевое поселение",
+            IsInfinite = true,
+            RoomCategoryChoice = RoomCategoryChoice.Existing,
+            ExistingRoomCategoryId = 101,
+        });
+
+        typeService.Created.ShouldHaveSingleItem().RoomCategory
+            .ShouldBe(new NewRoomCategory("Гостевое поселение"));
     }
 
     [Fact]
@@ -127,6 +160,17 @@ public class RoomTypeEditViewServiceTest
         var (updatedId, request) = typeService.Updated.ShouldHaveSingleItem();
         updatedId.ShouldBe(typeId);
         request.ShouldBe(new AccommodationTypeRequest("Домик", new MarkdownString(""), 0, 4, true));
+    }
+
+    [Fact]
+    public async Task UpdateRoomType_PassesInfiniteFlag()
+    {
+        var typeId = new AccommodationTypeIdentification(Mock.ProjectInfo.ProjectId, 7);
+
+        await CreateService().UpdateRoomType(typeId, new RoomTypeEditViewModel { Name = "Гостевое поселение", IsInfinite = true });
+
+        var (_, request) = typeService.Updated.ShouldHaveSingleItem();
+        request.ShouldBe(new AccommodationTypeRequest("Гостевое поселение", new MarkdownString(""), 0, 2, true, IsInfinite: true));
     }
 
     [Fact]

@@ -89,3 +89,15 @@ public class AccommodationTypeIsOccupiedException(AccommodationTypeIdentificatio
 {
     public AccommodationTypeIdentification AccommodationTypeId { get; } = accommodationTypeId;
 }
+
+/// <summary>
+/// Тип проживания нельзя сделать гостевым (бесконечным): у него остались собственные комнаты.
+/// Комнаты общего пула не мешают — ими управляют сестринские типы (ADR020, #1945).
+/// </summary>
+public class AccommodationTypeHasRoomsException(AccommodationTypeIdentification accommodationTypeId)
+    : JoinRpgProjectException(
+        accommodationTypeId.ProjectId,
+        $"Нельзя сделать тип проживания {accommodationTypeId} гостевым: сначала удалите его комнаты")
+{
+    public AccommodationTypeIdentification AccommodationTypeId { get; } = accommodationTypeId;
+}

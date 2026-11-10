@@ -115,7 +115,8 @@ internal class ProjectMetadataRepository(MyDbContext ctx) : IProjectMetadataRepo
                     new MarkdownString(type.Description?.Contents ?? ""),
                     type.Cost,
                     type.Capacity,
-                    type.IsPlayerSelectable))],
+                    type.IsPlayerSelectable,
+                    type.IsInfinite))],
                 [.. project.ProjectRoomCategories.Select(category => new RoomCategoryInfo(
                     new RoomCategoryIdentification(projectId, category.Id),
                     category.Name))]);

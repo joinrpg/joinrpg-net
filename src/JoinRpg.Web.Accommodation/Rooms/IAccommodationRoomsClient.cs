@@ -66,6 +66,10 @@ public record AccommodationRoomViewModel(
 /// <param name="UnassignedGroups">Группы, ещё не расселённые по комнатам</param>
 /// <param name="CanManageRooms">Право заводить, переименовывать и удалять комнаты</param>
 /// <param name="CanAssignRooms">Право расселять и выселять игроков</param>
+/// <param name="IsInfinite">
+/// Гостевой тип (бесконечное поселение): комнаты не используются, страница показывает пояснение
+/// вместо доски расселения (#1945).
+/// </param>
 public record RoomTypeRoomsViewModel(
     AccommodationTypeIdentification TypeId,
     string ProjectName,
@@ -76,7 +80,8 @@ public record RoomTypeRoomsViewModel(
     IReadOnlyList<AccommodationRoomViewModel> Rooms,
     IReadOnlyList<AccommodationGroupViewModel> UnassignedGroups,
     bool CanManageRooms,
-    bool CanAssignRooms);
+    bool CanAssignRooms,
+    bool IsInfinite = false);
 
 /// <summary>
 /// Управление комнатами и расселение на странице «Комнаты» типа проживания.

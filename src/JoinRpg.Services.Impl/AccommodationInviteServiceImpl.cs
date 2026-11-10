@@ -62,6 +62,15 @@ internal class AccommodationInviteServiceImpl(
                         "Заявка на проживание не принадлежит приглашающей заявке.");
                 }
 
+                // Гостевой тип (бесконечное поселение) одиночный: приглашать из него некого
+                // и незачем — свободное место не ограничено (issue #1945).
+                if (sender is { } own && own.Plan.GetAccommodationType(own.Group.AccommodationTypeId).IsInfinite)
+                {
+                    //TODO[Localize]
+                    throw new AccommodationInviteNotAllowedException(senderClaimId.ProjectId,
+                        $"Из гостевого поселения ({own.Plan.GetAccommodationType(own.Group.AccommodationTypeId).Name}) нельзя приглашать к совместному проживанию.");
+                }
+
                 var (receiverGroup, receiverClaimIds, _) = await LoadInviteTarget(ctx, target, sender?.Plan);
 
                 EnsureCanInvite(

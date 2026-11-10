@@ -56,11 +56,18 @@ public record RoomTypeOccupancySummary(
         AccommodationTypeIdentification typeId,
         int paidCount)
     {
+        var type = plan.GetAccommodationType(typeId);
         var groupsOfType = plan.Groups.Where(group => group.AccommodationTypeId == typeId).ToList();
         var fullRooms = plan.Rooms.Where(room => room.IsOccupied && plan.IsFull(room.Id)).ToList();
+        // Гостевой тип: комнат нет, место занято оплатой — «Занято» показывает оплаченных,
+        // «нерасселённые» — неоплативших. Среди неоплативших оплаченных нет, поэтому PaidCount
+        // для гостя обнуляем: иначе AcceptedNotPaid ушёл бы в минус (#1945).
+        var occupied = type.IsInfinite
+            ? paidCount
+            : groupsOfType.Where(group => group.RoomId is not null).Sum(group => group.SubjectsCount);
         return new(
             Capacity: plan.RoomCapacity,
-            Occupied: groupsOfType.Where(group => group.RoomId is not null).Sum(group => group.SubjectsCount),
+            Occupied: occupied,
             PoolOccupied: plan.Occupancy,
             RoomsCount: plan.Rooms.Count,
             ApprovedClaims: groupsOfType.Sum(group => group.SubjectsCount),
@@ -68,7 +75,7 @@ public record RoomTypeOccupancySummary(
             FullyOccupiedRoomsCount: fullRooms.Count,
             FullyOccupiedSeats: fullRooms.Sum(room => room.Occupancy),
             FreeCapacity: plan.FreeCapacity,
-            PaidCount: paidCount);
+            PaidCount: type.IsInfinite ? 0 : paidCount);
     }
 
     /// <summary>
@@ -142,10 +149,9 @@ public class RoomTypeListItemViewModel : RoomTypeViewModelBase
     /// <see cref="RoomTypeViewModelBase.CanAssignRooms"/>.
     /// </param>
     /// <remarks>
-    /// <c>IsInfinite</c> и <c>IsAutoFilledAccommodation</c> берутся из метаданных явно, хотя там
-    /// всегда <c>false</c>: функциональность не реализована (см.
-    /// <see cref="AccommodationTypeInfo.IsInfinite"/>), и строка должна показывать именно это
-    /// значение, а не совпадающий с ним по случайности дефолт вью-модели.
+    /// <c>IsInfinite</c> и <c>IsAutoFilledAccommodation</c> берутся из метаданных явно: строка
+    /// должна показывать именно значение настройки типа, а не дефолт вью-модели (#1945;
+    /// <see cref="AccommodationTypeInfo.IsInfinite"/>).
     /// </remarks>
     public RoomTypeListItemViewModel(
         AccommodationTypeInfo typeInfo,

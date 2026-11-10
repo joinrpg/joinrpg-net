@@ -340,6 +340,23 @@ public class RoomTypeRoomsControlTest : BunitContext
         dialogModule.Invocations["showModal"].Any().ShouldBeFalse();
     }
 
+    /// <summary>
+    /// Гостевой тип: диалог добавления комнат не открывается сам, вместо доски — пояснение (#1945).
+    /// </summary>
+    [Fact]
+    public void GuestType_NoAutoAddDialogAndBoardNotShown()
+    {
+        var cut = RenderControl(RoomsModel.Create(isInfinite: true));
+
+        cut.Render();
+
+        dialogModule.Invocations["showModal"].Any().ShouldBeFalse();
+        cut.Markup.ShouldContain("Гостевое поселение");
+        cut.FindAll("tr[data-room-id]").ShouldBeEmpty();
+        cut.FindAll("[data-action='add']").ShouldBeEmpty();
+        client.Calls.ShouldBeEmpty();
+    }
+
     [Fact]
     public async Task KickAll_EvictsOwnTypeAndRereadsModel()
     {

@@ -4,9 +4,9 @@ namespace JoinRpg.Web.Accommodation;
 /// Форма создания и изменения типа проживания — то, что мастер вводит руками.
 /// </summary>
 /// <remarks>
-/// Класс с сеттерами, а не record: его правит <c>EditForm</c>. Нереализованных флагов
-/// (бесконечное поселение, автозаполнение) здесь нет: в форме они не показываются, а сервис их
-/// не принимает (см. <c>AccommodationTypeInfo.IsInfinite</c>).
+/// Класс с сеттерами, а не record: его правит <c>EditForm</c>. Флага автозаполнения здесь
+/// нет: функциональность не реализована, и сервис её не принимает (см.
+/// <c>AccommodationTypeInfo.IsAutoFilledAccommodation</c>).
 /// </remarks>
 public class RoomTypeEditViewModel : IValidatableObject
 {
@@ -39,6 +39,14 @@ public class RoomTypeEditViewModel : IValidatableObject
     [Display(Name = "Игроки могут выбрать данный тип проживания",
         Description = "Если снять этот флаг, то только мастер может назначать этот тип поселения игрокам")]
     public bool IsPlayerSelectable { get; set; } = true;
+
+    /// <summary>
+    /// Гостевое поселение: бесконечное число мест, без комнат и лимита. Игроки не смогут
+    /// приглашать соседей, расселение по комнатам не требуется (#1945).
+    /// </summary>
+    [Display(Name = "Гостевое поселение (бесконечное число мест)",
+        Description = "Без комнат и лимита мест. Приглашать соседей нельзя, цену можно задать как обычно")]
+    public bool IsInfinite { get; set; }
 
     /// <summary>
     /// Описание в Markdown — как его ввёл мастер, не отрендеренное.

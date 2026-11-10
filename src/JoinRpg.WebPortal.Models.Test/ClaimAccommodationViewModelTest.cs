@@ -57,6 +57,22 @@ public class ClaimAccommodationViewModelTest
     }
 
     [Fact]
+    public async Task GuestType_FreeSpaceIsNotShown()
+    {
+        // Гостевой тип: понятия «свободных мест» у заявки нет — показывать ∞ нельзя (#1945).
+        var type = mock.CreateAccommodationType("Гостевое поселение", capacity: 1, isInfinite: true);
+        mock.ReInitProjectInfo();
+        var claim = mock.CreateApprovedClaim(mock.CreateCharacter("Жилец"), mock.Player);
+        _ = mock.CreateAccommodationRequest(type, claim);
+
+        var model = await Build(claim);
+
+        model.AccommodationType.ShouldNotBeNull().IsInfinite.ShouldBeTrue();
+        model.RoomName.ShouldBeNull();
+        model.RoomFreeSpace.ShouldBe(0);
+    }
+
+    [Fact]
     public async Task PlacedGroup_RoomNameAndNeighbours()
     {
         var type = mock.CreateAccommodationType("Домик", capacity: 3);

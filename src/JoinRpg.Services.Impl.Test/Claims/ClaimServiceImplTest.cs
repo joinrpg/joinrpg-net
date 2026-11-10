@@ -1809,6 +1809,26 @@ public class ClaimServiceImplTest : ClaimServiceTestBase
     }
 
     /// <summary>
+    /// Выбор гостевого типа устраивает одиночную группу без комнаты: расселение не требуется,
+    /// комната не назначается (#1945).
+    /// </summary>
+    [Fact]
+    public async Task SetAccommodationType_ToGuestType_CreatesRequestWithoutRoom()
+    {
+        var claim = CreateClaim(ClaimStatus.AddedByUser);
+        var guestType = mock.CreateAccommodationType("Гостевое поселение", isInfinite: true);
+
+        await CreateService().SetAccommodationType(
+            ProjectId.Value, claim.ClaimId, guestType.Id);
+
+        var request = claim.AccommodationRequest.ShouldNotBeNull();
+        request.AccommodationTypeId.ShouldBe(guestType.Id);
+        request.AccommodationId.ShouldBeNull();
+        request.Subjects.ShouldBe([claim]);
+        SentRoomNotifications.ShouldBeEmpty();
+    }
+
+    /// <summary>
     /// Смена типа у уже поселённой заявки: старая комната покидается, письмо о выезде уходит
     /// уведомлением — то есть после сохранения.
     /// </summary>

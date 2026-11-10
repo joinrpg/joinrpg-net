@@ -17,6 +17,19 @@ public class AccommodationRepositoryImpl(MyDbContext ctx) : IAccommodationReposi
             .ConfigureAwait(false);
     }
 
+    public async Task<bool> HasExclusiveRoomsOfType(AccommodationTypeIdentification accommodationTypeId)
+    {
+        // Комната принадлежит категории, а не типу (ADR020): «свои» комнаты — это комнаты
+        // категории, где селится только этот тип.
+        var projectId = accommodationTypeId.ProjectId.Value;
+        var typeId = accommodationTypeId.AccommodationTypeId;
+        return await ctx.Set<ProjectRoomCategory>()
+            .AnyAsync(category => category.ProjectId == projectId
+                && category.Rooms.Any()
+                && category.AccommodationTypes.All(type => type.Id == typeId))
+            .ConfigureAwait(false);
+    }
+
     public async Task<IReadOnlyCollection<ClaimIdentification>> GetClaimsInGroupsOfType(
         AccommodationTypeIdentification accommodationTypeId)
     {

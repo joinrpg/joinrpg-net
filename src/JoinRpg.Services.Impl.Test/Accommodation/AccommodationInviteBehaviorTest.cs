@@ -292,6 +292,30 @@ public class AccommodationInviteBehaviorTest : AccommodationInviteTestBase
     }
 
     /// <summary>
+    /// Гостевой тип (бесконечное поселение) одиночный: приглашать из него некого и незачем —
+    /// свободное место не ограничено (issue #1945).
+    /// </summary>
+    [Fact]
+    public async Task CreateInvite_FromGuestType_Throws()
+    {
+        var guestType = mock.CreateAccommodationType("Гостевое поселение", capacity: 1, isInfinite: true);
+        mock.ReInitProjectInfo();
+        var sender = CreateClaim("Приглашающий");
+        _ = mock.CreateAccommodationRequest(guestType, sender);
+        var receiver = CreateClaim("Приглашаемый");
+
+        var exception = await Should.ThrowAsync<AccommodationInviteNotAllowedException>(
+            () => CreateService().CreateAccommodationInvite(
+                sender.GetId(),
+                RequestId(sender),
+                AccommodationGroupIdentification.From(receiver.GetId())));
+
+        exception.Message.ShouldContain("Гостевое поселение");
+        mock.AccommodationInvites.ShouldBeEmpty();
+        SaveChangesCallCount.ShouldBe(0);
+    }
+
+    /// <summary>
     /// Приглашаемой группы с таким идентификатором нет. Раньше операция тихо не создавала ни
     /// одного приглашения, но сохраняла изменения и отправляла уведомление в пустоту; теперь это
     /// внятный отказ.

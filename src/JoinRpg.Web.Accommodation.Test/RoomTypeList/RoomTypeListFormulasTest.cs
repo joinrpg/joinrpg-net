@@ -96,6 +96,21 @@ public class RoomTypeListFormulasTest : BunitContext
         RenderFree(occupancy).ShouldBe("Свободно: 2 ✕ 3 = 6");
     }
 
+    /// <summary>
+    /// Гостевой тип: комнат нет, формула по комнатам неприменима — занятым считается каждый
+    /// купивший (#1945).
+    /// </summary>
+    [Fact]
+    public void GuestTypeShowsOccupiedWithoutRoomFormula()
+    {
+        var occupancy = Occupancy() with { Occupied = 5 };
+
+        Text(Render<OccupiedSeatsFormula>(parameters => parameters
+                .Add(c => c.Occupancy, occupancy)
+                .Add(c => c.IsInfinite, true)))
+            .ShouldBe("Занято: 5");
+    }
+
     [Fact]
     public void PartiallyOccupiedRoomAddsPartialTerms()
     {

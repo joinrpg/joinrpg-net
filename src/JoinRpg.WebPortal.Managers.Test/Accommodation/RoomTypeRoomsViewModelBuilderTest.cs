@@ -22,9 +22,9 @@ public class RoomTypeRoomsViewModelBuilderTest
 
     private UserIdentification Master => new(mock.Master.UserId);
 
-    private AccommodationTypeInfo CreateType(string name, int capacity, DataModel.ProjectRoomCategory? category = null)
+    private AccommodationTypeInfo CreateType(string name, int capacity, DataModel.ProjectRoomCategory? category = null, bool isInfinite = false)
     {
-        var type = mock.CreateAccommodationType(name, capacity: capacity, roomCategory: category);
+        var type = mock.CreateAccommodationType(name, capacity: capacity, isInfinite: isInfinite, roomCategory: category);
         mock.ReInitProjectInfo();
         return mock.ProjectInfo.AccommodationSettings.GetTypeById(new(ProjectId, type.Id));
     }
@@ -73,6 +73,15 @@ public class RoomTypeRoomsViewModelBuilderTest
         var model = Build([type], [], [pair, debtor, payerZ, payerA]);
 
         model.UnassignedGroups.Select(g => g.GroupId.AccommodationRequestId).ShouldBe([4, 3, 2, 1]);
+    }
+
+    [Fact]
+    public void GuestType_ModelIsInfinite()
+    {
+        var guest = CreateType("Гостевое поселение", capacity: 1, isInfinite: true);
+        var model = Build([guest], [], []);
+
+        model.IsInfinite.ShouldBeTrue();
     }
 
     [Fact]
