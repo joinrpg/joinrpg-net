@@ -1,6 +1,7 @@
 using JoinRpg.Common.WebComponents;
 using JoinRpg.DomainTypes.ProjectMetadata;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace JoinRpg.Web.ProjectCommon.Test;
@@ -8,6 +9,12 @@ namespace JoinRpg.Web.ProjectCommon.Test;
 public class RolesListSelectorTest
 {
     private static readonly ProjectIdentification ProjectId = new(1);
+    private static readonly ProjectRolesListIdentification SecondListId = new(ProjectId, 20);
+
+    private sealed class FormModel
+    {
+        public ProjectRolesListIdentification[]? SelectedIds { get; set; }
+    }
 
     private sealed class FakeSelectorClient : IRolesListSelectorClient
     {
@@ -47,5 +54,33 @@ public class RolesListSelectorTest
         cut.Markup.ShouldContain("Все роли");
         cut.Markup.ShouldContain("Горячие роли");
         client.Calls.ShouldBe(1);
+    }
+
+    /// <summary>
+    /// В <c>EditForm</c> валидация перерисовывает сообщение об ошибке и состояние кнопки по событию
+    /// <c>OnFieldChanged</c>. Без уведомления выбор сетки ролей не гасит ошибку — выглядит как
+    /// «валидация не отпускает, хотя сетку выбрал».
+    /// </summary>
+    [Fact]
+    public void Selecting_NotifiesEditContextThatFieldChanged()
+    {
+        var (ctx, _) = CreateContext();
+        using var _unused = ctx;
+        ctx.SetRendererInfo(new RendererInfo("WebAssembly", isInteractive: true));
+        var model = new FormModel();
+        var editContext = new EditContext(model);
+        var changedFields = new List<string>();
+        editContext.OnFieldChanged += (_, args) => changedFields.Add(args.FieldIdentifier.FieldName);
+
+        var cut = ctx.Render<RolesListSelector>(p => p
+            .AddCascadingValue(editContext)
+            .Add(x => x.ProjectId, ProjectId)
+            .Add(x => x.SelectedIdsExpression, () => model.SelectedIds)
+            .Add(x => x.SelectedIdsChanged, ids => model.SelectedIds = ids));
+
+        cut.FindAll(".join-select__list input")[1].Change(true);
+
+        model.SelectedIds.ShouldBe([SecondListId]);
+        changedFields.ShouldBe([nameof(FormModel.SelectedIds)]);
     }
 }

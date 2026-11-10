@@ -1,3 +1,4 @@
+@using System.Linq.Expressions
 @inject IPlotClient client
 @inject SelectorListCache cache
 
@@ -15,19 +16,43 @@
 
 @code {
 
+    [CascadingParameter] public EditContext? EditContext { get; set; }
     [Parameter] public string? Name { get; set; } = null;
     [Parameter][EditorRequired] public ProjectIdentification ProjectId { get; set; } = null!;
     [Parameter] public PlotFolderIdentification? SelectedId { get; set; }
     [Parameter] public EventCallback<PlotFolderIdentification[]> SelectedIdsChanged { get; set; }
     [Parameter] public EventCallback<PlotFolderDto[]> SelectedChanged { get; set; }
 
+    /// <summary>Поле модели для <see cref="EditContext"/>: форма узнаёт об изменении по этому выражению.</summary>
+    [Parameter] public Expression<Func<PlotFolderIdentification[]?>>? SelectedIdsExpression { get; set; }
+
     private PlotFolderDto[]? folders;
     private PlotFolderIdentification[] initial => SelectedId is not null ? [SelectedId] : [];
+    private FieldIdentifier? fieldIdentifier;
+
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+        if (SelectedIdsExpression is not null)
+        {
+            // Как в CharacterGroupSelector: пересоздаём при каждом вызове — модель формы может быть заменена.
+            fieldIdentifier = FieldIdentifier.Create(SelectedIdsExpression);
+            Name ??= fieldIdentifier.Value.FieldName;
+        }
+        else
+        {
+            fieldIdentifier = null;
+        }
+    }
 
     private async Task HandleSelectedItemsChanged(PlotFolderDto[] selectedItems)
     {
         await SelectedIdsChanged.InvokeAsync(selectedItems.Select(x => x.PlotFolderId).ToArray());
         await SelectedChanged.InvokeAsync(selectedItems);
+        if (EditContext is not null && fieldIdentifier is not null)
+        {
+            EditContext.NotifyFieldChanged(fieldIdentifier.Value);
+        }
     }
 
     protected override async Task OnInitializedAsync()

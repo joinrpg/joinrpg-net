@@ -1,7 +1,14 @@
+using Microsoft.AspNetCore.Components.Forms;
+
 namespace JoinRpg.Common.WebComponents.Test;
 
 public class JoinRpgDatePickerTest
 {
+    private sealed class FormModel
+    {
+        public DateOnly? OperationDate { get; set; }
+    }
+
     [Fact]
     public void RendersDateInputWithNameValueMinMax()
     {
@@ -62,5 +69,32 @@ public class JoinRpgDatePickerTest
         var input = cut.Find("input");
         input.HasAttribute("class").ShouldBeFalse();
         input.HasAttribute("style").ShouldBeFalse();
+    }
+
+    /// <summary>
+    /// В <c>EditForm</c> валидация перерисовывает сообщение об ошибке и состояние кнопки по событию
+    /// <c>OnFieldChanged</c>. Без уведомления ввод даты не гасит ошибку — выглядит как «валидация
+    /// не отпускает, хотя дату ввёл».
+    /// </summary>
+    [Fact]
+    public void Change_NotifiesEditContextThatFieldChanged()
+    {
+        using var ctx = new BunitContext();
+        var model = new FormModel();
+        var editContext = new EditContext(model);
+        var changedFields = new List<string>();
+        editContext.OnFieldChanged += (_, args) => changedFields.Add(args.FieldIdentifier.FieldName);
+
+        var cut = ctx.Render<JoinRpgDatePicker>(p => p
+            .AddCascadingValue(editContext)
+            .Add(x => x.Name, nameof(FormModel.OperationDate))
+            .Add(x => x.Value, model.OperationDate)
+            .Add(x => x.ValueChanged, v => model.OperationDate = v)
+            .Add(x => x.ValueExpression, () => model.OperationDate));
+
+        cut.Find("input").Change("2026-05-01");
+
+        model.OperationDate.ShouldBe(new DateOnly(2026, 5, 1));
+        changedFields.ShouldBe([nameof(FormModel.OperationDate)]);
     }
 }

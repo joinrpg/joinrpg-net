@@ -24,13 +24,13 @@
             <JoinAlert Variation="VariationStyleEnum.Success">@successMessage</JoinAlert>
         }
 
-        <EditForm Model="@model" OnValidSubmit="@HandleSubmit">
+        <EditForm EditContext="@editContext" OnValidSubmit="@HandleSubmit">
            <FormHorizontal>
                 <DataAnnotationsValidator />
                 <ValidationSummary />
 
                 <FormRowFor For="@(() => model.CharacterId)" Required="true">
-                    <SingleCharacterSelector @bind-SelectedCharacterId="@selectedCharacterId" ProjectId="@ProjectId" AllowEmpty="false" ListType="@characterListType" />
+                    <SingleCharacterSelector SelectedCharacterId="@selectedCharacterId" SelectedCharacterIdChanged="@OnSelectedCharacterChanged" ProjectId="@ProjectId" AllowEmpty="false" ListType="@characterListType" />
                 </FormRowFor>
 
                 <FormRowFor For="@(() => model.UserLinks)" Required="true">
@@ -61,6 +61,8 @@
     public string? PreselectedUserLink { get; set; }
 
     private InvitePlayerViewModel model = new();
+    private EditContext editContext = null!;
+    private FieldIdentifier characterField;
     private bool loading = false;
     private string? errorMessage = null;
     private string? successMessage = null;
@@ -78,7 +80,14 @@
         {
             // Список персонажей сузился до шаблонов — ранее выбранный персонаж мог в него не попасть.
             model.CharacterId = null;
+            editContext.NotifyFieldChanged(characterField);
         }
+    }
+
+    private void OnSelectedCharacterChanged(CharacterIdentification? value)
+    {
+        selectedCharacterId = value;
+        editContext.NotifyFieldChanged(characterField);
     }
 
     private CharacterIdentification? selectedCharacterId
@@ -102,6 +111,8 @@
 
     protected override void OnInitialized()
     {
+        editContext = new EditContext(model);
+        characterField = FieldIdentifier.Create(() => model.CharacterId);
         model.ProjectId = ProjectId;
         if (PreselectedCharacterId is not null && PreselectedCharacterId.ProjectId == ProjectId)
         {
@@ -149,8 +160,10 @@
             successMessage = succeeded.Count == 1
                 ? $"Игрок успешно приглашён. Заявка создана: {lastClaimId.ClaimId}"
                 : $"Игроки успешно приглашены. Создано заявок: {succeeded.Count}";
-            NavigationManager.NavigateTo($"/{lastClaimId.ProjectId.Value}/claim/{lastClaimId.ClaimId}/edit", forceLoad: true);
             model = new InvitePlayerViewModel { ProjectId = ProjectId };
+            editContext = new EditContext(model);
+            characterField = FieldIdentifier.Create(() => model.CharacterId);
+            NavigationManager.NavigateTo($"/{lastClaimId.ProjectId.Value}/claim/{lastClaimId.ClaimId}/edit", forceLoad: true);
         }
         else
         {

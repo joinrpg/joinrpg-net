@@ -1,8 +1,11 @@
+@using System.Linq.Expressions
+
 <CharacterSelector
   Name="@Name"
   ProjectId="@ProjectId"
   SelectedCharacterIds="@selectedIds"
   SelectedCharactersChanged="HandleSelectedChanged"
+  SelectedCharacterIdsExpression="@passThroughIdsExpression"
   Multiple="false"
   ListType="@ListType"
   AllowEmpty="@(AllowEmpty || NewCharacterOptionText is not null)"
@@ -12,10 +15,15 @@
 
 @code {
 
+    [CascadingParameter] public EditContext? EditContext { get; set; }
     [Parameter] public string? Name { get; set; } = null;
     [Parameter] [EditorRequired] public ProjectIdentification ProjectId { get; set; }
     [Parameter] public CharacterIdentification? SelectedCharacterId { get; set; }
     [Parameter] public EventCallback<CharacterIdentification?> SelectedCharacterIdChanged { get; set; }
+    /// <summary>Поле модели для одиночного выбора: EditContext узнаёт об изменении по этому выражению.</summary>
+    [Parameter] public Expression<Func<CharacterIdentification?>>? SelectedCharacterIdExpression { get; set; }
+    /// <summary>Поле модели для мульти-выбора: пробрасывается во внутренний <see cref="CharacterSelector"/>, который уведомляет EditContext сам.</summary>
+    [Parameter] public Expression<Func<CharacterIdentification[]?>>? SelectedCharacterIdsExpression { get; set; }
     [Parameter] public CharacterDto? SelectedCharacter { get; set; }
     [Parameter] public EventCallback<CharacterDto> SelectedCharacterChanged { get; set; }
     [Parameter] public CharacterListType ListType { get; set; } = CharacterListType.All;
@@ -31,6 +39,8 @@
     [Parameter] public string? NewCharacterOptionText { get; set; }
 
     private CharacterIdentification[] selectedIds = [];
+    private Expression<Func<CharacterIdentification[]?>>? passThroughIdsExpression = null;
+    private FieldIdentifier? fieldIdentifier = null;
 
     protected override void OnParametersSet()
     {
@@ -48,6 +58,21 @@
             // Родитель сбросил выбор (пустой пункт или «новый персонаж») — не держим прежний id.
             selectedIds = [];
         }
+
+        // Пересоздаём при каждом выставлении параметров — модель формы может быть заменена.
+        // Собственное выражение и проброс во внутренний селектор взаимоисключающи: иначе EditContext
+        // получит два уведомления по разным FieldIdentifier за одно изменение.
+        if (SelectedCharacterIdExpression is not null)
+        {
+            fieldIdentifier = FieldIdentifier.Create(SelectedCharacterIdExpression);
+            Name ??= fieldIdentifier.Value.FieldName;
+            passThroughIdsExpression = null;
+        }
+        else
+        {
+            fieldIdentifier = null;
+            passThroughIdsExpression = SelectedCharacterIdsExpression;
+        }
     }
 
     private async Task HandleSelectedChanged(CharacterDto[] values)
@@ -55,5 +80,10 @@
         var selected = values.Length == 0 ? null : values.Single();
         await SelectedCharacterIdChanged.InvokeAsync(selected?.CharacterId);
         await SelectedCharacterChanged.InvokeAsync(selected);
+
+        if (EditContext is not null && fieldIdentifier is not null)
+        {
+            EditContext.NotifyFieldChanged(fieldIdentifier.Value);
+        }
     }
 }

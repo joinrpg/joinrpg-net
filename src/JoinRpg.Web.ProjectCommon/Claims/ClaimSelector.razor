@@ -1,3 +1,4 @@
+@using System.Linq.Expressions
 @using JoinRpg.DomainTypes.Characters.Claims
 @inject IClaimListClient client
 @inject SelectorListCache cache
@@ -18,7 +19,10 @@
 
 @code {
 
+    [CascadingParameter] public EditContext? EditContext { get; set; }
     [Parameter] public string? Name { get; set; } = null;
+    /// <summary>Поле модели формы: EditContext узнаёт об изменении выбора по этому выражению.</summary>
+    [Parameter] public Expression<Func<ClaimIdentification?>>? ClaimIdExpression { get; set; }
     [Parameter] [EditorRequired] public ProjectIdentification ProjectId { get; set; }
     [Parameter] public ClaimIdentification? ClaimId { get; set; }
     [Parameter] public EventCallback<ClaimIdentification?> ClaimIdChanged { get; set; }
@@ -32,6 +36,7 @@
 
     private ClaimIdentification[] Selected { get; set; } = [];
     private ClaimLinkViewModel[]? claims;
+    private FieldIdentifier? fieldIdentifier;
 
     protected override async Task OnInitializedAsync()
         => claims = [.. (await cache.GetOrLoad<ClaimLinkViewModel>($"claims:{ProjectId.Value}:{Spec}",
@@ -48,6 +53,17 @@
         {
             Selected = [Claim.ClaimId];
         }
+
+        if (ClaimIdExpression is not null)
+        {
+            // Как в CharacterGroupSelector: пересоздаём при каждом рендере — модель формы может быть заменена.
+            fieldIdentifier = FieldIdentifier.Create(ClaimIdExpression);
+            Name ??= fieldIdentifier.Value.FieldName;
+        }
+        else
+        {
+            fieldIdentifier = null;
+        }
     }
 
     private async Task HandleSelectedItemsChanged(ClaimLinkViewModel[] selectedItems)
@@ -55,5 +71,9 @@
         var claim = selectedItems.SingleOrDefault();
         await ClaimIdChanged.InvokeAsync(claim?.ClaimId);
         await ClaimChanged.InvokeAsync(claim);
+        if (EditContext is not null && fieldIdentifier is not null)
+        {
+            EditContext.NotifyFieldChanged(fieldIdentifier.Value);
+        }
     }
 }
