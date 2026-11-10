@@ -1,4 +1,5 @@
 @using JoinRpg.DomainTypes
+@using JoinRpg.DomainTypes.Finances
 <JoinPanel>
     <Header>@(IsNew ? "Новый расход" : "Редактирование расхода")</Header>
     <ChildContent>
@@ -9,7 +10,7 @@
                 @if (State is { } state)
                 {
                     <FormRow Label="Состояние">
-                        <ExpenseStateBadge State="state" />
+                        <ExpenseStateBadge Status="state.ToStatus(HasActualCost)" />
                     </FormRow>
                 }
                 <FormRowFor For="@(() => Model.Name)">
@@ -80,6 +81,9 @@
 
     /// <summary>Режим формы: создание нового расхода (пустой <see cref="ExpenseEditViewModel.ExpenseId"/>) или правка существующего.</summary>
     private bool IsNew => Model.ExpenseId is null;
+
+    /// <summary>Факт уже внесён (сохранённые количество и цена факта); определяет комбинированный статус в бейдже.</summary>
+    private bool HasActualCost => ExpenseCost.Actual(Model.ActualQuantity, Model.ActualPrice) is not null;
 
     private EditContext editContext = null!;
     private bool formInvalid = true;

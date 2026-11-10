@@ -238,7 +238,7 @@ public class ExpenseEditFormTest : BunitContext
         };
         var cut = RenderForm(model, state: ExpenseStateView.Rejected, onSave: savedModel => saved = savedModel);
 
-        cut.Markup.ShouldContain("Отклонён");
+        cut.Markup.ShouldContain("Удален");
         cut.Markup.ShouldContain("Редактирование расхода");
         cut.Markup.ShouldContain("Сохранить");
         cut.Markup.ShouldNotContain("Добавить");
@@ -247,6 +247,24 @@ public class ExpenseEditFormTest : BunitContext
 
         saved.ShouldNotBeNull();
         saved.ExpenseId.ShouldBe(new ExpenseIdentification(new ProjectIdentification(1), 42));
+    }
+
+    [Fact]
+    public void EditModeWithActualShowsCombinedStatus()
+    {
+        var model = new ExpenseEditViewModel
+        {
+            ExpenseId = new ExpenseIdentification(new ProjectIdentification(1), 42),
+            Name = "Аренда зала",
+            CategoryPath = "Аренда базы",
+            MasterId = new UserIdentification(1),
+            PlannedPrice = 100,
+            ActualQuantity = 1,
+            ActualPrice = 50,
+        };
+        var cut = RenderForm(model, state: ExpenseStateView.Rejected);
+
+        cut.Markup.ShouldContain("Не согласован");
     }
 
     [Fact]

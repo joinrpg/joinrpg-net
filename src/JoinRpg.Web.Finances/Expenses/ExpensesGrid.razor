@@ -38,7 +38,7 @@
                     <text>—</text>
                 }
             </td>
-            <td><ExpenseStateBadge State="expense.State" /></td>
+            <td><ExpenseStateBadge Status="expense.State.ToStatus(expense.ActualCost is not null)" /></td>
             <td>@(expense.SpentAt?.ToString("d", RussianCulture) ?? "—")</td>
             @if (RowActions is not null)
             {
