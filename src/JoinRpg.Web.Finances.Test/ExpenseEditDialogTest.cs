@@ -85,7 +85,7 @@ public class ExpenseEditDialogTest : BunitContext
         };
         _ = cut.InvokeAsync(() => cut.Instance.ShowAsync(model, ExpenseStateView.Rejected));
 
-        cut.Find(".join-dialog-caption").TextContent.Trim().ShouldBe("Редактирование расхода");        FooterButtons(cut)[0].TextContent.Trim().ShouldBe("Сохранить");
+        cut.Find(".join-dialog-caption").TextContent.Trim().ShouldBe("Редактирование расхода"); FooterButtons(cut)[0].TextContent.Trim().ShouldBe("Сохранить");
         cut.Markup.ShouldContain("Удален");
     }
 
