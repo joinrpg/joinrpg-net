@@ -147,8 +147,10 @@ public class ChangeFeeButtonTest : BunitContext
 
         await ConfirmAsync(cut);
 
-        cut.WaitForAssertion(() => cut.Markup.ShouldContain("Не удалось сохранить"));
-        cut.Markup.ShouldNotContain("502");
+        cut.WaitForAssertion(() => cut.Find("dialog").TextContent.ShouldContain("Не удалось сохранить"));
+        // Проверяем TextContent, а не весь Markup: в scope-атрибутах CSS-изоляции («b-xxxxxx»)
+        // случайно может оказаться любая подстрока, включая «502».
+        cut.Find("dialog").TextContent.ShouldNotContain("502");
     }
 
     /// <summary>По умолчанию кнопка XS — так она стоит в плотных финансовых таблицах рядом с btn-xs.</summary>

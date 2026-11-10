@@ -9,7 +9,10 @@ namespace JoinRpg.Common.PrimitiveTypes;
 /// </summary>
 public abstract record SocialLink(PrefferedName? PrettyName, bool IsVerified)
 {
+    /// <summary>Числовой id профиля в соцсети, если известен.</summary>
     public abstract long? Id { get; }
+
+    /// <summary>Ссылка на профиль, если её можно построить.</summary>
     public abstract Uri? Link { get; }
 
     /// <summary>
@@ -20,18 +23,27 @@ public abstract record SocialLink(PrefferedName? PrettyName, bool IsVerified)
     public abstract bool CanLogin { get; }
 }
 
+/// <summary>Привязка Telegram: id чата (если есть ExternalLogin) и/или видимое имя пользователя.</summary>
 public sealed record TelegramSocialLink : SocialLink, ISpanParsable<TelegramSocialLink>
 {
-    // Нет, если не привязан ExternalLogin (есть только legacy PrettyName из UserExtra.Telegram) —
-    // в этом случае это неверифицированный отображаемый контакт, слать через него сообщения нельзя.
+    /// <summary>
+    /// Id чата для Telegram Bot API. Нет, если не привязан ExternalLogin
+    /// (есть только legacy PrettyName из UserExtra.Telegram) — тогда это неверифицированный
+    /// отображаемый контакт, слать через него сообщения нельзя.
+    /// </summary>
     public TelegramChatId? ChatId { get; }
 
+    /// <inheritdoc />
     public override long? Id => ChatId?.Value;
 
+    /// <inheritdoc />
     public override Uri? Link => PrettyName is null ? null : new Uri($"https://t.me/{PrettyName.Value}");
 
+    /// <inheritdoc />
     public override bool CanLogin => false;
 
+    /// <summary>Нужно указать хотя бы один из параметров: <paramref name="chatId"/> или <paramref name="prettyName"/>.</summary>
+    /// <exception cref="ArgumentException">Оба параметра пустые.</exception>
     public TelegramSocialLink(TelegramChatId? chatId, PrefferedName? prettyName = null, bool isVerified = false)
         : base(NormalizeUserName(prettyName), isVerified)
     {
@@ -44,15 +56,19 @@ public sealed record TelegramSocialLink : SocialLink, ISpanParsable<TelegramSoci
         ChatId = chatId;
     }
 
+    /// <summary>Строит ссылку из id, если он задан; иначе возвращает <c>null</c>.</summary>
     public static TelegramSocialLink? FromOptional(long? id, PrefferedName? userName, bool isVerified = false)
         => id is null ? null : new TelegramSocialLink(new TelegramChatId(id.Value), userName, isVerified);
 
+    /// <inheritdoc cref="FromOptional(long?, PrefferedName?, bool)" />
     public static TelegramSocialLink? FromOptional(string? key, PrefferedName? userName, bool isVerified = false)
         => string.IsNullOrWhiteSpace(key) ? null : new TelegramSocialLink(new TelegramChatId(long.Parse(key)), userName, isVerified);
 
+    /// <inheritdoc cref="FromOptional(long?, PrefferedName?, bool)" />
     public static TelegramSocialLink? FromOptional(long? id, string? userName, bool isVerified = false)
         => FromOptional(id, PrefferedName.FromOptional(userName), isVerified);
 
+    /// <inheritdoc cref="FromOptional(long?, PrefferedName?, bool)" />
     public static TelegramSocialLink? FromOptional(string? key, string? userName, bool isVerified = false)
         => FromOptional(key, PrefferedName.FromOptional(userName), isVerified);
 
@@ -70,6 +86,10 @@ public sealed record TelegramSocialLink : SocialLink, ISpanParsable<TelegramSoci
             : null;
     }
 
+    /// <summary>
+    /// Парсит строку вида «Telegram(123, @user)» или «123, @user». Делит только по ',': chat id
+    /// каналов/супергрупп отрицательный, '-' — часть числа, а не разделитель.
+    /// </summary>
     public static bool TryParse([NotNullWhen(true)] ReadOnlySpan<char> value, IFormatProvider? provider, [MaybeNullWhen(false)] out TelegramSocialLink result)
     {
         // Не используем общий IdentificationParseHelper.SplitIdentifier — он делит и по ',', и по
@@ -101,15 +121,21 @@ public sealed record TelegramSocialLink : SocialLink, ISpanParsable<TelegramSoci
         return false;
     }
 
+    /// <inheritdoc cref="TryParse(ReadOnlySpan{char}, IFormatProvider, out TelegramSocialLink)" />
+    /// <exception cref="ArgumentException">Строку не удалось распарсить.</exception>
     public static TelegramSocialLink Parse(string value, IFormatProvider? provider = null) => Parse(value.AsSpan(), provider);
 
+    /// <inheritdoc cref="TryParse(ReadOnlySpan{char}, IFormatProvider, out TelegramSocialLink)" />
     public static bool TryParse(string? value, IFormatProvider? provider, [MaybeNullWhen(false)] out TelegramSocialLink result) => TryParse(value.AsSpan(), provider, out result);
 
+    /// <inheritdoc cref="TryParse(ReadOnlySpan{char}, IFormatProvider, out TelegramSocialLink)" />
+    /// <exception cref="ArgumentException">Строку не удалось распарсить.</exception>
     public static TelegramSocialLink Parse(ReadOnlySpan<char> value, IFormatProvider? provider)
         => TryParse(value, provider, out var result) ? result : throw new ArgumentException("Could not parse supplied value.", nameof(value));
 
     private static PrefferedName? NormalizeUserName(PrefferedName? userName) => userName is null || string.IsNullOrWhiteSpace(userName.Value) ? null : userName;
 
+    /// <inheritdoc />
     public override string ToString() => (ChatId, PrettyName) switch
     {
         (null, _) => $"Telegram(@{PrettyName?.Value})",
@@ -118,19 +144,25 @@ public sealed record TelegramSocialLink : SocialLink, ISpanParsable<TelegramSoci
     };
 }
 
+/// <summary>Привязка ВКонтакте: числовой id или slug профиля; при наличии верифицированного ExternalLogin можно входить через неё.</summary>
 public sealed record VkSocialLink : SocialLink
 {
     private readonly long? id;
 
+    /// <inheritdoc />
     public override long? Id => id;
 
+    /// <inheritdoc />
     // Как и у Telegram: если числового id нет, ссылка всё равно строится по PrettyName (slug профиля).
     public override Uri? Link => id is long numericId
         ? new Uri($"https://vk.com/id{numericId}")
         : PrettyName is null ? null : new Uri($"https://vk.com/{PrettyName.Value}");
 
+    /// <inheritdoc />
     public override bool CanLogin => IsVerified;
 
+    /// <summary>Нужно указать хотя бы один из параметров: <paramref name="id"/> или <paramref name="prettyName"/>.</summary>
+    /// <exception cref="ArgumentException">Оба параметра пустые.</exception>
     public VkSocialLink(long? id, PrefferedName? prettyName = null, bool isVerified = false)
         : base(prettyName, isVerified)
     {
@@ -171,5 +203,6 @@ public sealed record VkSocialLink : SocialLink
         return long.TryParse(trimmed, out var parsedId) ? parsedId : null;
     }
 
+    /// <inheritdoc />
     public override string ToString() => Id is not null ? $"Vk({Id})" : $"Vk({PrettyName})";
 }
