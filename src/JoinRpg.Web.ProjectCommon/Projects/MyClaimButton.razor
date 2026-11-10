@@ -1,11 +1,11 @@
 @inject IProjectUriLocator projectUriLocator
  @if (HasMyClaims)
 {
-  <JoinButton Link="@uri.ToString()" Size="@Size" Title="Моя заявка" Preset="ButtonPreset.Claim" Label="Моя заявка" />
+  <JoinButton Link="@myClaimUri.ToString()" Size="@Size" Title="Моя заявка" Preset="ButtonPreset.Claim" Label="Моя заявка" />
 }
 else if (ProjectStatus == ProjectLifecycleStatus.ActiveClaimsOpen)
 {
-    <JoinButton Link="@uri.ToString()" Size="@Size" Label="Заявиться" Preset="ButtonPreset.Claim" Title="Создать новую заявку на проект" />
+    <JoinButton Link="@addClaimUri.ToString()" Size="@Size" Label="Заявиться" Preset="ButtonPreset.Claim" Title="Создать новую заявку на проект" />
 } else
 {
     <JoinButton Size="@Size" Label="Заявки закрыты" Preset="ButtonPreset.Claim" Disabled="true" Title="Подать заявку невозможно, т.к. прием заявок закрыт мастерами" />
@@ -27,11 +27,13 @@ else if (ProjectStatus == ProjectLifecycleStatus.ActiveClaimsOpen)
     [Parameter]
     public SizeStyleEnum? Size { get; set; }
 
-    private Uri uri = null!;
+    private Uri myClaimUri = null!;
+    private Uri addClaimUri = null!;
 
     protected override void OnParametersSet()
     {
-        uri = projectUriLocator.GetMyClaimUri(ProjectId);
+        myClaimUri = projectUriLocator.GetMyClaimUri(ProjectId);
+        addClaimUri = projectUriLocator.GetAddClaimUri(ProjectId);
         base.OnParametersSet();
     }
 }
