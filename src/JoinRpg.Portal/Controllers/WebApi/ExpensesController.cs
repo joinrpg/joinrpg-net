@@ -55,6 +55,11 @@ public class ExpensesController(
     public async Task<ActionResult<IReadOnlyCollection<string>>> CategoryPathSuggestions(ProjectIdentification projectId)
         => Ok(await expenseService.LoadCategoryPathSuggestions(projectId));
 
+    /// <summary>Текущий пользователь — мастер по умолчанию в форме нового расхода.</summary>
+    [HttpGet]
+    public ActionResult<UserIdentification> CurrentUser(ProjectIdentification projectId)
+        => Ok(currentUserAccessor.UserIdentification);
+
     /// <summary>Выгрузка расходов проекта в Excel/CSV — зеркало грида страницы «Расходы».</summary>
     [HttpGet]
     public async Task<ActionResult> Export(ProjectIdentification projectId, string? export)

@@ -296,6 +296,16 @@ public class ExpensesControllerTest
     }
 
     [Fact]
+    public void CurrentUserReturnsIdFromAccessor()
+    {
+        var controller = CreateController(currentUserId: new UserIdentification(123));
+
+        var result = controller.CurrentUser(ProjectId);
+
+        result.Result.ShouldBeOfType<OkObjectResult>().Value.ShouldBe(new UserIdentification(123));
+    }
+
+    [Fact]
     public void ApproveAndRejectRequireCanManageMoney()
     {
         foreach (var action in new[] { nameof(ExpensesController.Approve), nameof(ExpensesController.Reject) })

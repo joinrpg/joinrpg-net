@@ -1,6 +1,7 @@
 using Bunit;
 using JoinRpg.Blazor.Client.ApiClients;
 using JoinRpg.Blazor.Client.Expenses;
+using JoinRpg.Common.PrimitiveTypes;
 using JoinRpg.DomainTypes.Finances;
 using JoinRpg.Web.Finances.Expenses;
 using Microsoft.Extensions.DependencyInjection;
@@ -95,6 +96,9 @@ public class MyExpensesLoaderTest : BunitContext
             => throw new NotSupportedException();
 
         public Task<IReadOnlyCollection<string>> GetCategoryPathSuggestions(ProjectIdentification projectId)
+            => throw new NotSupportedException();
+
+        public Task<UserIdentification> GetCurrentUser(ProjectIdentification projectId)
             => throw new NotSupportedException();
 
         public Task<bool> CanManageMoney(ProjectIdentification projectId) => throw new NotSupportedException();

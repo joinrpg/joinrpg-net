@@ -21,6 +21,9 @@ public interface IExpensesClient
     /// <summary>Полные пути категорий для подсказок поля «Категория»: категории с не отклонёнными расходами и их предки.</summary>
     Task<IReadOnlyCollection<string>> GetCategoryPathSuggestions(ProjectIdentification projectId);
 
+    /// <summary>Текущий пользователь — мастер по умолчанию в форме нового расхода.</summary>
+    Task<UserIdentification> GetCurrentUser(ProjectIdentification projectId);
+
     Task<ExpenseIdentification> CreateExpense(ProjectIdentification projectId, ExpenseEditViewModel model);
 
     Task EditExpense(ExpenseIdentification expenseId, ExpenseEditViewModel model);

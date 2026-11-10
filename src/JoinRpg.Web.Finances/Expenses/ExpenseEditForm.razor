@@ -98,7 +98,22 @@
 
     private void HandleFieldChanged(object? sender, FieldChangedEventArgs e)
     {
+        FillPlannedFromActualIfEmpty();
         formInvalid = !editContext.Validate();
+    }
+
+    // Факт ввели, а план пустой (цена 0) — подставляем план из факта. Живо, при вводе;
+    // сабмит тоже донормализует, если change-событие потерялось. Копируем только пока план пустой:
+    // заполненный (или исправленный пользователем) план факт не перезаписывает.
+    private void FillPlannedFromActualIfEmpty()
+    {
+        if (Model.PlannedPrice == 0 && Model.ActualPrice is > 0)
+        {
+            Model.PlannedPrice = Model.ActualPrice.Value;
+            Model.PlannedQuantity = Model.ActualQuantity ?? Model.PlannedQuantity;
+            editContext.NotifyFieldChanged(new FieldIdentifier(Model, nameof(Model.PlannedPrice)));
+            editContext.NotifyFieldChanged(new FieldIdentifier(Model, nameof(Model.PlannedQuantity)));
+        }
     }
 
     private void OnMasterChanged(UserIdentification? masterId)
@@ -109,6 +124,7 @@
 
     private async Task HandleSubmit()
     {
+        FillPlannedFromActualIfEmpty();
         formInvalid = !editContext.Validate();
         if (formInvalid)
         {
