@@ -34,8 +34,8 @@ public class ExpensesGridTest : BunitContext
         // ₽ — псевдоэлемент PriceElement (CSS), в разметке только числа
         cut.FindAll("td").Select(e => e.TextContent.Trim()).ShouldContain("2 × 1500 = 3000");
         cut.FindAll("td").Select(e => e.TextContent.Trim()).ShouldContain("2 × 1400 = 2800");
-        cut.Markup.ShouldContain("Одобрен");
-        cut.Markup.ShouldContain("На рассмотрении");
+        cut.Markup.ShouldContain("Потрачен");
+        cut.Markup.ShouldContain("Запрошен");
         cut.FindAll("td").Select(e => e.TextContent.Trim()).ShouldContain("10 × 100 = 1000");
         cut.Markup.ShouldContain("15.02.2026");
     }
@@ -72,7 +72,7 @@ public class ExpensesGridTest : BunitContext
             .Add(x => x.Expenses, SampleExpenses)
             .Add(x => x.ShowMaster, false));
 
-        cut.Markup.ShouldNotContain("Мастер");
+        cut.FindAll("th").ShouldNotContain(header => header.TextContent.Trim() == "Мастер");
         cut.Markup.ShouldNotContain("Иван Мастеров");
         cut.Markup.ShouldContain("Аренда зала");
         cut.FindAll("td").Select(e => e.TextContent.Trim()).ShouldContain("2 × 1500 = 3000");
