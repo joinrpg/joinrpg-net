@@ -60,4 +60,28 @@ public class ProjectClaimButtonsRelativeUriTest
 
         cut.Find("a").GetAttribute("href").ShouldBe("/1/myclaim");
     }
+
+    [Fact]
+    public void MyClaimButton_ClaimsOpenWithoutMyClaims_RendersApplyLink()
+    {
+        using var ctx = CreateContext();
+        var cut = ctx.Render<MyClaimButton>(p => p
+            .Add(x => x.ProjectId, ProjectId)
+            .Add(x => x.HasMyClaims, false)
+            .Add(x => x.ProjectStatus, ProjectLifecycleStatus.ActiveClaimsOpen));
+
+        cut.Find("a").GetAttribute("href").ShouldBe("/1/apply");
+    }
+
+    [Fact]
+    public void MyClaimButton_ClaimsClosed_RendersDisabledButton()
+    {
+        using var ctx = CreateContext();
+        var cut = ctx.Render<MyClaimButton>(p => p
+            .Add(x => x.ProjectId, ProjectId)
+            .Add(x => x.HasMyClaims, false)
+            .Add(x => x.ProjectStatus, ProjectLifecycleStatus.ActiveClaimsClosed));
+
+        cut.Find("button").HasAttribute("disabled").ShouldBeTrue();
+    }
 }
