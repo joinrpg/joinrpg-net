@@ -133,7 +133,8 @@ internal static class ProjectInfoFixture
         int? roomCategoryId = null,
         string? name = null,
         int cost = 1000,
-        bool isPlayerSelectable = true)
+        bool isPlayerSelectable = true,
+        bool isInfinite = false)
         => new(
             new AccommodationTypeIdentification(ProjectId, typeId),
             new RoomCategoryIdentification(ProjectId, roomCategoryId ?? typeId),
@@ -141,7 +142,8 @@ internal static class ProjectInfoFixture
             new MarkdownString(""),
             cost,
             capacity,
-            isPlayerSelectable);
+            isPlayerSelectable,
+            isInfinite);
 
     /// <summary>
     /// Строит дерево групп по описанию «группа → её прямые родители», досчитывая транзитивные

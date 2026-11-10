@@ -4,19 +4,13 @@ using JoinRpg.DomainTypes.ProjectMetadata.Accommodation;
 namespace JoinRpg.DomainTypes.Test.ProjectMetadata;
 
 /// <summary>
-/// Нереализованные флаги типа проживания (ADR015): «бесконечное поселение» и «автозаполнение»
-/// объявлены в доменной модели, но функциональности за ними нет — значение всегда <c>false</c>.
+/// Флаги типа проживания (ADR015): «бесконечное поселение» читается из колонки БД как параметр
+/// записи, «автозаполнение» остаётся нереализованным — значение всегда <c>false</c>.
 /// </summary>
-/// <remarks>
-/// Тест стоит не ради самой константы (её держит подпись: свойства без сеттеров), а ради того,
-/// чтобы «реализация» мимо настоящего механизма — например, превращение свойства в параметр
-/// записи, читаемый из колонки БД, — не прошла молча: писать флаги по-прежнему нечем, а
-/// потребители метаданных уже считают их заведомо снятыми.
-/// </remarks>
 public class AccommodationTypeInfoTest
 {
     [Fact]
-    public void UnimplementedFlagsAreAlwaysFalse()
+    public void IsInfiniteIsFalseByDefault()
     {
         var typeInfo = ProjectInfoFixture.MakeAccommodationType(typeId: 1, capacity: 4);
 
@@ -24,38 +18,38 @@ public class AccommodationTypeInfoTest
         typeInfo.IsAutoFilledAccommodation.ShouldBeFalse();
     }
 
-    /// <summary>
-    /// Даже у типа, собранного «как попало» — нулевая вместимость, отрицательная цена, закрытый
-    /// для игроков, — флаги остаются снятыми: они ни от чего не зависят.
-    /// </summary>
     [Fact]
-    public void UnimplementedFlagsAreFalseForAnyType()
+    public void IsInfiniteIsReadFromParameter()
     {
-        var projectId = ProjectInfoFixture.ProjectId;
-        var typeInfo = new AccommodationTypeInfo(
-            new AccommodationTypeIdentification(projectId, 42),
-            new RoomCategoryIdentification(projectId, 42),
-            Name: "",
-            Description: new MarkdownString(""),
-            Cost: -100,
-            Capacity: 0,
-            IsPlayerSelectable: false);
+        var typeInfo = ProjectInfoFixture.MakeAccommodationType(typeId: 2, capacity: 1, isInfinite: true);
 
-        typeInfo.IsInfinite.ShouldBeFalse();
+        typeInfo.IsInfinite.ShouldBeTrue();
         typeInfo.IsAutoFilledAccommodation.ShouldBeFalse();
     }
 
     /// <summary>
-    /// Копия через <c>with</c> тоже не даёт выставить флаги: они не параметры записи, а
-    /// вычисляемые свойства.
+    /// Копия через <c>with</c> сохраняет параметр записи: флаг часть состояния типа, а не
+    /// вычисляемое свойство.
     /// </summary>
     [Fact]
-    public void UnimplementedFlagsSurviveWithCopy()
+    public void IsInfiniteSurvivesWithCopy()
     {
-        var original = ProjectInfoFixture.MakeAccommodationType(typeId: 7, capacity: 2);
+        var original = ProjectInfoFixture.MakeAccommodationType(typeId: 7, capacity: 2, isInfinite: true);
         var typeInfo = original with { Capacity = int.MaxValue, IsPlayerSelectable = true };
 
-        typeInfo.IsInfinite.ShouldBeFalse();
+        typeInfo.IsInfinite.ShouldBeTrue();
+    }
+
+    /// <summary>
+    /// Нереализованный флаг «автозаполнение» остаётся вычисляемым свойством: копия через
+    /// <c>with</c> не даёт его выставить.
+    /// </summary>
+    [Fact]
+    public void IsAutoFilledAccommodationSurvivesWithCopy()
+    {
+        var original = ProjectInfoFixture.MakeAccommodationType(typeId: 8, capacity: 2);
+        var typeInfo = original with { Capacity = int.MaxValue, IsPlayerSelectable = true };
+
         typeInfo.IsAutoFilledAccommodation.ShouldBeFalse();
     }
 }
