@@ -1,6 +1,3 @@
-using JoinRpg.DomainTypes.Characters.Claims.Accommodation;
-using JoinRpg.DomainTypes.ProjectMetadata.Accommodation;
-
 namespace JoinRpg.DomainTypes.Test.ProjectMetadata;
 
 /// <summary>
