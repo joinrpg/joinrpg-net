@@ -40,44 +40,61 @@ internal class MidnightJobsScheduler(
 
     /// <summary>
     /// Один плановый запуск: проверка выключения конфигом, запись в журнал DailyJobRuns, запуск джобы.
+    /// Инфраструктурные ошибки (журнал, скоуп, конфиг) не вылетают наружу: в .NET 11 упавший
+    /// BackgroundService останавливает хост целиком, а джоба должна просто не состояться.
     /// </summary>
     internal async Task RunScheduledOnce(Type jobType, DateOnly dayOfRun, CancellationToken stoppingToken)
     {
         var jobName = jobType.FullName!;
 
-        // Настройка читается на каждом запуске: изменение перезагружаемого конфига подхватывается без рестарта.
-        if (options.CurrentValue.IsDisabled(jobType))
+        try
         {
-            // Строку в DailyJobRuns не пишем: после включения джоба отработает на ближайшем плановом запуске.
-            logger.LogWarning("Skipping running {jobName}: disabled by configuration {section}:Disabled", jobName, JobsOptions.SectionName);
-            return;
-        }
-
-        using var scope = serviceProvider.CreateScope();
-        using var activity = BackgroundServiceActivity.ActivitySource.StartActivity($"Run of {jobName}");
-        activity?.AddTag("jobName", jobName);
-        var jobRepository = scope.ServiceProvider.GetRequiredService<IJobRepository>();
-
-        var jobId = new JobId(jobName, dayOfRun);
-        if (await jobRepository.TryInsertJobRecord(jobId))
-        {
-            logger.LogInformation("Will start {jobName} on this instance", jobName);
-            try
+            // Настройка читается на каждом запуске: изменение перезагружаемого конфига подхватывается без рестарта.
+            if (options.CurrentValue.IsDisabled(jobType))
             {
-                var jobRunner = scope.ServiceProvider.GetRequiredService<IEnumerable<IJobRunner>>().Single(r => r.JobType == jobType);
-                await jobRunner.RunJob(scope, stoppingToken);
-                _ = await jobRepository.TrySetJobCompleted(jobId);
-                logger.LogInformation("Successfully complete {jobName} on this instance", jobName);
+                // Строку в DailyJobRuns не пишем: после включения джоба отработает на ближайшем плановом запуске.
+                logger.LogWarning("Skipping running {jobName}: disabled by configuration {section}:Disabled", jobName, JobsOptions.SectionName);
+                return;
             }
-            catch (Exception ex)
+
+            using var scope = serviceProvider.CreateScope();
+            using var activity = BackgroundServiceActivity.ActivitySource.StartActivity($"Run of {jobName}");
+            activity?.AddTag("jobName", jobName);
+            var jobRepository = scope.ServiceProvider.GetRequiredService<IJobRepository>();
+
+            var jobId = new JobId(jobName, dayOfRun);
+            if (await jobRepository.TryInsertJobRecord(jobId))
             {
-                logger.LogError(ex, "Error running {jobName}", jobName);
-                _ = await jobRepository.TrySetJobFailed(jobId);
+                logger.LogInformation("Will start {jobName} on this instance", jobName);
+                try
+                {
+                    var jobRunner = scope.ServiceProvider.GetRequiredService<IEnumerable<IJobRunner>>().Single(r => r.JobType == jobType);
+                    await jobRunner.RunJob(scope, stoppingToken);
+                    _ = await jobRepository.TrySetJobCompleted(jobId);
+                    logger.LogInformation("Successfully complete {jobName} on this instance", jobName);
+                }
+                catch (Exception ex)
+                {
+                    logger.LogError(ex, "Error running {jobName}", jobName);
+                    try
+                    {
+                        _ = await jobRepository.TrySetJobFailed(jobId);
+                    }
+                    catch (Exception markEx)
+                    {
+                        // Джоба упала, скорее всего, из-за той же недоступной БД — запись о неуспехе тоже может падать.
+                        logger.LogError(markEx, "Failed to record failure of {jobName} in DailyJobRuns journal", jobName);
+                    }
+                }
+            }
+            else
+            {
+                logger.LogInformation("Skipping running {jobName} as it already running at another instance", jobName);
             }
         }
-        else
+        catch (Exception ex) when (ex is not OperationCanceledException || !stoppingToken.IsCancellationRequested)
         {
-            logger.LogInformation("Skipping running {jobName} as it already running at another instance", jobName);
+            logger.LogError(ex, "Error preparing scheduled run of {jobName}", jobName);
         }
     }
 

@@ -64,7 +64,20 @@ internal class SenderJobService<TSender>(IServiceProvider serviceProvider,
     {
         await hostApplicationLifetime.WaitForAppStartup(stoppingToken);
 
-        if (!IsSenderEnabled())
+        bool isEnabled;
+        try
+        {
+            isEnabled = IsSenderEnabled();
+        }
+        catch (Exception ex)
+        {
+            // Не даём исключению уронить хост: в .NET 11 упавший BackgroundService останавливает приложение целиком.
+            // Fail-closed: если состояние отправителя неизвестно, джобу не запускаем.
+            logger.LogCritical(ex, "Не удалось проверить, включена ли отправка SenderJobService<{senderJobName}>; джоба не запускается", JobName);
+            return;
+        }
+
+        if (!isEnabled)
         {
             // Завершаемся штатно: OperationCanceledException не от stoppingToken хост считает падением службы и останавливается целиком.
             logger.LogInformation("Отправка SenderJobService<{senderJobName}> отключена, джоба не запускается", JobName);
