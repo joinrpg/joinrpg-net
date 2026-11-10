@@ -28,7 +28,8 @@
 | `ExpenseCategory` | иерархия категорий: `ParentCategoryId`, денормализованный путь `ParentCategoriesImpl` (`IntList`, как `CharacterGroup.ParentGroupsImpl`), `IsActive` (требование `IDeletableSubEntity`; операций удаления на первом этапе нет) |
 | `ExpenseApproval` | история согласования: состояние, в которое перевели, кто и когда, комментарий |
 
-Деньги — `int` в рублях, как принято у `FinanceOperation.MoneyAmount`; количество — `int`.
+Деньги — `decimal(18,2)` в рублях с копейками (миграция `ExpenseMoneyDecimal`; `FinanceOperation.MoneyAmount`
+пока `int` — отдельная задача); количество — `int`. Копейки в UI показываются только если есть.
 Идентификаторы — `ExpenseIdentification`/`ExpenseCategoryIdentification` в `JoinRpg.DomainTypes`
 (`[TypedEntityId]`-record'ы, по образцу `CharacterIdentification`); доменные типы данных — `ExpenseInfo`,
 `ExpenseCategoryInfo`, `ExpenseState` (паттерн `RoomInfo`/`AdvertisementChannelInfo`): репозиторий
