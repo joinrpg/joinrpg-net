@@ -1,6 +1,8 @@
 using Bunit;
+using JoinRpg.Common.WebComponents;
 using JoinRpg.DomainTypes.Finances;
 using JoinRpg.Web.Finances.Expenses;
+using Microsoft.Extensions.DependencyInjection;
 using Shouldly;
 using Xunit;
 
@@ -8,6 +10,19 @@ namespace JoinRpg.Web.Finances.Test;
 
 public class ExpensesGridTest : BunitContext
 {
+    public ExpensesGridTest()
+        => Services.AddSingleton<IUriLocator<UserLinkViewModel>>(new FakeUserLinkLocator());
+
+    [Fact]
+    public void RendersMasterAsUserLink()
+    {
+        var cut = RenderGrid();
+
+        var link = cut.Find("a.join-user");
+        link.TextContent.ShouldContain("Иван Мастеров");
+        link.GetAttribute("href").ShouldBe("https://example.org/user/15");
+    }
+
     [Fact]
     public void RendersExpenseRows()
     {
@@ -90,7 +105,8 @@ public class ExpensesGridTest : BunitContext
             SpentAt: new DateOnly(2026, 2, 15),
             State: ExpenseStateView.Approved,
             MasterName: "Иван Мастеров",
-            CreatedByName: "Пётр Создателев"),
+            CreatedByName: "Пётр Создателев",
+            MasterId: new UserIdentification(15)),
         new(
             new ExpenseIdentification(new ProjectIdentification(1), 2),
             "Канцелярия",
@@ -104,4 +120,9 @@ public class ExpensesGridTest : BunitContext
             MasterName: "Иван Мастеров",
             CreatedByName: "Иван Мастеров"),
     ];
+
+    private sealed class FakeUserLinkLocator : IUriLocator<UserLinkViewModel>
+    {
+        public Uri GetUri(UserLinkViewModel target) => new($"https://example.org/user/{target.UserId?.Value}");
+    }
 }

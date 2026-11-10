@@ -61,6 +61,12 @@ public class ExpensesController(
             model.PlannedPrice,
             model.SpentAt,
             ToMarkdown(model.Description)));
+        // Финансовый администратор одобряет свой расход молча — отдельным вызовом (отдельная транзакция)
+        var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId);
+        if (projectInfo.HasMasterAccess(currentUserAccessor, Permission.CanManageMoney))
+        {
+            await expenseService.ApproveExpense(id, comment: null);
+        }
         return Ok(id);
     }
 

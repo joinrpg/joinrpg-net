@@ -1,6 +1,7 @@
 using Bunit;
 using JoinRpg.Blazor.Client.ApiClients;
 using JoinRpg.Blazor.Client.Expenses;
+using JoinRpg.Common.PrimitiveTypes;
 using JoinRpg.Common.PrimitiveTypes.Users;
 using JoinRpg.Common.WebComponents;
 using JoinRpg.DomainTypes.Finances;
@@ -38,11 +39,23 @@ public class ExpensesPageTest : BunitContext
     {
         Services.AddSingleton<IExpensesClient>(expensesClient);
         Services.AddSingleton<IMasterClient>(new FakeMasterClient([]));
+        Services.AddSingleton<IUriLocator<UserLinkViewModel>>(new FakeUserLinkLocator());
         _ = AddBunitPersistentComponentState();
         Services.AddScoped<SelectorListCache>();
         Services.AddSingleton(typeof(ILogger<>), typeof(NullLogger<>));
         JSInterop.Mode = JSRuntimeMode.Loose;
         SetRendererInfo(new RendererInfo("WebAssembly", isInteractive: true));
+    }
+
+    [Fact]
+    public void NewExpenseFormDefaultsSpentAtToToday()
+    {
+        var cut = Render<ExpensesPage>(p => p.Add(x => x.ProjectId, ProjectId));
+
+        cut.FindAll("button").Single(button => button.TextContent.Trim() == "Новый расход").Click();
+
+        var today = DateOnly.FromDateTime(DateTime.Today).ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture);
+        cut.Find("input[name=SpentAt]").GetAttribute("value").ShouldBe(today);
     }
 
     [Fact]
@@ -121,5 +134,10 @@ public class ExpensesPageTest : BunitContext
     private sealed class FakeMasterClient(UserInfoHeader[] masters) : IMasterClient
     {
         public Task<List<UserInfoHeader>> GetMasters(int projectId) => Task.FromResult(masters.ToList());
+    }
+
+    private sealed class FakeUserLinkLocator : IUriLocator<UserLinkViewModel>
+    {
+        public Uri GetUri(UserLinkViewModel target) => new($"https://example.org/user/{target.UserId}");
     }
 }

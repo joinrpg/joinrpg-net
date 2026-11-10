@@ -86,6 +86,11 @@
 
     protected override void OnInitialized()
     {
+        // При создании дата по умолчанию — сегодня; при правке сохранённую дату не затираем
+        if (IsNew && Model.SpentAt is null)
+        {
+            Model.SpentAt = DateOnly.FromDateTime(DateTime.Today);
+        }
         editContext = new EditContext(Model);
         editContext.OnFieldChanged += HandleFieldChanged;
         formInvalid = !editContext.Validate();

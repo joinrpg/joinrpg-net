@@ -25,7 +25,7 @@
             <td>@expense.Name</td>
             @if (ShowMaster)
             {
-                <td>@expense.MasterName</td>
+                <td><UserLink Model="expense.MasterLink" /></td>
             }
             <td>@FormatCost(expense.PlannedQuantity, expense.PlannedPrice, expense.PlannedCost)</td>
             <td>
