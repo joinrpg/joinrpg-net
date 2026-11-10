@@ -17,52 +17,50 @@
                 </h4>
                 @if (project.Status == ProjectLifecycleStatus.Blocked)
                 {
-                    <div class="text-warning" title="Проект заблокирован на время восстановления данных">Заблокирован</div>
+                    <JoinBadge Variation="VariationStyleEnum.Warning" Title="Проект заблокирован на время восстановления данных" Text="Заблокирован" />
                 }
-                <div class="btn-group">
+                <JoinButtonGroup Size="SizeStyleEnum.Small">
                     @if (project.IsMaster)
                     {
-                        <a href="/@(project.ProjectId.Value)/home"
-                           class="btn btn-info btn-sm"
-                           role="button"
-                           title="У меня есть права мастера на этой игре">Мой проект</a>
+                        <JoinButton Link="@($"/{project.ProjectId.Value}/home")"
+                                    Style="VariationStyleEnum.Info"
+                                    Title="У меня есть права мастера на этой игре"
+                                    Label="Мой проект" />
                     }
 
-                    <a href="/@(project.ProjectId.Value)/roles"
-                       class="btn btn-primary btn-sm"
-                       role="button"
-                       title="Сетка ролей">
-                        Сетка ролей
-                    </a>
+                    <JoinButton Link="@projectUriLocator.GetRolesListUri(project.ProjectId).ToString()"
+                                Style="VariationStyleEnum.Primary"
+                                Title="Сетка ролей"
+                                Label="Сетка ролей" />
 
                     @if (!project.IsMaster && project.PublishPlot)
                     {
-                        <a href="/@(project.ProjectId.Value)/plots/index"
-                           class="btn btn-info btn-sm"
-                           role="button">
-                            Материалы
-                        </a>
+                        <JoinButton Link="@($"/{project.ProjectId.Value}/plots/index")"
+                                    Style="VariationStyleEnum.Info"
+                                    Label="Материалы" />
                     }
 
                     @if (project.HasMyClaims || project.IsAcceptingClaims)
                     {
-                        <MyClaimButton ProjectId="@project.ProjectId" HasMyClaims="@project.HasMyClaims" ProjectStatus="@project.Status" Size="@SizeStyleEnum.Small" />
+                        <MyClaimButton ProjectId="@project.ProjectId" HasMyClaims="@project.HasMyClaims" ProjectStatus="@project.Status" />
                     }
-                </div>
+                </JoinButtonGroup>
             </div>
 
         }
 
         @if (MoreGamesUrl is not null)
         {
-            <div class="card">
+            <div class="card more-games-card">
                 <h4 class="project-name">
-                    <a href="@MoreGamesUrl"><JoinIcon Icon="JoinIconType.Calendar" style="color:black;" /><text>&nbsp;</text>Еще больше игр на КогдаИгре</a>
+                    Еще больше игр на <a href="@MoreGamesUrl"><JoinIcon Icon="JoinIconType.Calendar" style="color:black;" /><text>&nbsp;</text>КогдаИгре</a>
                 </h4>
             </div>
         }
     </div>
 }
+@inject IProjectUriLocator projectUriLocator
+
 @code {
     [Parameter]
     [EditorRequired]
