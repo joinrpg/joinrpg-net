@@ -18,6 +18,7 @@ internal class ExpenseService(
     {
         var projectInfo = await RequestMasterAccess(projectId);
         _ = projectInfo.RequestMasterAccess(request.MasterId);
+        ValidateActualPair(request.ActualQuantity, request.ActualPrice);
 
         var category = await categoryResolver.ResolveCategoryPath(projectInfo.ProjectId, request.CategoryPath);
 
@@ -32,6 +33,8 @@ internal class ExpenseService(
             CategoryPathIds = category.PathIds,
             PlannedQuantity = request.PlannedQuantity,
             PlannedPrice = request.PlannedPrice,
+            ActualQuantity = request.ActualQuantity,
+            ActualPrice = request.ActualPrice,
             SpentAt = request.SpentAt?.ToDateTime(TimeOnly.MinValue),
             State = ExpenseState.Proposed,
         };
@@ -52,6 +55,7 @@ internal class ExpenseService(
         var projectInfo = await RequestMasterAccess(expenseId.ProjectId);
         var expense = await LoadExpense(expenseId);
         RequestOwnExpenseAccess(projectInfo, expense);
+        ValidateActualPair(request.ActualQuantity, request.ActualPrice);
 
         if (projectInfo.HasMasterAccess(currentUserAccessor, Permission.CanManageMoney))
         {
@@ -67,6 +71,17 @@ internal class ExpenseService(
 
         var previousPlannedCost = ExpenseCost.Planned(expense.PlannedQuantity, expense.PlannedPrice);
         var newPlannedCost = ExpenseCost.Planned(request.PlannedQuantity, request.PlannedPrice);
+        // Правила сброса одобрения (см. SetExpenseActual) считаем до изменения расхода.
+        // Факт-правило — только при реальной смене факта: та же пара, пересланная формой,
+        // одобрение не сбрасывает; сверяем факт с результирующим (новым) планом.
+        var planKeepsApproval = newPlannedCost <= previousPlannedCost;
+        var actualChanged = expense.ActualQuantity != request.ActualQuantity || expense.ActualPrice != request.ActualPrice;
+        var actualKeepsApproval = !actualChanged
+            || request.ActualQuantity is null
+            || ActualChangeKeepsApproval(
+                newPlannedCost,
+                ExpenseCost.Actual(expense.ActualQuantity, expense.ActualPrice),
+                ExpenseCost.Planned(request.ActualQuantity.Value, request.ActualPrice.Value));
 
         expense.Name = request.Name;
         expense.Description = new MarkdownDbValue(request.Description?.Value);
@@ -75,10 +90,12 @@ internal class ExpenseService(
         expense.CategoryPathIds = category.PathIds;
         expense.PlannedQuantity = request.PlannedQuantity;
         expense.PlannedPrice = request.PlannedPrice;
+        expense.ActualQuantity = request.ActualQuantity;
+        expense.ActualPrice = request.ActualPrice;
         expense.SpentAt = request.SpentAt?.ToDateTime(TimeOnly.MinValue);
-        // Одобрение сохраняем, только если план не вырос: уменьшение или та же сумма
-        // денежную сторону не меняют. Иначе согласование требуется заново.
-        expense.State = expense.State == ExpenseState.Approved && newPlannedCost <= previousPlannedCost
+        // Одобрение сохраняем, только если не вырос ни план, ни факт (правила #6180):
+        // уменьшение или та же сумма денежную сторону не меняют, иначе согласование требуется заново.
+        expense.State = expense.State == ExpenseState.Approved && planKeepsApproval && actualKeepsApproval
             ? ExpenseState.Approved
             : ExpenseState.Proposed;
         EntityAudit.MarkChanged(expense, DateTime.UtcNow, currentUserAccessor.UserId);
@@ -106,7 +123,7 @@ internal class ExpenseService(
         // Одобрение сохраняем, только если факт не вырос: меньше предыдущего одобренного
         // факта или в пределах плана. Иначе согласование требуется заново.
         expense.State = expense.State == ExpenseState.Approved
-            && ((previousActual is { } prev && newCost < prev) || newCost < plannedCost)
+            && ActualChangeKeepsApproval(plannedCost, previousActual, newCost)
             ? ExpenseState.Approved
             : ExpenseState.Proposed;
         EntityAudit.MarkChanged(expense, DateTime.UtcNow, currentUserAccessor.UserId);
@@ -118,6 +135,22 @@ internal class ExpenseService(
             expense.ActualQuantity,
             expense.ActualPrice);
     }
+
+    /// <summary>Факт задаётся только парой «количество + цена»: оба поля или ни одного.</summary>
+    private static void ValidateActualPair(int? actualQuantity, int? actualPrice)
+    {
+        if ((actualQuantity is null) != (actualPrice is null))
+        {
+            throw new JoinValidationException("TODO[Localize]: факт расхода задаётся парой — укажите и количество, и цену, или ни одного из них");
+        }
+    }
+
+    /// <summary>Правило #6180 для факта: одобрение сохраняется, только если фактическая стоимость
+    /// не выросла — меньше прежнего факта или в пределах плана (при совмещённой правке —
+    /// результирующего нового плана). Равная прежнему факту сумма одобрение не сохраняет,
+    /// когда она не ниже плана. Применяется только если факт реально изменился.</summary>
+    private static bool ActualChangeKeepsApproval(int plannedCost, int? previousActualCost, int newActualCost)
+        => (previousActualCost is { } previous && newActualCost < previous) || newActualCost < plannedCost;
 
     /// <summary>Мастер без <see cref="Permission.CanManageMoney"/> может править только свои
     /// расходы (понёс сам) или созданные собой.</summary>

@@ -53,16 +53,20 @@ public class ExpenseServiceTest
         string categoryPath = "Аренда базы\\Жилые корпуса",
         int plannedQuantity = 2,
         int plannedPrice = 5000,
-        DateOnly? spentAt = null)
-        => new(masterId, "Аренда домика", categoryPath, plannedQuantity, plannedPrice, spentAt, new MarkdownString("Предоплата за август"));
+        DateOnly? spentAt = null,
+        int? actualQuantity = null,
+        int? actualPrice = null)
+        => new(masterId, "Аренда домика", categoryPath, plannedQuantity, plannedPrice, spentAt, new MarkdownString("Предоплата за август"), actualQuantity, actualPrice);
 
     private static EditExpenseRequest EditRequest(
         UserIdentification masterId,
         string name = "Аренда домика (уточнено)",
         int plannedQuantity = 3,
         int plannedPrice = 4500,
-        DateOnly? spentAt = null)
-        => new(masterId, name, "Аренда базы\\Жилые корпуса", plannedQuantity, plannedPrice, spentAt, new MarkdownString("Уточнено"));
+        DateOnly? spentAt = null,
+        int? actualQuantity = null,
+        int? actualPrice = null)
+        => new(masterId, name, "Аренда базы\\Жилые корпуса", plannedQuantity, plannedPrice, spentAt, new MarkdownString("Уточнено"), actualQuantity, actualPrice);
 
     /// <summary>Ещё один мастер проекта; метаданные пересобираем, чтобы ACL увидел его.</summary>
     private User CreateMaster(string name = "Master2")
@@ -722,5 +726,215 @@ public class ExpenseServiceTest
         await service.SetExpenseActual(expenseId, new ExpenseActualRequest(5, 200, new DateOnly(2026, 8, 21)));
 
         expenses.ShouldHaveSingleItem().State.ShouldBe(ExpenseState.Proposed);
+    }
+
+    [Fact]
+    public async Task CreateExpense_WithActual_StoresActual()
+    {
+        var service = CreateService(mock.Master.UserId);
+
+        await service.CreateExpense(
+            ProjectId,
+            CreateRequest(new UserIdentification(mock.Master.UserId), actualQuantity: 2, actualPrice: 4800));
+
+        var expense = expenses.ShouldHaveSingleItem();
+        expense.ActualQuantity.ShouldBe(2);
+        expense.ActualPrice.ShouldBe(4800);
+    }
+
+    [Theory]
+    [InlineData(2, null)]
+    [InlineData(null, 4800)]
+    public async Task CreateExpense_WithPartialActual_Throws(int? actualQuantity, int? actualPrice)
+    {
+        var service = CreateService(mock.Master.UserId);
+
+        await Should.ThrowAsync<JoinValidationException>(() => service.CreateExpense(
+            ProjectId,
+            CreateRequest(new UserIdentification(mock.Master.UserId), actualQuantity: actualQuantity, actualPrice: actualPrice)));
+
+        expenses.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task EditExpense_WithActual_StoresActual()
+    {
+        var service = CreateService(mock.Master.UserId);
+        var expenseId = await CreateExpenseAsMaster();
+
+        await service.EditExpense(
+            expenseId,
+            EditRequest(new UserIdentification(mock.Master.UserId), plannedQuantity: 2, plannedPrice: 5000, actualQuantity: 3, actualPrice: 4500));
+
+        var expense = expenses.ShouldHaveSingleItem();
+        expense.ActualQuantity.ShouldBe(3);
+        expense.ActualPrice.ShouldBe(4500);
+    }
+
+    [Fact]
+    public async Task EditExpense_WithoutActual_ClearsActual()
+    {
+        var service = CreateService(mock.Master.UserId);
+        var expenseId = await CreateExpenseAsMaster();
+        await service.SetExpenseActual(expenseId, new ExpenseActualRequest(2, 5000, new DateOnly(2026, 9, 1)));
+        expenses.ShouldHaveSingleItem().ActualQuantity.ShouldNotBeNull();
+
+        await service.EditExpense(
+            expenseId,
+            EditRequest(new UserIdentification(mock.Master.UserId), plannedQuantity: 2, plannedPrice: 5000));
+
+        var expense = expenses.ShouldHaveSingleItem();
+        expense.ActualQuantity.ShouldBeNull();
+        expense.ActualPrice.ShouldBeNull();
+    }
+
+    [Theory]
+    [InlineData(2, null)]
+    [InlineData(null, 4500)]
+    public async Task EditExpense_WithPartialActual_Throws(int? actualQuantity, int? actualPrice)
+    {
+        var service = CreateService(mock.Master.UserId);
+        var expenseId = await CreateExpenseAsMaster();
+
+        await Should.ThrowAsync<JoinValidationException>(() => service.EditExpense(
+            expenseId,
+            EditRequest(new UserIdentification(mock.Master.UserId), plannedQuantity: 2, plannedPrice: 5000, actualQuantity: actualQuantity, actualPrice: actualPrice)));
+
+        var expense = expenses.ShouldHaveSingleItem();
+        expense.ActualQuantity.ShouldBeNull();
+        expense.ActualPrice.ShouldBeNull();
+    }
+
+    [Fact]
+    public async Task EditExpense_WithinPlannedCost_KeepsApproved()
+    {
+        // Правила сброса — те же, что у SetExpenseActual: факт без роста одобрение сохраняет
+        var service = CreateService(mock.Master.UserId);
+        var expenseId = await CreateExpenseAsMaster(plannedQuantity: 3, plannedPrice: 100);
+        await service.ApproveExpense(expenseId, null);
+
+        // Факта не было; 2×100=200 меньше плана 3×100=300; план не меняем
+        await service.EditExpense(
+            expenseId,
+            EditRequest(new UserIdentification(mock.Master.UserId), plannedQuantity: 3, plannedPrice: 100, actualQuantity: 2, actualPrice: 100));
+
+        var expense = expenses.ShouldHaveSingleItem();
+        expense.State.ShouldBe(ExpenseState.Approved);
+        expense.ActualQuantity.ShouldBe(2);
+        expense.ActualPrice.ShouldBe(100);
+    }
+
+    [Fact]
+    public async Task EditExpense_ExceedsPlannedCost_ResetsToProposed()
+    {
+        var service = CreateService(mock.Master.UserId);
+        var expenseId = await CreateExpenseAsMaster(plannedQuantity: 1, plannedPrice: 100);
+        await service.ApproveExpense(expenseId, null);
+
+        // 5×100=500 больше плана 1×100=100 — одобрение сбрасывается, план не меняем
+        await service.EditExpense(
+            expenseId,
+            EditRequest(new UserIdentification(mock.Master.UserId), plannedQuantity: 1, plannedPrice: 100, actualQuantity: 5, actualPrice: 100));
+
+        var expense = expenses.ShouldHaveSingleItem();
+        expense.State.ShouldBe(ExpenseState.Proposed);
+        expense.ActualQuantity.ShouldBe(5);
+        expense.ActualPrice.ShouldBe(100);
+    }
+
+    [Fact]
+    public async Task EditExpense_GrowsApprovedActual_ResetsToProposed()
+    {
+        var service = CreateService(mock.Master.UserId);
+        var expenseId = await CreateExpenseAsMaster(plannedQuantity: 1, plannedPrice: 500);
+        await service.ApproveExpense(expenseId, null);
+        await service.SetExpenseActual(expenseId, new ExpenseActualRequest(5, 200, new DateOnly(2026, 8, 20)));
+        expenses.ShouldHaveSingleItem().State.ShouldBe(ExpenseState.Proposed);
+        await service.ApproveExpense(expenseId, null);
+
+        // 6×200=1200 больше предыдущего одобренного факта 5×200=1000
+        await service.EditExpense(
+            expenseId,
+            EditRequest(new UserIdentification(mock.Master.UserId), plannedQuantity: 1, plannedPrice: 500, actualQuantity: 6, actualPrice: 200));
+
+        expenses.ShouldHaveSingleItem().State.ShouldBe(ExpenseState.Proposed);
+    }
+
+    [Fact]
+    public async Task EditExpense_DecreasesApprovedActual_KeepsApproved()
+    {
+        var service = CreateService(mock.Master.UserId);
+        var expenseId = await CreateExpenseAsMaster(plannedQuantity: 1, plannedPrice: 500);
+        await service.ApproveExpense(expenseId, null);
+        // 5×200=1000 больше плана 500 — согласование сбросилось, одобряем повторно
+        await service.SetExpenseActual(expenseId, new ExpenseActualRequest(5, 200, new DateOnly(2026, 8, 20)));
+        expenses.ShouldHaveSingleItem().State.ShouldBe(ExpenseState.Proposed);
+        await service.ApproveExpense(expenseId, null);
+
+        // 4×200=800 меньше прежнего факта 1000 — одобрение сохраняется
+        await service.EditExpense(
+            expenseId,
+            EditRequest(new UserIdentification(mock.Master.UserId), plannedQuantity: 1, plannedPrice: 500, actualQuantity: 4, actualPrice: 200));
+
+        expenses.ShouldHaveSingleItem().State.ShouldBe(ExpenseState.Approved);
+    }
+
+    [Fact]
+    public async Task EditExpense_UnchangedActual_KeepsApproved()
+    {
+        // Approved с фактом, равным плану (штатно после автозаполнения плана и молчаливого одобрения):
+        // правка текста с пересланной той же парой факта одобрение не сбрасывает
+        var service = CreateService(mock.Master.UserId);
+        var expenseId = await CreateExpenseAsMaster();
+        await service.SetExpenseActual(expenseId, new ExpenseActualRequest(2, 5000, new DateOnly(2026, 8, 20)));
+        expenses.ShouldHaveSingleItem().State.ShouldBe(ExpenseState.Proposed);
+        await service.ApproveExpense(expenseId, null);
+
+        await service.EditExpense(
+            expenseId,
+            EditRequest(new UserIdentification(mock.Master.UserId), plannedQuantity: 2, plannedPrice: 5000, actualQuantity: 2, actualPrice: 5000));
+
+        var expense = expenses.ShouldHaveSingleItem();
+        expense.State.ShouldBe(ExpenseState.Approved);
+        expense.Name.ShouldBe("Аренда домика (уточнено)");
+    }
+
+    [Fact]
+    public async Task EditExpense_SameCostAsApprovedActual_ResetsToProposed()
+    {
+        // Сумма нового факта равна прежнему одобренному, но сам факт реально изменился
+        // (значения полей другие) — сравнение строгое «меньше», одобрение не сохраняет
+        var service = CreateService(mock.Master.UserId);
+        var expenseId = await CreateExpenseAsMaster(plannedQuantity: 1, plannedPrice: 500);
+        await service.ApproveExpense(expenseId, null);
+        await service.SetExpenseActual(expenseId, new ExpenseActualRequest(5, 200, new DateOnly(2026, 8, 20)));
+        expenses.ShouldHaveSingleItem().State.ShouldBe(ExpenseState.Proposed);
+        await service.ApproveExpense(expenseId, null);
+
+        // 2×500=1000 — ровно прежний факт 5×200=1000, но пара изменилась
+        await service.EditExpense(
+            expenseId,
+            EditRequest(new UserIdentification(mock.Master.UserId), plannedQuantity: 1, plannedPrice: 500, actualQuantity: 2, actualPrice: 500));
+
+        expenses.ShouldHaveSingleItem().State.ShouldBe(ExpenseState.Proposed);
+    }
+
+    [Fact]
+    public async Task EditExpense_GrowsActualAboveResultingPlan_ResetsToProposed()
+    {
+        // Совмещённая правка: план вниз (300 → 100), факт вверх, но выше результирующего плана —
+        // инвариант «Approved ⇒ факт ниже плана либо снижен» одобрение не сохраняет
+        var service = CreateService(mock.Master.UserId);
+        var expenseId = await CreateExpenseAsMaster(plannedQuantity: 3, plannedPrice: 100);
+        await service.ApproveExpense(expenseId, null);
+
+        await service.EditExpense(
+            expenseId,
+            EditRequest(new UserIdentification(mock.Master.UserId), plannedQuantity: 1, plannedPrice: 100, actualQuantity: 2, actualPrice: 100));
+
+        var expense = expenses.ShouldHaveSingleItem();
+        expense.State.ShouldBe(ExpenseState.Proposed);
+        expense.ActualQuantity.ShouldBe(2);
+        expense.ActualPrice.ShouldBe(100);
     }
 }
