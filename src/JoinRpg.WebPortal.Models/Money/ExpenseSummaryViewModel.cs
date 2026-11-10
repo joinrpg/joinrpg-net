@@ -19,13 +19,9 @@ public class ExpenseSummaryViewModel
 {
     public IReadOnlyCollection<ExpenseSummaryRow> Rows { get; }
 
-    [Display(Name = "Потрачено (одобрено)")]
-    public decimal TotalSpent { get; }
-
-    internal ExpenseSummaryViewModel(IReadOnlyCollection<ExpenseSummaryRow> rows, decimal totalSpent)
+    internal ExpenseSummaryViewModel(IReadOnlyCollection<ExpenseSummaryRow> rows)
     {
         Rows = rows;
-        TotalSpent = totalSpent;
     }
 }
 
@@ -76,17 +72,14 @@ public static class ExpenseSummaryBuilder
             .OrderBy(r => r.CategoryPath)
             .ToArray();
 
-        var totalSpent = expenses.Sum(e => e.ActualBalanceEffect);
-
         // «Итого» считаем по расходам напрямую, а не суммируя строки: суммы строк включают
         // поддерево, и сумма строк дала бы двойной счёт.
         return new ExpenseSummaryViewModel(
             [.. rows, new ExpenseSummaryRow(
                 "Итого",
                 ApprovedPlannedCost: expenses.Where(e => e.State == ExpenseState.Approved).Sum(e => e.PlannedCost),
-                ApprovedActualCost: totalSpent,
+                ApprovedActualCost: expenses.Sum(e => e.ActualBalanceEffect),
                 ProposedCost: expenses.Where(e => e.State == ExpenseState.Proposed).Sum(e => e.PlannedBalanceEffect),
-                IsTotal: true)],
-            totalSpent);
+                IsTotal: true)]);
     }
 }

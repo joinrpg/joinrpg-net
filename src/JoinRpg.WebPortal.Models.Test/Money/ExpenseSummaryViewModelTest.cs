@@ -57,7 +57,6 @@ public class ExpenseSummaryViewModelTest
         transport.ApprovedPlannedCost.ShouldBe(30);
         transport.ApprovedActualCost.ShouldBe(0);
         transport.ProposedCost.ShouldBe(0);
-        summary.TotalSpent.ShouldBe(180);
 
         // Итого — сумма по расходам, а не по строкам: агрегация подкатегорий
         // в родителей не должна давать двойной счёт.
@@ -105,7 +104,6 @@ public class ExpenseSummaryViewModelTest
         var summary = ExpenseSummaryBuilder.Build(expenses);
 
         summary.Rows.Where(r => !r.IsTotal).ShouldBeEmpty();
-        summary.TotalSpent.ShouldBe(0);
         // Строка «Итого» показывается всегда, даже когда все суммы нулевые.
         var total = summary.Rows.Single();
         total.IsTotal.ShouldBeTrue();
@@ -148,7 +146,7 @@ public class ExpenseSummaryViewModelTest
         categories.Single().CategoryPath.ShouldBe("Транспорт");
         categories.Single().ProposedCost.ShouldBe(40);
         summary.Rows.Last().ProposedCost.ShouldBe(40);
-        summary.TotalSpent.ShouldBe(0);
+        summary.Rows.Last().ApprovedActualCost.ShouldBe(0);
     }
 
     [Fact]
@@ -195,7 +193,7 @@ public class ExpenseSummaryViewModelTest
 
         summary.Rows.Where(r => !r.IsTotal).Single().ApprovedPlannedCost.ShouldBe(30);
         summary.Rows.Where(r => !r.IsTotal).Single().ApprovedActualCost.ShouldBe(0);
-        summary.TotalSpent.ShouldBe(0);
+        summary.Rows.Last().ApprovedActualCost.ShouldBe(0);
     }
 
     [Fact]
@@ -212,6 +210,6 @@ public class ExpenseSummaryViewModelTest
         // 49,90 + 100,10 = 150,00 — копейки не теряются при суммировании
         summary.Rows.Where(r => !r.IsTotal).Single().ApprovedPlannedCost.ShouldBe(150.00m);
         summary.Rows.Last().ApprovedPlannedCost.ShouldBe(150.00m);
-        summary.TotalSpent.ShouldBe(0m);
+        summary.Rows.Last().ApprovedActualCost.ShouldBe(0m);
     }
 }
