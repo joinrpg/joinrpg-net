@@ -1,4 +1,4 @@
-<h3>Расходы</h3>
+<h3>Расходы <a href="/@ProjectId/expenses">(подробнее)</a></h3>
 
 <JoinBorderedTable Items="Rows" Context="row">
     <HeadContent>
@@ -44,4 +44,9 @@
     [Parameter]
     [EditorRequired]
     public decimal MastersTotal { get; set; }
+
+    /// <summary>Id проекта: для ссылки на страницу расходов.</summary>
+    [Parameter]
+    [EditorRequired]
+    public int ProjectId { get; set; }
 }

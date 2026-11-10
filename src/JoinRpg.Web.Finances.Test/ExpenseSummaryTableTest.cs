@@ -17,9 +17,12 @@ public class ExpenseSummaryTableTest : BunitContext
                 new ExpenseSummaryRowViewModel("Расходники", ApprovedPlannedCost: 1000, ApprovedActualCost: 0, ProposedCost: 0),
             ])
             .Add(x => x.TotalSpent, 2800)
-            .Add(x => x.MastersTotal, 7000));
+            .Add(x => x.MastersTotal, 7000)
+            .Add(x => x.ProjectId, 7));
 
         cut.Markup.ShouldContain("Расходы");
+        cut.Markup.ShouldContain("/7/expenses");
+        cut.Markup.ShouldContain("(подробнее)");
         cut.Markup.ShouldContain("Аренда базы\\Жилые корпуса");
         cut.Markup.ShouldContain("План (одобрено)");
         cut.Markup.ShouldContain("Факт (одобрено)");
@@ -57,7 +60,8 @@ public class ExpenseSummaryTableTest : BunitContext
         var cut = Render<ExpenseSummaryTable>(p => p
             .Add(x => x.Rows, [])
             .Add(x => x.TotalSpent, 0)
-            .Add(x => x.MastersTotal, 0));
+            .Add(x => x.MastersTotal, 0)
+            .Add(x => x.ProjectId, 7));
 
         cut.Markup.ShouldContain("Расходов пока нет");
         cut.Markup.ShouldContain("Потрачено (одобрено)");

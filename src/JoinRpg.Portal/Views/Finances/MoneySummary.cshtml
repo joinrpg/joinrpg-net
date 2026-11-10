@@ -21,10 +21,11 @@
             .ToArray(),
         TotalSpent = expenseSummary.TotalSpent,
         MastersTotal = Model.Balance.Sum(balance => balance.Total),
+        ProjectId = Model.ProjectId,
     }))
 }
 
-<h3>По типам</h3>
+<h3>Взносы <a href="/@Model.ProjectId/money/operations">(подробнее)</a></h3>
 
 @await Html.PartialAsync("_PaymentTypes", Model.PaymentTypeSummary)
 
