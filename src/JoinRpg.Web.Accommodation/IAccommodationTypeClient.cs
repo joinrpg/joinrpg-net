@@ -12,13 +12,15 @@ namespace JoinRpg.Web.Accommodation;
 /// <param name="Capacity">Сколько человек помещается в номере</param>
 /// <param name="Cost">Стоимость</param>
 /// <param name="DescriptionHtml">Описание, уже отрисованное из Markdown</param>
+/// <param name="IsInfinite">Гостевой тип: мест не ограничено, без комнат (#1945)</param>
 [method: JsonConstructor]
 public record AccommodationTypeViewModel(
     AccommodationTypeIdentification TypeId,
     string Name,
     int Capacity,
     int Cost,
-    string DescriptionHtml)
+    string DescriptionHtml,
+    bool IsInfinite = false)
 {
     /// <summary>
     /// Собрать из доменного типа проживания. Описание приходит уже отрисованным: markdown
@@ -26,7 +28,7 @@ public record AccommodationTypeViewModel(
     /// компилируется и под браузер.
     /// </summary>
     public AccommodationTypeViewModel(AccommodationTypeInfo type, string descriptionHtml)
-        : this(type.Id, type.Name, type.Capacity, type.Cost, descriptionHtml)
+        : this(type.Id, type.Name, type.Capacity, type.Cost, descriptionHtml, type.IsInfinite)
     {
     }
 
