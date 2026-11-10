@@ -3,12 +3,15 @@ using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel.Mocks;
 using JoinRpg.DomainTypes;
 using JoinRpg.DomainTypes.Finances;
+using JoinRpg.DomainTypes.Interfaces;
 using JoinRpg.DomainTypes.ProjectMetadata;
 using JoinRpg.Portal.Controllers.WebApi;
 using JoinRpg.Portal.Infrastructure.Authorization;
+using JoinRpg.Services.Export;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Finances.Expenses;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace JoinRpg.Portal.Test.Controllers;
 
@@ -221,6 +224,63 @@ public class ExpensesControllerTest
     }
 
     [Fact]
+    public async Task ExportReturnsXlsxFileWithExpenses()
+    {
+        var mock = new MockedProject();
+        var masterId = new UserIdentification(mock.Master.UserId);
+        var expense = new ExpenseInfo(
+            new ExpenseIdentification(ProjectId, 7),
+            Name: "Аренда столов",
+            Description: new MarkdownString("**Договор** с базой"),
+            CategoryPath: [new ExpenseCategoryBriefInfo(new ExpenseCategoryIdentification(ProjectId, 1), "Аренда базы")],
+            PlannedQuantity: 10,
+            PlannedPrice: 300,
+            ActualQuantity: null,
+            ActualPrice: null,
+            SpentAt: null,
+            State: ExpenseState.Approved,
+            MasterId: masterId,
+            CreatedById: masterId);
+        var controller = CreateController(
+            repository: new FakeExpenseRepository { Expenses = [expense] },
+            metadataRepository: new FakeProjectMetadataRepository(mock.ProjectInfo));
+
+        var result = await controller.Export(ProjectId, "xlsx");
+
+        var file = result.ShouldBeOfType<FileContentResult>();
+        file.ContentType.ShouldBe("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        file.FileDownloadName.ShouldEndWith(".xlsx");
+        file.FileDownloadName.ShouldContain("Расходы");
+        file.FileContents.Length.ShouldBeGreaterThan(0);
+    }
+
+    [Fact]
+    public async Task ExportReturnsCsvFileWhenRequested()
+    {
+        var controller = CreateController();
+
+        var result = await controller.Export(ProjectId, "csv");
+
+        var file = result.ShouldBeOfType<FileContentResult>();
+        file.ContentType.ShouldBe("text/csv");
+        file.FileDownloadName.ShouldEndWith(".csv");
+        file.FileDownloadName.ShouldContain("Расходы");
+        file.FileContents.Length.ShouldBeGreaterThan(0);
+    }
+
+    [Fact]
+    public async Task ExportWithoutExpensesReturnsNonEmptyXlsx()
+    {
+        var controller = CreateController();
+
+        var result = await controller.Export(ProjectId, "xlsx");
+
+        var file = result.ShouldBeOfType<FileContentResult>();
+        file.FileDownloadName.ShouldEndWith(".xlsx");
+        file.FileContents.Length.ShouldBeGreaterThan(0);
+    }
+
+    [Fact]
     public async Task CanManageMoneyComesFromMasterPermissions()
     {
         var mock = new MockedProject();
@@ -247,6 +307,9 @@ public class ExpensesControllerTest
         }
     }
 
+    private static readonly IExportDataService ExportDataService =
+        new ServiceCollection().AddJoinExportService().BuildServiceProvider().GetRequiredService<IExportDataService>();
+
     private static ExpensesController CreateController(
         FakeExpenseRepository? repository = null,
         FakeExpenseService? service = null,
@@ -256,7 +319,9 @@ public class ExpensesControllerTest
             repository ?? new FakeExpenseRepository(),
             service ?? new FakeExpenseService(),
             new FakeCurrentUserAccessor(currentUserId ?? MasterId),
-            metadataRepository ?? new FakeProjectMetadataRepository(new MockedProject().ProjectInfo));
+            metadataRepository ?? new FakeProjectMetadataRepository(new MockedProject().ProjectInfo),
+            ExportDataService,
+            new StubUriService());
 
     private sealed class FakeExpenseRepository : IExpenseRepository
     {
@@ -328,5 +393,13 @@ public class ExpensesControllerTest
         public void PrimeCache(ProjectInfo projectInfo)
         {
         }
+    }
+
+    /// <summary>Ссылки не используются в выгрузке расходов — заглушка, чтобы собрать экспортёр.</summary>
+    private sealed class StubUriService : IUriService
+    {
+        public string Get(ILinkable link) => GetUri(link).ToString();
+
+        public Uri GetUri(ILinkable link) => new("https://joinrpg.ru/");
     }
 }

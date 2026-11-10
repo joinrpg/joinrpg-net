@@ -21,13 +21,14 @@ else
     {
         <JoinAlert Variation="VariationStyleEnum.Danger">@actionError</JoinAlert>
     }
-    @if (editing is null)
-    {
-        <p>
+    <p>
+        @if (editing is null)
+        {
             <JoinButton Preset="ButtonPreset.Add" Label="Новый расход" AutoProgress="false" OnClick="@StartCreate" />
-        </p>
-    }
-    else
+        }
+        <JoinButton Link="@($"/webapi/{ProjectId.Value}/expenses/export?export=xlsx")" Preset="ButtonPreset.Download" Label="Скачать Excel" />
+    </p>
+    @if (editing is not null)
     {
         <ExpenseEditForm @key="editing.Model" Model="editing.Model" ProjectId="ProjectId" State="editing.State" CategorySuggestions="categorySuggestions" OnSave="Save" OnCancel="CancelEdit" />
     }
