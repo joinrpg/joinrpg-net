@@ -35,6 +35,23 @@ public class ExpenseSummaryTableTest : BunitContext
     }
 
     [Fact]
+    public void RendersKopecksWhenPresent()
+    {
+        var cut = Render<ExpenseSummaryTable>(p => p
+            .Add(x => x.Rows,
+            [
+                new ExpenseSummaryRowViewModel("Расходники", ApprovedPlannedCost: 49.90m, ApprovedActualCost: 149.70m, ProposedCost: 0),
+            ])
+            .Add(x => x.TotalSpent, 149.70m)
+            .Add(x => x.MastersTotal, 1000));
+
+        // Копейки показываются только если есть
+        cut.FindAll(".price-value").Select(e => e.TextContent.Trim()).ToArray()
+            .ShouldBe(["49,9", "149,7", "0"]);
+        cut.Markup.ShouldContain("-149,7");
+    }
+
+    [Fact]
     public void EmptyRowsShowPlaceholderButTotalsStay()
     {
         var cut = Render<ExpenseSummaryTable>(p => p
