@@ -219,6 +219,35 @@ public class ExpensesPageTest : BunitContext
         });
     }
 
+    [Fact]
+    public async Task SaveFailureKeepsEnteredDataForRetry()
+    {
+        var cut = Render<ExpensesPage>(p => p.Add(x => x.ProjectId, ProjectId));
+
+        ClickButton(cut, "Новый расход");
+        var dialog = cut.Find("dialog");
+        dialog.QuerySelectorAll("input[type=text]")[0].Change("Аренда зала");
+        dialog.QuerySelectorAll("input[type=text]")[1].Change("Аренда базы\\Жилые корпуса");
+        SelectMaster(cut, "Иван Мастеров");
+        dialog.QuerySelectorAll("input[type=number]")[2].Change("2"); // факт количество
+        dialog.QuerySelectorAll("input[type=number]")[3].Change("1400"); // факт цена
+
+        expensesClient.CreateFailure = new ServerProblemException("Нет прав на деньги");
+        await SubmitDialogAsync(cut);
+
+        cut.WaitForAssertion(() => cut.Markup.ShouldContain("Ошибка: Нет прав на деньги"));
+
+        // Регрессия: старая форма оставалась открытой с введёнными данными. Тот же диалог
+        // должен принять повторный сабмит без потери модели.
+        expensesClient.CreateFailure = null;
+        await SubmitDialogAsync(cut);
+
+        cut.WaitForAssertion(() => expensesClient.Created.ShouldNotBeNull());
+        expensesClient.Created.Name.ShouldBe("Аренда зала");
+        expensesClient.Created.CategoryPath.ShouldBe("Аренда базы\\Жилые корпуса");
+        expensesClient.Created.PlannedPrice.ShouldBe(1400); // план подставился из факта
+    }
+
     private static string DialogCaption(IRenderedComponent<ExpensesPage> cut)
         => cut.Find(".join-dialog-caption").TextContent.Trim();
 
@@ -286,8 +315,15 @@ public class ExpensesPageTest : BunitContext
         public Task<UserIdentification> GetCurrentUser(ProjectIdentification projectId)
             => Task.FromResult(CurrentUser);
 
+        /// <summary>Исключение, которое бросит <c>CreateExpense</c>; null — сохранение успешно.</summary>
+        public ServerProblemException? CreateFailure { get; set; }
+
         public Task<ExpenseIdentification> CreateExpense(ProjectIdentification projectId, ExpenseEditViewModel model)
         {
+            if (CreateFailure is { } failure)
+            {
+                return Task.FromException<ExpenseIdentification>(failure);
+            }
             Created = model;
             return Task.FromResult(new ExpenseIdentification(projectId, 99));
         }

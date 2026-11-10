@@ -144,13 +144,26 @@ else
 
     private async Task EditAsync(ExpenseEditViewModel model, ExpenseStateView? state)
     {
-        var result = await editDialog.ShowAsync(model, state);
-        if (result is null)
+        while (true)
         {
-            return;
+            var result = await editDialog.ShowAsync(model, state);
+            if (result is null)
+            {
+                return;
+            }
+            FillPlannedFromActual(result);
+            var saved = await Save(result);
+            // Продолжение выполняется не из события страницы (диалог закрылся по onclose) —
+            // публикуем результат сохранения сами: и actionError, и обновлённый грид
+            StateHasChanged();
+            if (saved)
+            {
+                return;
+            }
+            // Сохранение не удалось — открываем диалог заново с той же моделью:
+            // введённые данные не должны пропадать (как в старой панельной форме)
+            model = result;
         }
-        FillPlannedFromActual(result);
-        await Save(result);
     }
 
     // Факт ввели, а план пустой — подставляем план из факта. Страховка от потерянного
@@ -167,7 +180,7 @@ else
         }
     }
 
-    private async Task Save(ExpenseEditViewModel model)
+    private async Task<bool> Save(ExpenseEditViewModel model)
     {
         actionError = null;
         try
@@ -182,16 +195,19 @@ else
             }
 
             await LoadAll();
+            return true;
         }
         catch (ServerProblemException exception)
         {
             // Ожидаемый отказ сервиса (нет прав, чужой расход) — текст предназначен мастеру
             actionError = $"Ошибка: {exception.Message}";
+            return false;
         }
         catch (Exception exception)
         {
             Logger.LogError(exception, "Ошибка сохранения расхода проекта {ProjectId}", ProjectId);
             actionError = "Не удалось сохранить расход. Обновите страницу и попробуйте ещё раз.";
+            return false;
         }
     }
 
