@@ -39,13 +39,13 @@
             @(await Html.RenderComponentAsync<PriceElement>(RenderMode.Static, new { Price = item.Total }))
         </td>
         <td>
-            @(await Html.RenderComponentAsync<PriceElement>(RenderMode.Static, new { Price = item.FeeBalance }))
+            @(await Html.RenderComponentAsync<PriceElement>(RenderMode.Static, new { Price = (decimal)item.FeeBalance }))
         </td>
         <td>
-            @(await Html.RenderComponentAsync<PriceElement>(RenderMode.Static, new { Price = item.ReceiveBalance }))
+            @(await Html.RenderComponentAsync<PriceElement>(RenderMode.Static, new { Price = (decimal)item.ReceiveBalance }))
         </td>
         <td>
-            @(await Html.RenderComponentAsync<PriceElement>(RenderMode.Static, new { Price = item.SendBalance }))
+            @(await Html.RenderComponentAsync<PriceElement>(RenderMode.Static, new { Price = (decimal)item.SendBalance }))
         </td>
         <td>
             @(await Html.RenderComponentAsync<PriceElement>(RenderMode.Static, new { Price = item.ExpensesBalance }))
