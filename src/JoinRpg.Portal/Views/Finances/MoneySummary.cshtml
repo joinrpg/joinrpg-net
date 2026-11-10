@@ -19,13 +19,11 @@
         Rows = expenseSummary.Rows
             .Select(row => new ExpenseSummaryRowViewModel(row.CategoryPath, row.ApprovedPlannedCost, row.ApprovedActualCost, row.ProposedCost, row.IsTotal))
             .ToArray(),
-        TotalSpent = expenseSummary.TotalSpent,
-        MastersTotal = Model.Balance.Sum(balance => balance.Total),
         ProjectId = Model.ProjectId,
     }))
 }
 
-<h3>Взносы <a href="@Url.Action("Operations", "Finances", new { Model.ProjectId })">(подробнее)</a></h3>
+<h3>Взносы (<a href="@Url.Action("Operations", "Finances", new { Model.ProjectId })">подробнее</a>)</h3>
 
 @await Html.PartialAsync("_PaymentTypes", Model.PaymentTypeSummary)
 

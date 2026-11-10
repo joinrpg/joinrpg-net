@@ -1,14 +1,14 @@
 @inject IExpensesUriLocator ExpensesUriLocator
 
-<h3>Расходы <a href="@ExpensesUriLocator.GetExpensesUri(new ProjectIdentification(ProjectId))">(подробнее)</a></h3>
+<h3>Расходы (<a href="@ExpensesUriLocator.GetExpensesUri(new ProjectIdentification(ProjectId))">подробнее</a>)</h3>
 
 <JoinBorderedTable Items="Rows" Context="row">
     <HeadContent>
         <tr>
             <th>Категория</th>
-            <th>План (одобрено)</th>
-            <th>Факт (одобрено)</th>
-            <th>На рассмотрении</th>
+            <th class="text-right">План (одобрено)</th>
+            <th class="text-right">Факт (одобрено)</th>
+            <th class="text-right">На рассмотрении</th>
         </tr>
     </HeadContent>
     <ItemTemplate>
@@ -16,16 +16,16 @@
             @if (row.IsTotal)
             {
                 <td><b>@row.CategoryPath</b></td>
-                <td><b><PriceElement Price="row.ApprovedPlannedCost" /></b></td>
-                <td><b><PriceElement Price="row.ApprovedActualCost" /></b></td>
-                <td><b><PriceElement Price="row.ProposedCost" /></b></td>
+                <td class="text-right"><b><PriceElement Price="row.ApprovedPlannedCost" /></b></td>
+                <td class="text-right"><b><PriceElement Price="row.ApprovedActualCost" /></b></td>
+                <td class="text-right"><b><PriceElement Price="row.ProposedCost" /></b></td>
             }
             else
             {
                 <td>@row.CategoryPath</td>
-                <td><PriceElement Price="row.ApprovedPlannedCost" /></td>
-                <td><PriceElement Price="row.ApprovedActualCost" /></td>
-                <td><PriceElement Price="row.ProposedCost" /></td>
+                <td class="text-right"><PriceElement Price="row.ApprovedPlannedCost" /></td>
+                <td class="text-right"><PriceElement Price="row.ApprovedActualCost" /></td>
+                <td class="text-right"><PriceElement Price="row.ProposedCost" /></td>
             }
         </tr>
     </ItemTemplate>
@@ -36,26 +36,11 @@
     </EmptyContent>
 </JoinBorderedTable>
 
-<p>
-    <b>Потрачено (одобрено)</b>: -<PriceElement Price="TotalSpent" />
-    <b>Осталось у мастеров</b>: <PriceElement Price="MastersTotal" />
-</p>
-
 @code {
-    /// <summary>Строки по категориям; пустой список — строка-заглушка, итоги показываем всегда.</summary>
+    /// <summary>Строки по категориям; пустой список — строка-заглушка.</summary>
     [Parameter]
     [EditorRequired]
     public IReadOnlyList<ExpenseSummaryRowViewModel> Rows { get; set; } = default!;
-
-    /// <summary>Потрачено (одобрено): сумма фактических списаний со счёта проекта.</summary>
-    [Parameter]
-    [EditorRequired]
-    public decimal TotalSpent { get; set; }
-
-    /// <summary>Осталось у мастеров: Σ балансов мастеров, считает вызывающая страница.</summary>
-    [Parameter]
-    [EditorRequired]
-    public decimal MastersTotal { get; set; }
 
     /// <summary>Id проекта: для ссылки на страницу расходов.</summary>
     [Parameter]
