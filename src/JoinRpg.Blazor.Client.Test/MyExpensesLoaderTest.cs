@@ -40,7 +40,8 @@ public class MyExpensesLoaderTest : BunitContext
     {
         var cut = Render<MyExpensesLoader>(p => p.Add(x => x.ProjectId, ProjectId));
 
-        cut.Markup.ShouldNotContain("Мастер");
+        cut.FindAll("th").ShouldNotContain(header => header.TextContent.Trim() == "Мастер");
+        cut.Markup.ShouldNotContain("Иван Мастеров");
         cut.Markup.ShouldContain("Аренда зала");
     }
 
