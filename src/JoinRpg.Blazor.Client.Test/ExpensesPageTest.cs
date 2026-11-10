@@ -57,31 +57,31 @@ public class ExpensesPageTest : BunitContext
     {
         var cut = Render<ExpensesPage>(p => p.Add(x => x.ProjectId, ProjectId));
 
-        cut.FindAll("button").Single(button => button.TextContent.Trim() == "Новый расход").Click();
+        ClickButton(cut, "Новый расход");
 
         var today = DateOnly.FromDateTime(DateTime.Today).ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture);
-        cut.Find("input[name=SpentAt]").GetAttribute("value").ShouldBe(today);
+        cut.Find("dialog input[name=SpentAt]").GetAttribute("value").ShouldBe(today);
     }
 
     [Fact]
-    public void EditButtonDoesNotStuckInProgressAfterCancel()
+    public async Task EditButtonDoesNotStuckInProgressAfterCancel()
     {
         var cut = Render<ExpensesPage>(p => p.Add(x => x.ProjectId, ProjectId));
 
         ClickEditButton(cut);
-        cut.Markup.ShouldContain("Редактирование расхода");
+        DialogCaption(cut).ShouldBe("Редактирование расхода");
 
-        cut.FindAll("button").Single(button => button.TextContent.Trim() == "Отменить").Click();
-        cut.Markup.ShouldNotContain("Редактирование расхода");
+        await CancelDialogAsync(cut);
 
         // Регрессия: после отмены кнопка «Править» зависала в состоянии прогресса
-        // (JoinButton.AutoProgress) и переставала реагировать на клики.
+        // (JoinButton.AutoProgress) и переставала реагировать на клики. Закрытие диалога
+        // в разметке не видно (видимость управляется JS), поэтому проверяем кнопку.
         var editButton = FindEditButton(cut);
         editButton.HasAttribute("disabled").ShouldBeFalse();
         editButton.InnerHtml.ShouldNotContain("#hourglass"); // иконка прогресса
 
         ClickEditButton(cut);
-        cut.Markup.ShouldContain("Редактирование расхода");
+        DialogCaption(cut).ShouldBe("Редактирование расхода");
     }
 
     [Fact]
@@ -103,10 +103,10 @@ public class ExpensesPageTest : BunitContext
         expensesClient.CurrentUser = new UserIdentification(42);
         var cut = Render<ExpensesPage>(p => p.Add(x => x.ProjectId, ProjectId));
 
-        cut.FindAll("button").Single(button => button.TextContent.Trim() == "Новый расход").Click();
+        ClickButton(cut, "Новый расход");
 
         // Мастер по умолчанию — текущий пользователь: на переключателе выбрано его имя, а не «(нет)»
-        cut.Find("details.join-select summary .join-select__value").TextContent.Trim().ShouldBe("Иван Мастеров");
+        cut.Find("dialog details.join-select summary .join-select__value").TextContent.Trim().ShouldBe("Иван Мастеров");
     }
 
     [Fact]
@@ -120,10 +120,10 @@ public class ExpensesPageTest : BunitContext
         ];
         var cut = Render<ExpensesPage>(p => p.Add(x => x.ProjectId, ProjectId));
 
-        cut.FindAll("button").Single(button => button.TextContent.Trim() == "Новый расход").Click();
+        ClickButton(cut, "Новый расход");
 
         // Дата по умолчанию — максимальный SpentAt среди расходов (расходы без даты пропускаются)
-        cut.Find("input[name=SpentAt]").GetAttribute("value").ShouldBe("2026-11-05");
+        cut.Find("dialog input[name=SpentAt]").GetAttribute("value").ShouldBe("2026-11-05");
     }
 
     [Fact]
@@ -133,11 +133,11 @@ public class ExpensesPageTest : BunitContext
         var cut = Render<ExpensesPage>(p => p.Add(x => x.ProjectId, ProjectId));
 
         // Регрессия: на пустом проекте клик «Новый расход» не падает, дата — сегодня
-        cut.FindAll("button").Single(button => button.TextContent.Trim() == "Новый расход").Click();
+        ClickButton(cut, "Новый расход");
 
-        cut.Markup.ShouldContain("Новый расход"); // заголовок панели формы — форма открылась
+        DialogCaption(cut).ShouldBe("Новый расход"); // диалог открылся
         var today = DateOnly.FromDateTime(DateTime.Today).ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture);
-        cut.Find("input[name=SpentAt]").GetAttribute("value").ShouldBe(today);
+        cut.Find("dialog input[name=SpentAt]").GetAttribute("value").ShouldBe(today);
     }
 
     [Fact]
@@ -164,21 +164,21 @@ public class ExpensesPageTest : BunitContext
     }
 
     [Fact]
-    public void SpendButtonOpensFormWithActualFilledFromPlan()
+    public void SpendButtonOpensDialogWithActualFilledFromPlan()
     {
         var cut = Render<ExpensesPage>(p => p.Add(x => x.ProjectId, ProjectId));
 
-        cut.FindAll("button").Single(button => button.TextContent.Trim() == "Потратил").Click();
+        ClickButton(cut, "Потратил");
 
-        cut.Markup.ShouldContain("Редактирование расхода");
+        DialogCaption(cut).ShouldBe("Редактирование расхода");
         // Факт предзаполнен из плана (2 × 1500)
-        var numberInputs = cut.FindAll("input[type=number]");
+        var numberInputs = cut.FindAll("dialog input[type=number]");
         numberInputs[2].GetAttribute("value").ShouldBe("2"); // факт количество
         numberInputs[3].GetAttribute("value").ShouldBe("1500"); // факт цена
     }
 
     [Fact]
-    public void ExportLinkPresentAndStaysVisibleWhenFormOpened()
+    public void ExportLinkPresentAndButtonsStayVisibleWhenDialogOpened()
     {
         var cut = Render<ExpensesPage>(p => p.Add(x => x.ProjectId, ProjectId));
 
@@ -186,9 +186,93 @@ public class ExpensesPageTest : BunitContext
 
         ClickEditButton(cut);
 
-        // Форма открылась, кнопка «Новый расход» спряталась — ссылка на выгрузку остаётся
-        cut.Markup.ShouldContain("Редактирование расхода");
+        // Диалог открылся поверх грида: кнопки страницы никуда не пропадают
+        DialogCaption(cut).ShouldBe("Редактирование расхода");
         FindExportLink(cut);
+        cut.FindAll("button").Single(button => button.TextContent.Trim() == "Новый расход");
+    }
+
+    [Fact]
+    public async Task SaveSendsFilledModelToServer()
+    {
+        var cut = Render<ExpensesPage>(p => p.Add(x => x.ProjectId, ProjectId));
+
+        ClickButton(cut, "Новый расход");
+        var dialog = cut.Find("dialog");
+        dialog.QuerySelectorAll("input[type=text]")[0].Change("Аренда зала");
+        dialog.QuerySelectorAll("input[type=text]")[1].Change("Аренда базы\\Жилые корпуса");
+        SelectMaster(cut, "Иван Мастеров");
+        dialog.QuerySelectorAll("input[type=number]")[2].Change("2"); // факт количество
+        dialog.QuerySelectorAll("input[type=number]")[3].Change("1400"); // факт цена
+
+        await SubmitDialogAsync(cut);
+
+        cut.WaitForAssertion(() =>
+        {
+            expensesClient.Created.ShouldNotBeNull();
+            expensesClient.Created.Name.ShouldBe("Аренда зала");
+            expensesClient.Created.CategoryPath.ShouldBe("Аренда базы\\Жилые корпуса");
+            expensesClient.Created.MasterId.ShouldBe(new UserIdentification(42));
+            // План подставился из факта
+            expensesClient.Created.PlannedQuantity.ShouldBe(2);
+            expensesClient.Created.PlannedPrice.ShouldBe(1400);
+        });
+    }
+
+    [Fact]
+    public async Task SaveFailureKeepsEnteredDataForRetry()
+    {
+        var cut = Render<ExpensesPage>(p => p.Add(x => x.ProjectId, ProjectId));
+
+        ClickButton(cut, "Новый расход");
+        var dialog = cut.Find("dialog");
+        dialog.QuerySelectorAll("input[type=text]")[0].Change("Аренда зала");
+        dialog.QuerySelectorAll("input[type=text]")[1].Change("Аренда базы\\Жилые корпуса");
+        SelectMaster(cut, "Иван Мастеров");
+        dialog.QuerySelectorAll("input[type=number]")[2].Change("2"); // факт количество
+        dialog.QuerySelectorAll("input[type=number]")[3].Change("1400"); // факт цена
+
+        expensesClient.CreateFailure = new ServerProblemException("Нет прав на деньги");
+        await SubmitDialogAsync(cut);
+
+        cut.WaitForAssertion(() => cut.Markup.ShouldContain("Ошибка: Нет прав на деньги"));
+
+        // Регрессия: старая форма оставалась открытой с введёнными данными. Тот же диалог
+        // должен принять повторный сабмит без потери модели.
+        expensesClient.CreateFailure = null;
+        await SubmitDialogAsync(cut);
+
+        cut.WaitForAssertion(() => expensesClient.Created.ShouldNotBeNull());
+        expensesClient.Created.Name.ShouldBe("Аренда зала");
+        expensesClient.Created.CategoryPath.ShouldBe("Аренда базы\\Жилые корпуса");
+        expensesClient.Created.PlannedPrice.ShouldBe(1400); // план подставился из факта
+    }
+
+    private static string DialogCaption(IRenderedComponent<ExpensesPage> cut)
+        => cut.Find(".join-dialog-caption").TextContent.Trim();
+
+    private static void ClickButton(IRenderedComponent<ExpensesPage> cut, string label)
+        => cut.FindAll("button").Single(button => button.TextContent.Trim() == label).Click();
+
+    private static async Task SubmitDialogAsync(IRenderedComponent<ExpensesPage> cut)
+    {
+        var footerButtons = cut.FindAll(".join-dialog-footer button");
+        await footerButtons[0].ClickAsync(new Microsoft.AspNetCore.Components.Web.MouseEventArgs());
+        await cut.Find("dialog").TriggerEventAsync("onclose", EventArgs.Empty);
+    }
+
+    private static async Task CancelDialogAsync(IRenderedComponent<ExpensesPage> cut)
+    {
+        var footerButtons = cut.FindAll(".join-dialog-footer button");
+        await footerButtons[1].ClickAsync(new Microsoft.AspNetCore.Components.Web.MouseEventArgs());
+        await cut.Find("dialog").TriggerEventAsync("onclose", EventArgs.Empty);
+    }
+
+    private static void SelectMaster(IRenderedComponent<ExpensesPage> cut, string displayName)
+    {
+        var item = cut.FindAll("dialog details.join-select .join-select__item")
+            .Single(i => i.QuerySelector(".join-select__text")!.TextContent.Trim() == displayName);
+        item.QuerySelector("input")!.Change(true);
     }
 
     private static AngleSharp.Dom.IElement FindExportLink(IRenderedComponent<ExpensesPage> cut)
@@ -211,6 +295,9 @@ public class ExpensesPageTest : BunitContext
         /// <summary>Текущий пользователь — предзаполнение мастера в форме создания.</summary>
         public UserIdentification CurrentUser { get; set; } = new(1);
 
+        /// <summary>Модель последнего вызова <c>CreateExpense</c>.</summary>
+        public ExpenseEditViewModel? Created { get; private set; }
+
         public Task<IReadOnlyList<ExpenseViewModel>> GetExpenses(ProjectIdentification projectId)
             => Task.FromResult<IReadOnlyList<ExpenseViewModel>>(Expenses);
 
@@ -228,8 +315,18 @@ public class ExpensesPageTest : BunitContext
         public Task<UserIdentification> GetCurrentUser(ProjectIdentification projectId)
             => Task.FromResult(CurrentUser);
 
+        /// <summary>Исключение, которое бросит <c>CreateExpense</c>; null — сохранение успешно.</summary>
+        public ServerProblemException? CreateFailure { get; set; }
+
         public Task<ExpenseIdentification> CreateExpense(ProjectIdentification projectId, ExpenseEditViewModel model)
-            => throw new NotSupportedException();
+        {
+            if (CreateFailure is { } failure)
+            {
+                return Task.FromException<ExpenseIdentification>(failure);
+            }
+            Created = model;
+            return Task.FromResult(new ExpenseIdentification(projectId, 99));
+        }
 
         public Task EditExpense(ExpenseIdentification expenseId, ExpenseEditViewModel model)
             => throw new NotSupportedException();

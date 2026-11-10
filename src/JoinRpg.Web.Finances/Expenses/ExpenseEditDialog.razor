@@ -1,0 +1,95 @@
+@using JoinRpg.DomainTypes
+@using JoinRpg.DomainTypes.Finances
+@* Диалог создания/правки расхода. Модель и её дефолты (дата, мастер) создаёт страница;
+   диалог возвращает заполненную модель или null при отмене. *@
+<JoinFormDialog @ref="dialog"
+                TViewModel="ExpenseEditViewModel"
+                Caption="@(Model.ExpenseId is null ? "Новый расход" : "Редактирование расхода")"
+                FormName="ExpenseEdit"
+                SubmitButtonPreset="@(Model.ExpenseId is null ? ButtonPreset.Add : ButtonPreset.Save)"
+                Model="Model">
+    @if (State is { } state)
+    {
+        <FormRow Label="Состояние">
+            <ExpenseStateBadge Status="state.ToStatus(HasActualCost)" />
+        </FormRow>
+    }
+    <FormRowFor For="@(() => Model.Name)">
+        <JoinTextInput @bind-Value="Model.Name" />
+    </FormRowFor>
+    <FormRowFor For="@(() => Model.CategoryPath)">
+        <JoinTextInput @bind-Value="Model.CategoryPath" Variants="CategorySuggestions" />
+    </FormRowFor>
+    <FormRowFor For="@(() => Model.MasterId)">
+        <MasterSelector ProjectId="ProjectId.Value" MasterId="Model.MasterId" MasterIdChanged="id => Model.MasterId = id" />
+    </FormRowFor>
+    <FormRowFor For="@(() => Model.PlannedQuantity)">
+        <JoinInputNumber @bind-Value="Model.PlannedQuantity" Min="0" />
+    </FormRowFor>
+    <FormRowFor For="@(() => Model.PlannedPrice)">
+        <JoinInputNumber @bind-Value="Model.PlannedPrice" Min="0" step="0.01" />
+    </FormRowFor>
+    <FormRowFor For="@(() => Model.ActualQuantity)">
+        <JoinInputNumber TValue="int?" Value="Model.ActualQuantity" ValueChanged="OnActualQuantityChanged" ValueExpression="() => Model.ActualQuantity" Min="0" />
+    </FormRowFor>
+    <FormRowFor For="@(() => Model.ActualPrice)">
+        <JoinInputNumber TValue="decimal?" Value="Model.ActualPrice" ValueChanged="OnActualPriceChanged" ValueExpression="() => Model.ActualPrice" Min="0" step="0.01" />
+    </FormRowFor>
+    <FormRowFor For="@(() => Model.SpentAt)">
+        <JoinRpgDatePicker Name="@nameof(Model.SpentAt)" @bind-Value="Model.SpentAt" />
+    </FormRowFor>
+    <FormRowFor For="@(() => Model.Description)">
+        <JoinMarkdownTextArea @bind-Value="Model.Description" />
+    </FormRowFor>
+</JoinFormDialog>
+
+@code {
+    /// <summary>Проект, из которого MasterSelector грузит список мастеров.</summary>
+    [Parameter]
+    [EditorRequired]
+    public ProjectIdentification ProjectId { get; set; }
+
+    /// <summary>Полные пути категорий для подсказок поля «Категория»; <c>null</c> — без подсказок.</summary>
+    [Parameter]
+    public IReadOnlyCollection<string>? CategorySuggestions { get; set; }
+
+    private JoinFormDialog<ExpenseEditViewModel> dialog = null!;
+
+    // Модель создаётся заново при каждом показе — JoinFormDialog пересоздаст EditContext,
+    // и сообщения валидации прошлого показа не останутся.
+    private ExpenseEditViewModel Model { get; set; } = new();
+
+    private ExpenseStateView? State { get; set; }
+
+    /// <summary>Факт уже внесён (сохранённые количество и цена факта); определяет комбинированный статус в бейдже.</summary>
+    private bool HasActualCost => ExpenseCost.Actual(Model.ActualQuantity, Model.ActualPrice) is not null;
+
+    /// <summary>Показать диалог. Возвращает заполненную модель или <c>null</c>, если пользователь отменил.</summary>
+    public async Task<ExpenseEditViewModel?> ShowAsync(ExpenseEditViewModel model, ExpenseStateView? state)
+    {
+        Model = model;
+        State = state;
+        StateHasChanged();
+        return await dialog.ShowModalAsync();
+    }
+
+    // Факт ввели, а план пустой — подставляем план из факта. Копируем только пока план пустой:
+    // заполненный (или исправленный пользователем) план факт не перезаписывает.
+    private void OnActualQuantityChanged(int? quantity)
+    {
+        Model.ActualQuantity = quantity;
+        if (Model.PlannedQuantity is null && quantity is > 0)
+        {
+            Model.PlannedQuantity = quantity;
+        }
+    }
+
+    private void OnActualPriceChanged(decimal? price)
+    {
+        Model.ActualPrice = price;
+        if (Model.PlannedPrice is null && price is > 0)
+        {
+            Model.PlannedPrice = price;
+        }
+    }
+}
