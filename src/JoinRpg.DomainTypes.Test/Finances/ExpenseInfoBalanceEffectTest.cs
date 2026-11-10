@@ -9,9 +9,9 @@ public class ExpenseInfoBalanceEffectTest
     private static ExpenseInfo Expense(
         ExpenseState state,
         int plannedQuantity,
-        int plannedPrice,
+        decimal plannedPrice,
         int? actualQuantity = null,
-        int? actualPrice = null)
+        decimal? actualPrice = null)
         => new(
             new ExpenseIdentification(ProjectId, 1),
             "Аренда базы",
@@ -29,45 +29,63 @@ public class ExpenseInfoBalanceEffectTest
     [Fact]
     public void ApprovedWithActual_CountsIntoActualEffectOnly()
     {
-        var expense = Expense(ExpenseState.Approved, 2, 100, 2, 90);
+        var expense = Expense(ExpenseState.Approved, 2, 100m, 2, 90m);
 
-        expense.ActualBalanceEffect.ShouldBe(180);
-        expense.PlannedBalanceEffect.ShouldBe(0);
+        expense.ActualBalanceEffect.ShouldBe(180m);
+        expense.PlannedBalanceEffect.ShouldBe(0m);
     }
 
     [Fact]
     public void ApprovedWithoutActual_CountsIntoPlannedEffectOnly()
     {
-        var expense = Expense(ExpenseState.Approved, 2, 100);
+        var expense = Expense(ExpenseState.Approved, 2, 100m);
 
-        expense.ActualBalanceEffect.ShouldBe(0);
-        expense.PlannedBalanceEffect.ShouldBe(200);
+        expense.ActualBalanceEffect.ShouldBe(0m);
+        expense.PlannedBalanceEffect.ShouldBe(200m);
     }
 
     [Fact]
     public void ProposedWithoutActual_CountsIntoPlannedEffect()
     {
-        var expense = Expense(ExpenseState.Proposed, 2, 100);
+        var expense = Expense(ExpenseState.Proposed, 2, 100m);
 
-        expense.ActualBalanceEffect.ShouldBe(0);
-        expense.PlannedBalanceEffect.ShouldBe(200);
+        expense.ActualBalanceEffect.ShouldBe(0m);
+        expense.PlannedBalanceEffect.ShouldBe(200m);
     }
 
     [Fact]
     public void ProposedWithActual_CountsActualIntoPlannedEffect()
     {
-        var expense = Expense(ExpenseState.Proposed, 2, 100, 2, 80);
+        var expense = Expense(ExpenseState.Proposed, 2, 100m, 2, 80m);
 
-        expense.ActualBalanceEffect.ShouldBe(0);
-        expense.PlannedBalanceEffect.ShouldBe(160);
+        expense.ActualBalanceEffect.ShouldBe(0m);
+        expense.PlannedBalanceEffect.ShouldBe(160m);
     }
 
     [Fact]
     public void RejectedWithActual_CountsIntoNothing()
     {
-        var expense = Expense(ExpenseState.Rejected, 2, 100, 2, 90);
+        var expense = Expense(ExpenseState.Rejected, 2, 100m, 2, 90m);
 
-        expense.ActualBalanceEffect.ShouldBe(0);
-        expense.PlannedBalanceEffect.ShouldBe(0);
+        expense.ActualBalanceEffect.ShouldBe(0m);
+        expense.PlannedBalanceEffect.ShouldBe(0m);
+    }
+
+    [Fact]
+    public void ApprovedWithKopeckActual_CountsIntoActualEffectOnly()
+    {
+        var expense = Expense(ExpenseState.Approved, 3, 49.90m, 3, 49.90m);
+
+        expense.ActualBalanceEffect.ShouldBe(149.70m);
+        expense.PlannedBalanceEffect.ShouldBe(0m);
+    }
+
+    [Fact]
+    public void ProposedWithKopeckPlan_CountsKopeckPlanIntoPlannedEffect()
+    {
+        var expense = Expense(ExpenseState.Proposed, 3, 49.90m);
+
+        expense.ActualBalanceEffect.ShouldBe(0m);
+        expense.PlannedBalanceEffect.ShouldBe(149.70m);
     }
 }

@@ -49,12 +49,12 @@ public class Expense : IProjectEntity, ICreatedUpdatedTrackedForEntity, IValidat
 
     public int PlannedQuantity { get; set; }
 
-    /// <summary>Цена за единицу в рублях (int), как в FinanceOperation.MoneyAmount.</summary>
-    public int PlannedPrice { get; set; }
+    /// <summary>Цена за единицу в рублях (decimal, копейки); количество — <see cref="int"/>.</summary>
+    public decimal PlannedPrice { get; set; }
 
     public int? ActualQuantity { get; set; }
 
-    public int? ActualPrice { get; set; }
+    public decimal? ActualPrice { get; set; }
 
     /// <summary>Дата (без времени) расхода; может быть указана и у планового расхода (без факта).
     /// Хранилище — datetime: EF6 не умеет DateOnly, доменный тип — <see cref="DateOnly"/>.</summary>
