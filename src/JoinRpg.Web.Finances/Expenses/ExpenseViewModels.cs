@@ -4,12 +4,13 @@ using JoinRpg.DomainTypes.Finances;
 
 namespace JoinRpg.Web.Finances.Expenses;
 
-/// <summary>Строка сводки расходов по категории: суммы в разрезе состояний согласования.</summary>
+/// <summary>Строка сводки расходов по категории: суммы в разрезе состояний согласования. Итоговая строка помечена <see cref="IsTotal"/>.</summary>
 public record ExpenseSummaryRowViewModel(
     string CategoryPath,
     decimal ApprovedPlannedCost,
     decimal ApprovedActualCost,
-    decimal ProposedCost);
+    decimal ProposedCost,
+    bool IsTotal = false);
 
 /// <summary>Мастер для выбора в форме расхода: идентификатор и отображаемое имя.</summary>
 public record ExpenseMasterViewModel(

@@ -17,7 +17,7 @@
     @(await Html.RenderComponentAsync<ExpenseSummaryTable>(RenderMode.Static, new
     {
         Rows = expenseSummary.Rows
-            .Select(row => new ExpenseSummaryRowViewModel(row.CategoryPath, row.ApprovedPlannedCost, row.ApprovedActualCost, row.ProposedCost))
+            .Select(row => new ExpenseSummaryRowViewModel(row.CategoryPath, row.ApprovedPlannedCost, row.ApprovedActualCost, row.ProposedCost, row.IsTotal))
             .ToArray(),
         TotalSpent = expenseSummary.TotalSpent,
         MastersTotal = Model.Balance.Sum(balance => balance.Total),

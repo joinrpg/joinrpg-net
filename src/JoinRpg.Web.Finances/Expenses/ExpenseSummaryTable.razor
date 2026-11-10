@@ -11,10 +11,20 @@
     </HeadContent>
     <ItemTemplate>
         <tr>
-            <td>@row.CategoryPath</td>
-            <td><PriceElement Price="row.ApprovedPlannedCost" /></td>
-            <td><PriceElement Price="row.ApprovedActualCost" /></td>
-            <td><PriceElement Price="row.ProposedCost" /></td>
+            @if (row.IsTotal)
+            {
+                <td><b>@row.CategoryPath</b></td>
+                <td><b><PriceElement Price="row.ApprovedPlannedCost" /></b></td>
+                <td><b><PriceElement Price="row.ApprovedActualCost" /></b></td>
+                <td><b><PriceElement Price="row.ProposedCost" /></b></td>
+            }
+            else
+            {
+                <td>@row.CategoryPath</td>
+                <td><PriceElement Price="row.ApprovedPlannedCost" /></td>
+                <td><PriceElement Price="row.ApprovedActualCost" /></td>
+                <td><PriceElement Price="row.ProposedCost" /></td>
+            }
         </tr>
     </ItemTemplate>
     <EmptyContent>

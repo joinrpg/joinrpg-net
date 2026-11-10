@@ -6,11 +6,14 @@ public record ExpenseSummaryRow(
     [property: Display(Name = "Категория")] string CategoryPath,
     [property: Display(Name = "План (одобрено)")] decimal ApprovedPlannedCost,
     [property: Display(Name = "Факт (одобрено)")] decimal ApprovedActualCost,
-    [property: Display(Name = "На рассмотрении")] decimal ProposedCost);
+    [property: Display(Name = "На рассмотрении")] decimal ProposedCost,
+    bool IsTotal = false);
 
 /// <summary>
 /// Блок расходов в финансовой сводке проекта (ADR030): суммы по категориям в разрезе
-/// состояний согласования. Отклонённые расходы ни в одну сумму не входят.
+/// состояний согласования. Отклонённые расходы ни в одну сумму не входят. Последняя
+/// строка — «Итого»: суммы посчитаны по расходам напрямую, чтобы агрегация подкатегорий
+/// в родителей не давала двойного счёта.
 /// </summary>
 public class ExpenseSummaryViewModel
 {
@@ -71,6 +74,15 @@ public static class ExpenseSummaryBuilder
 
         var totalSpent = expenses.Sum(e => e.ActualBalanceEffect);
 
-        return new ExpenseSummaryViewModel(rows, totalSpent);
+        // «Итого» считаем по расходам напрямую, а не суммируя строки: суммы строк включают
+        // поддерево, и сумма строк дала бы двойной счёт.
+        var totalRow = new ExpenseSummaryRow(
+            "Итого",
+            ApprovedPlannedCost: expenses.Where(e => e.State == ExpenseState.Approved).Sum(e => e.PlannedCost),
+            ApprovedActualCost: totalSpent,
+            ProposedCost: expenses.Where(e => e.State == ExpenseState.Proposed).Sum(e => e.PlannedBalanceEffect),
+            IsTotal: true);
+
+        return new ExpenseSummaryViewModel([.. rows, totalRow], totalSpent);
     }
 }

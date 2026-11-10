@@ -15,6 +15,7 @@ public class ExpenseSummaryTableTest : BunitContext
             [
                 new ExpenseSummaryRowViewModel("Аренда базы\\Жилые корпуса", ApprovedPlannedCost: 3000, ApprovedActualCost: 2800, ProposedCost: 500),
                 new ExpenseSummaryRowViewModel("Расходники", ApprovedPlannedCost: 1000, ApprovedActualCost: 0, ProposedCost: 0),
+                new ExpenseSummaryRowViewModel("Итого", ApprovedPlannedCost: 4000, ApprovedActualCost: 2800, ProposedCost: 500, IsTotal: true),
             ])
             .Add(x => x.TotalSpent, 2800)
             .Add(x => x.MastersTotal, 7000)
@@ -32,9 +33,13 @@ public class ExpenseSummaryTableTest : BunitContext
         // «Потрачено» — с минусом
         cut.Find("p").TextContent.ShouldContain("-2800");
 
-        // Цены по порядку: строки (план/факт/на рассмотрении), потом итоги (потрачено, осталось).
+        // Цены по порядку: строки (план/факт/на рассмотрении), строка «Итого», потом итоги (потрачено, осталось).
         cut.FindAll(".price-value").Select(e => e.TextContent.Trim()).ToArray()
-            .ShouldBe(["3000", "2800", "500", "1000", "0", "0", "2800", "7000"]);
+            .ShouldBe(["3000", "2800", "500", "1000", "0", "0", "4000", "2800", "500", "2800", "7000"]);
+
+        // Строка «Итого» целиком жирная.
+        var totalRow = cut.FindAll("tr").Single(tr => tr.TextContent.Contains("Итого"));
+        totalRow.QuerySelectorAll("b").Length.ShouldBe(4);
     }
 
     [Fact]
