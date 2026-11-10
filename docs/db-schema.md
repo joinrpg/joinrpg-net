@@ -740,7 +740,7 @@ erDiagram
         int Cost
         int Capacity "сколько селим в комнату по этому типу"
         bool IsPlayerSelectable
-        bool IsInfinite "не реализовано"
+        bool IsInfinite "гостевое поселение: без комнат и лимита мест (#1945)"
         bool IsAutoFilledAccommodation "не реализовано"
     }
 

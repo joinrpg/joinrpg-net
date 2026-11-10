@@ -102,6 +102,12 @@ public record AccommodationTypeInfo(
 > в конце ADR. Оба флага в `AccommodationTypeInfo` добавлены, но как вычисляемые свойства,
 > всегда возвращающие `false`.
 
+> **Уточнение от 10.11.2026.** Флаг `IsInfinite` (гостевое поселение) **реализован** (#1945):
+> стал параметром записи `AccommodationTypeInfo`, читаемым из колонки, — ровно тот путь, что
+> был обещан в уточнении от 02.10.2026. Записывается через `AccommodationTypeRequest.IsInfinite`,
+> в форме типа — чекбокс «Гостевое поселение». `IsAutoFilledAccommodation` остаётся
+> нереализованным вычисляемым свойством.
+
 Рядом — `ProjectAccommodationSettings`:
 
 ```csharp
@@ -246,3 +252,8 @@ Task DeleteAccommodationType(AccommodationTypeIdentification id);
 дефолт (поведение то же, но перестаёт быть случайным). Разметка не тронута: решение «реализовать
 или удалить» не принято. Проверка —
 `src/JoinRpg.DomainTypes.Test/ProjectMetadata/AccommodationTypeInfoTest.cs`.*
+
+*Обновлено: 10.11.2026 — `IsInfinite` реализован (#1945): параметр записи `AccommodationTypeInfo`,
+читаемый из колонки; запись через `AccommodationTypeRequest.IsInfinite`. Гостевой тип: без комнат
+и лимита мест, приглашения к совместному проживанию запрещены, создаётся по умолчанию в новых
+конвентах. `IsAutoFilledAccommodation` по-прежнему заглушка.*
