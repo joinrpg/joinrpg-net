@@ -20,7 +20,8 @@
             .Select(row => new ExpenseSummaryRowViewModel(row.CategoryPath, row.ApprovedPlannedCost, row.ApprovedActualCost, row.ProposedCost))
             .ToArray(),
         TotalSpent = expenseSummary.TotalSpent,
-        MastersTotal = Model.Balance.Sum(balance => balance.Total),    }))
+        MastersTotal = Model.Balance.Sum(balance => balance.Total),
+    }))
 }
 
 <h3>По типам</h3>

@@ -17,7 +17,7 @@ else
 {
     @* «Одобрено» — сумма PlannedCost по Approved (факт может отсутствовать); Rejected не учитывается ни в одной сумме. *@
     <p>
-        Запланировано: <b>@FormatMoney(PlannedTotal) ₽</b> / Одобрено: <b>@FormatMoney(ApprovedTotal) ₽</b>
+        Запланировано: <b><PriceElement Price="PlannedTotal" /></b> / Одобрено: <b><PriceElement Price="ApprovedTotal" /></b>
     </p>
     <ExpensesGrid Expenses="expenses" ShowMaster="false" />
 }
@@ -26,17 +26,12 @@ else
     [Parameter, EditorRequired]
     public ProjectIdentification ProjectId { get; set; } = null!;
 
-    private static readonly System.Globalization.CultureInfo RussianCulture = System.Globalization.CultureInfo.GetCultureInfo("ru-RU");
-
     private IReadOnlyList<ExpenseViewModel>? expenses;
     private string? error;
 
     private decimal PlannedTotal => expenses?.Where(expense => expense.State != ExpenseStateView.Rejected).Sum(expense => expense.PlannedCost) ?? 0;
 
     private decimal ApprovedTotal => expenses?.Where(expense => expense.State == ExpenseStateView.Approved).Sum(expense => expense.PlannedCost) ?? 0;
-
-    /// <summary>Копейки показываем только если они есть: «4000 ₽», а не «4000,00 ₽».</summary>
-    private static string FormatMoney(decimal value) => value.ToString("0.##", RussianCulture);
 
     protected override async Task OnInitializedAsync()
     {

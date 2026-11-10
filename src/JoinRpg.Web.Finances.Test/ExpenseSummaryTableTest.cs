@@ -25,13 +25,13 @@ public class ExpenseSummaryTableTest : BunitContext
         cut.Markup.ShouldContain("Факт (одобрено)");
         cut.Markup.ShouldContain("На рассмотрении");
         cut.Markup.ShouldContain("Потрачено (одобрено)");
-        cut.Markup.ShouldContain("-2800");
         cut.Markup.ShouldContain("Осталось у мастеров");
-        cut.Markup.ShouldContain("7000");
+        // «Потрачено» — с минусом
+        cut.Find("p").TextContent.ShouldContain("-2800");
 
-        // Цены строк по порядку: план/факт/на рассмотрении для каждой категории.
+        // Цены по порядку: строки (план/факт/на рассмотрении), потом итоги (потрачено, осталось).
         cut.FindAll(".price-value").Select(e => e.TextContent.Trim()).ToArray()
-            .ShouldBe(["3000", "2800", "500", "1000", "0", "0"]);
+            .ShouldBe(["3000", "2800", "500", "1000", "0", "0", "2800", "7000"]);
     }
 
     [Fact]
@@ -45,11 +45,10 @@ public class ExpenseSummaryTableTest : BunitContext
             .Add(x => x.TotalSpent, 149.70m)
             .Add(x => x.MastersTotal, 1500.50m));
 
-        // Копейки показываются только если есть — и в строках, и в итоге «Осталось у мастеров»
+        // Копейки показываются только если есть — и в строках, и в итогах
         cut.FindAll(".price-value").Select(e => e.TextContent.Trim()).ToArray()
-            .ShouldBe(["49,9", "149,7", "0"]);
-        cut.Markup.ShouldContain("-149,7");
-        cut.Markup.ShouldContain("1500,5");
+            .ShouldBe(["49,9", "149,7", "0", "149,7", "1500,5"]);
+        cut.Find("p").TextContent.ShouldContain("-149,7");
     }
 
     [Fact]
