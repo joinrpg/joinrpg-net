@@ -1,20 +1,26 @@
 @using JoinRpg.Helpers
-@switch (State)
+@switch (Status)
 {
-    case ExpenseStateView.Approved:
-        <JoinBadge Variation="VariationStyleEnum.Success" Title="Состояние расхода">@State.GetDisplayName()</JoinBadge>
+    case ExpenseStatusView.Spent:
+        <JoinBadge Variation="VariationStyleEnum.Success" Title="@Status.GetDescription()">@Status.GetDisplayName()</JoinBadge>
         break;
-    case ExpenseStateView.Rejected:
-        <JoinBadge Variation="VariationStyleEnum.Danger" Title="Состояние расхода">@State.GetDisplayName()</JoinBadge>
+    case ExpenseStatusView.SpentUnapproved:
+        <JoinBadge Variation="VariationStyleEnum.Warning" Title="@Status.GetDescription()">@Status.GetDisplayName()</JoinBadge>
+        break;
+    case ExpenseStatusView.Planned:
+        <JoinBadge Variation="VariationStyleEnum.Info" Title="@Status.GetDescription()">@Status.GetDisplayName()</JoinBadge>
+        break;
+    case ExpenseStatusView.NotApproved:
+        <JoinBadge Variation="VariationStyleEnum.Danger" Title="@Status.GetDescription()">@Status.GetDisplayName()</JoinBadge>
         break;
     default:
-        <JoinBadge Variation="VariationStyleEnum.Warning" Title="Состояние расхода">@State.GetDisplayName()</JoinBadge>
+        <JoinBadge Variation="VariationStyleEnum.None" Title="@Status.GetDescription()">@Status.GetDisplayName()</JoinBadge>
         break;
 }
 
 @code {
-    /// <summary>Состояние согласования расхода: цвет бейджа — по тому, решено ли согласование и чем.</summary>
+    /// <summary>Комбинированный статус расхода: цвет бейджа — по согласованию и факту траты.</summary>
     [Parameter]
     [EditorRequired]
-    public ExpenseStateView State { get; set; }
+    public ExpenseStatusView Status { get; set; }
 }
