@@ -21,6 +21,8 @@ internal class CsvBackend : IGeneratorBackend
     {
         // Явный формат: ToString() у DateOnly зависит от культуры сервера.
         DateOnly date => date.ToString("dd.MM.yyyy", CultureInfo.InvariantCulture),
+        // Явный формат: разделитель decimal зависел бы от культуры сервера.
+        decimal dec => dec.ToString("0.##", CultureInfo.InvariantCulture),
         var content => content?.ToString(),
     });
 

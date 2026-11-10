@@ -94,9 +94,22 @@ public class ExpenseEditViewModel : IValidatableObject
         {
             yield return new ValidationResult("Плановая цена должна быть больше нуля", [nameof(PlannedPrice)]);
         }
+        if (!FitsMoneyColumn(PlannedPrice))
+        {
+            yield return new ValidationResult("Плановая цена — не больше двух знаков после запятой", [nameof(PlannedPrice)]);
+        }
         if (ActualPrice is <= 0)
         {
             yield return new ValidationResult("Фактическая цена должна быть больше нуля", [nameof(ActualPrice)]);
         }
+        if (ActualPrice is { } actualPrice && !FitsMoneyColumn(actualPrice))
+        {
+            yield return new ValidationResult("Фактическая цена — не больше двух знаков после запятой", [nameof(ActualPrice)]);
+        }
     }
+
+    /// <summary>Цена должна влезать в decimal(18,2) без округления: иначе SQL Server молча
+    /// округлит лишние знаки или убьёт запрос arithmetic overflow.</summary>
+    private static bool FitsMoneyColumn(decimal price)
+        => price <= 9999999999999999.99m && price == decimal.Round(price, 2);
 }

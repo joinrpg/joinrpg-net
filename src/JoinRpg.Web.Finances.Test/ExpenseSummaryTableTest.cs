@@ -43,12 +43,13 @@ public class ExpenseSummaryTableTest : BunitContext
                 new ExpenseSummaryRowViewModel("Расходники", ApprovedPlannedCost: 49.90m, ApprovedActualCost: 149.70m, ProposedCost: 0),
             ])
             .Add(x => x.TotalSpent, 149.70m)
-            .Add(x => x.MastersTotal, 1000));
+            .Add(x => x.MastersTotal, 1500.50m));
 
-        // Копейки показываются только если есть
+        // Копейки показываются только если есть — и в строках, и в итоге «Осталось у мастеров»
         cut.FindAll(".price-value").Select(e => e.TextContent.Trim()).ToArray()
             .ShouldBe(["49,9", "149,7", "0"]);
         cut.Markup.ShouldContain("-149,7");
+        cut.Markup.ShouldContain("1500,5");
     }
 
     [Fact]

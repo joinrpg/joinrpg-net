@@ -107,6 +107,50 @@ public class ExpenseValidationTest
     }
 
     [Fact]
+    public void PlannedPriceWithKopecksPasses()
+    {
+        var expense = ValidPlannedExpense();
+        expense.PlannedPrice = 49.90m;
+        Validate(expense).ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void PlannedPriceWithSubKopeckFractionFails()
+    {
+        // Больше двух знаков: SQL Server молча округлит decimal(18,2) — цена станет 0,00
+        var expense = ValidPlannedExpense();
+        expense.PlannedPrice = 0.001m;
+        Validate(expense).ShouldContain(nameof(Expense.PlannedPrice));
+    }
+
+    [Fact]
+    public void PlannedPriceBeyondDecimal182Fails()
+    {
+        // Не влезает в decimal(18,2): умерло бы arithmetic overflow в БД вместо валидации
+        var expense = ValidPlannedExpense();
+        expense.PlannedPrice = 10000000000000000m;
+        Validate(expense).ShouldContain(nameof(Expense.PlannedPrice));
+    }
+
+    [Fact]
+    public void ActualPriceWithKopecksPasses()
+    {
+        var expense = ValidPlannedExpense();
+        expense.ActualQuantity = 2;
+        expense.ActualPrice = 14000.50m;
+        Validate(expense).ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void ActualPriceWithSubKopeckFractionFails()
+    {
+        var expense = ValidPlannedExpense();
+        expense.ActualQuantity = 2;
+        expense.ActualPrice = 0.001m;
+        Validate(expense).ShouldContain(nameof(Expense.ActualPrice));
+    }
+
+    [Fact]
     public void SpentAtWithoutActualPasses()
     {
         // Дата — единое опциональное поле: может быть указана и у планового расхода (без факта)

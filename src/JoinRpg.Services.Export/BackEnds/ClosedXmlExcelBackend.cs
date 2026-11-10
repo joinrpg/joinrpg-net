@@ -70,6 +70,9 @@ internal partial class ClosedXmlExcelBackend : IGeneratorBackend
             case int num:
                 _ = xlCell.SetValue(num);
                 break;
+            case decimal dec:
+                _ = xlCell.SetValue(dec);
+                break;
             case DateTime time:
                 _ = xlCell.SetValue(time);
                 break;

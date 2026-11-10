@@ -25,11 +25,13 @@
 </JoinBorderedTable>
 
 <p>
-    <b>Потрачено (одобрено)</b>: -@TotalSpent.ToString("0.##", System.Globalization.CultureInfo.GetCultureInfo("ru-RU"))&nbsp;₽
-    <b>Осталось у мастеров</b>: @MastersTotal&nbsp;₽
+    <b>Потрачено (одобрено)</b>: -@FormatMoney(TotalSpent)&nbsp;₽
+    <b>Осталось у мастеров</b>: @FormatMoney(MastersTotal)&nbsp;₽
 </p>
 
 @code {
+    private static readonly System.Globalization.CultureInfo RussianCulture = System.Globalization.CultureInfo.GetCultureInfo("ru-RU");
+
     /// <summary>Строки по категориям; пустой список — строка-заглушка, итоги показываем всегда.</summary>
     [Parameter]
     [EditorRequired]
@@ -43,5 +45,8 @@
     /// <summary>Осталось у мастеров: Σ балансов мастеров, считает вызывающая страница.</summary>
     [Parameter]
     [EditorRequired]
-    public int MastersTotal { get; set; }
+    public decimal MastersTotal { get; set; }
+
+    /// <summary>Копейки показываем только если они есть: «1500 ₽», а не «1500,00 ₽».</summary>
+    private static string FormatMoney(decimal value) => value.ToString("0.##", RussianCulture);
 }

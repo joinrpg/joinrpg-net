@@ -66,6 +66,20 @@ public class ClosedXmlExcelBackendTests
     }
 
     [Fact]
+    public void Decimal_IsWrittenAsNumberNotString()
+    {
+        var backend = new ClosedXmlExcelBackend();
+        backend.WriteRow([new Cell("Заголовок")]);
+        backend.WriteRow([new Cell(49.90m)]);
+
+        using var stream = new MemoryStream(backend.Generate());
+        using var workbook = new XLWorkbook(stream);
+        var cell = workbook.Worksheets.First().Cell(2, 1);
+        cell.DataType.ShouldBe(XLDataType.Number);
+        cell.GetValue<decimal>().ShouldBe(49.90m);
+    }
+
+    [Fact]
     public void ExcelFileWithLongValue_CanBeCreatedWithoutException()
     {
         var value = new string('х', 100_000);
