@@ -1,3 +1,4 @@
+@using System.Linq.Expressions
 @inject IKogdaIgraSyncClient client
 @inject SelectorListCache cache
 
@@ -10,13 +11,14 @@
                    Text: m.Name,
                    Subtext: m.Year?.ToString() ?? ""))"
                SelectedValues="@KogdaIgraIds"
-               SelectedValuesChanged="@KogdaIgraIdsChanged"
+               SelectedValuesChanged="@HandleSelectedValuesChanged"
                SelectedItemsChanged="@KogdaIgrasChanged"
                Multiple="@Multiple"
                />
 
 @code {
 
+    [CascadingParameter] public EditContext? EditContext { get; set; }
     [Parameter] public string? Name { get; set; } = null;
     [Parameter] public KogdaIgraIdentification[] KogdaIgraIds { get; set; } = [];
     [Parameter] public EventCallback<KogdaIgraIdentification[]> KogdaIgraIdsChanged { get; set; }
@@ -25,6 +27,9 @@
     [Parameter] public EventCallback<KogdaIgraShortViewModel[]> KogdaIgrasChanged { get; set; }
     [Parameter] public KogdaIgraShortViewModel[]? InitialList { get; set; }
 
+    /// <summary>Поле модели для одиночного выбора (форма создания проекта): EditContext узнаёт об изменении по этому выражению.</summary>
+    [Parameter] public Expression<Func<KogdaIgraIdentification?>>? KogdaIgraGameIdExpression { get; set; }
+
     /// <summary>Разрешить выбор нескольких игр (по умолчанию — как в админке).</summary>
     [Parameter] public bool Multiple { get; set; } = true;
 
@@ -32,6 +37,7 @@
     [Parameter] public bool FutureOnly { get; set; } = false;
 
     private KogdaIgraShortViewModel[]? itemModels;
+    private FieldIdentifier? fieldIdentifier;
 
     protected override async Task OnInitializedAsync()
     {
@@ -40,5 +46,29 @@
                 async () => await client.GetFutureKogdaIgraCandidates())]
             : [.. await cache.GetOrLoad<KogdaIgraShortViewModel>("kogda-igra:all",
                 async () => await client.GetKogdaIgraCandidates())]);
+    }
+
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+        if (KogdaIgraGameIdExpression is not null)
+        {
+            // Как в CharacterGroupSelector: пересоздаём при каждом рендере — модель формы может быть заменена.
+            fieldIdentifier = FieldIdentifier.Create(KogdaIgraGameIdExpression);
+            Name ??= fieldIdentifier.Value.FieldName;
+        }
+        else
+        {
+            fieldIdentifier = null;
+        }
+    }
+
+    private async Task HandleSelectedValuesChanged(KogdaIgraIdentification[] selection)
+    {
+        await KogdaIgraIdsChanged.InvokeAsync(selection);
+        if (EditContext is not null && fieldIdentifier is not null)
+        {
+            EditContext.NotifyFieldChanged(fieldIdentifier.Value);
+        }
     }
 }

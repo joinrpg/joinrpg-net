@@ -67,7 +67,8 @@
                 <FormRowFor For="@(() => Model.KogdaIgraGameId)" hidden="@(Model.KogdaIgraChoice != KogdaIgraLinkChoiceViewModel.Linked)">
                     <KogdaIgraGameSelector Multiple="false" FutureOnly="true"
                         KogdaIgraIds="@(Model.KogdaIgraGameId is { } kiId ? [kiId] : [])"
-                        KogdaIgraIdsChanged="@(ids => Model.KogdaIgraGameId = ids.FirstOrDefault())" />
+                        KogdaIgraIdsChanged="@(ids => Model.KogdaIgraGameId = ids.FirstOrDefault())"
+                        KogdaIgraGameIdExpression="() => Model.KogdaIgraGameId" />
                 </FormRowFor>
                 <FormRowFor For="@(() => Model.MessageForKogdaIgraEditors)" hidden="@(Model.KogdaIgraChoice != KogdaIgraLinkChoiceViewModel.NotOnKogdaIgra)">
                     <JoinTextArea @bind-Value="Model.MessageForKogdaIgraEditors" Rows="4" />
