@@ -25,10 +25,11 @@ else
                     <JoinTextInput @bind-Value="model.Name" />
                 </FormRowFor>
 
-                @if (RoomTypeId is null)
+                @if (RoomTypeId is null && !model.IsInfinite)
                 {
                     @* Категория выбирается один раз, при создании: перенос типа в другую категорию
-                       означал бы переселение его жильцов (ADR020, §4). *@
+                       означал бы переселение его жильцов (ADR020, §4). У гостевого типа категорию
+                       всё равно создают автоматически — с именем типа, — но выбирать её нечего (#1945). *@
                     <FormRowFor For="@(() => model.RoomCategoryChoice)">
                         <InputRadioGroup @bind-Value="model.RoomCategoryChoice">
                             <div class="radio">
@@ -68,7 +69,7 @@ else
                         </InputRadioGroup>
                     </FormRowFor>
                 }
-                else if (model.RoomCategory is { } roomCategory)
+                else if (model.RoomCategory is { } roomCategory && !model.IsInfinite)
                 {
                     <FormRow Label="Категория комнат">
                         <p class="form-control-static">
@@ -97,10 +98,17 @@ else
                                      ParsingErrorMessage="Укажите цену за 1 место целым числом" />
                 </FormRowFor>
 
-                <FormRowFor For="@(() => model.Capacity)">
-                    <JoinInputNumber @bind-Value="model.Capacity"
-                                     ParsingErrorMessage="Укажите количество мест в номере — целое число от 1 до 1000" />
+                <FormRowFor For="@(() => model.IsInfinite)">
+                    <CheckboxInput id="roomtype-infinite" @bind-Value="model.IsInfinite" />
                 </FormRowFor>
+
+                @if (!model.IsInfinite)
+                {
+                    <FormRowFor For="@(() => model.Capacity)">
+                        <JoinInputNumber @bind-Value="model.Capacity"
+                                         ParsingErrorMessage="Укажите количество мест в номере — целое число от 1 до 1000" />
+                    </FormRowFor>
+                }
 
                 <FormRowFor For="@(() => model.IsPlayerSelectable)">
                     <CheckboxInput @bind-Value="model.IsPlayerSelectable" />

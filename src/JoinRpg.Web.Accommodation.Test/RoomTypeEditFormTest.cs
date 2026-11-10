@@ -39,10 +39,14 @@ public class RoomTypeEditFormTest : BunitContext
         var cut = RenderCreate();
 
         cut.FindAll("input[type=number]")[1].GetAttribute("value").ShouldBe(RoomTypeEditViewModel.DefaultCapacity.ToString());
-        cut.Find("input[type=checkbox]").HasAttribute("checked").ShouldBeTrue();
+        PlayerSelectableCheckbox(cut).HasAttribute("checked").ShouldBeTrue();
         cut.Find("button[type=submit]").TextContent.ShouldBe("Добавить");
         client.Loaded.ShouldBeEmpty("Пустой форме нечего загружать");
     }
+
+    /// <summary>Чекбокс «Игроки могут выбирать» — среди чекбоксов формы он не первый (#1945).</summary>
+    private static AngleSharp.Dom.IElement PlayerSelectableCheckbox(IRenderedComponent<RoomTypeEditForm> cut)
+        => cut.FindAll("input[type=checkbox]").Single(checkbox => checkbox.Id != "roomtype-infinite");
 
     /// <summary>
     /// Клик по подписи должен попадать в поле, как в прежней MVC-форме: каждая подпись ссылается
@@ -55,9 +59,9 @@ public class RoomTypeEditFormTest : BunitContext
 
         // У строки кнопок подпись пустая — ей и ссылаться не на что.
         var labels = cut.FindAll("label.control-label").Where(label => label.TextContent.Trim().Length > 0).ToList();
-        // Пять полей типа плюс «Категория комнат» (ADR020): id строки забирает поле имени новой категории —
+        // Шесть полей типа плюс «Категория комнат» (ADR020): id строки забирает поле имени новой категории —
         // единственное поле строки из Common, радиокнопки и список его не забирают.
-        labels.Count.ShouldBe(6);
+        labels.Count.ShouldBe(7);
         foreach (var label in labels)
         {
             var target = label.GetAttribute("for");
@@ -66,8 +70,47 @@ public class RoomTypeEditFormTest : BunitContext
                 .TagName.ShouldBeOneOf("INPUT", "TEXTAREA");
         }
 
-        var checkboxId = cut.Find("input[type=checkbox]").Id;
+        var checkboxId = PlayerSelectableCheckbox(cut).Id;
         labels.ShouldContain(label => label.GetAttribute("for") == checkboxId);
+    }
+
+    /// <summary>
+    /// Режим «Гостевое поселение» (#1945): количество мест в номере и выбор категории скрываются,
+    /// при сохранении флаг уходит в модель.
+    /// </summary>
+    [Fact]
+    public void CreateForm_GuestMode_HidesCapacityAndCategory()
+    {
+        client.Categories = [new RoomCategoryOptionViewModel(101, "Люкс", ["Люкс"])];
+        var cut = RenderCreate();
+
+        cut.Find("#roomtype-infinite").Change(true);
+
+        cut.FindAll("input[type=number]").ShouldHaveSingleItem("У гостевого типа цена есть, мест в номере нет");
+        cut.FindAll("#roomtype-category-new").ShouldBeEmpty("Категория гостевому типу не нужна — её всё равно создают с именем типа");
+        cut.FindAll("#roomtype-category-existing").ShouldBeEmpty();
+
+        cut.Find("input[type=text]").Change("Гостевое поселение");
+        cut.Find("form").Submit();
+
+        client.Created.ShouldHaveSingleItem().Model.IsInfinite.ShouldBeTrue();
+    }
+
+    /// <summary>Гостевой тип на редактировании: вместимость и категория скрыты (#1945).</summary>
+    [Fact]
+    public void EditForm_GuestType_HidesCapacityAndCategory()
+    {
+        client.Existing = new RoomTypeEditViewModel
+        {
+            Name = "Гостевое поселение",
+            IsInfinite = true,
+            RoomCategory = new RoomCategoryOptionViewModel(101, "Гостевое поселение", []),
+        };
+
+        var cut = RenderEdit();
+
+        cut.FindAll("input[type=number]").ShouldHaveSingleItem();
+        cut.FindAll(".roomtype-category").ShouldBeEmpty();
     }
 
     [Fact]
@@ -258,7 +301,7 @@ public class RoomTypeEditFormTest : BunitContext
         var cut = RenderEdit();
 
         cut.Find("input[type=text]").GetAttribute("value").ShouldBe("Домик");
-        cut.Find("input[type=checkbox]").HasAttribute("checked").ShouldBeFalse();
+        PlayerSelectableCheckbox(cut).HasAttribute("checked").ShouldBeFalse();
         cut.Find("button[type=submit]").TextContent.ShouldBe("Сохранить");
 
         cut.FindAll("input[type=number]")[1].Change("6");

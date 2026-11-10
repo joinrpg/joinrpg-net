@@ -63,6 +63,7 @@ internal static class RoomTypeEditViewModelBuilder
             Cost = typeInfo.Cost,
             Capacity = typeInfo.Capacity,
             IsPlayerSelectable = typeInfo.IsPlayerSelectable,
+            IsInfinite = typeInfo.IsInfinite,
             Description = typeInfo.Description.Value,
             // Соседей отбираем по Id, а не по имени: имена типов не уникальны, а поле имени в форме
             // меняется, пока мастер печатает.
@@ -87,7 +88,8 @@ internal static class RoomTypeEditViewModelBuilder
             new MarkdownString(model.Description ?? ""),
             model.Cost,
             model.Capacity,
-            model.IsPlayerSelectable);
+            model.IsPlayerSelectable,
+            model.IsInfinite);
 
     /// <summary>
     /// Пустое название новой категории — категория получит имя типа.
