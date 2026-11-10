@@ -22,8 +22,10 @@ public class MasterBalanceViewModel
     [Display(Name = "Собрано взносов (не подтверждено)")]
     public int ModerationBalance { get; }
 
+    /// <summary>Расходы мастера, отрицательные или 0 (деньги уходят).</summary>
     [Display(Name = "Расходы")]
     public decimal ExpensesBalance { get; }
+    /// <summary>Запланированные расходы мастера, отрицательные или 0 (деньги ещё не ушли).</summary>
     [Display(Name = "Запланировано")]
     public decimal PlannedExpenses { get; }
 
@@ -58,10 +60,10 @@ public class MasterBalanceViewModel
         var ownExpenses = (expenses ?? [])
             .Where(e => e.MasterId == master.UserId)
             .ToArray();
-        ExpensesBalance = ownExpenses.Sum(e => e.ActualBalanceEffect);
-        PlannedExpenses = ownExpenses.Sum(e => e.PlannedBalanceEffect);
+        ExpensesBalance = -ownExpenses.Sum(e => e.ActualBalanceEffect);
+        PlannedExpenses = -ownExpenses.Sum(e => e.PlannedBalanceEffect);
 
-        Total = FeeBalance + ReceiveBalance + SendBalance - ExpensesBalance;
+        Total = FeeBalance + ReceiveBalance + SendBalance + ExpensesBalance;
     }
 
     public bool AnythingEverHappens() => ReceiveBalance != 0 || FeeBalance != 0 ||

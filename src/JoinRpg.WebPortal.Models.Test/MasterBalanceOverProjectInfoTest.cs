@@ -102,7 +102,7 @@ public class MasterBalanceOverProjectInfoTest
         var balance = new MasterBalanceViewModel(mock.MasterInfo, mock.ProjectInfo,
             [Operation(cash, 500, FinanceOperationState.Approved)], [], expenses);
 
-        balance.ExpensesBalance.ShouldBe(180);
+        balance.ExpensesBalance.ShouldBe(-180);
         balance.PlannedExpenses.ShouldBe(0);
         balance.Total.ShouldBe(500 - 180);
     }
@@ -117,7 +117,7 @@ public class MasterBalanceOverProjectInfoTest
             [Operation(cash, 500, FinanceOperationState.Approved)], [], expenses);
 
         balance.ExpensesBalance.ShouldBe(0);
-        balance.PlannedExpenses.ShouldBe(300);
+        balance.PlannedExpenses.ShouldBe(-300);
         balance.Total.ShouldBe(500);
     }
 
@@ -145,7 +145,7 @@ public class MasterBalanceOverProjectInfoTest
             [], [], expenses);
 
         balance.ExpensesBalance.ShouldBe(0);
-        balance.PlannedExpenses.ShouldBe(160);
+        balance.PlannedExpenses.ShouldBe(-160);
         balance.Total.ShouldBe(0);
     }
 
@@ -176,7 +176,7 @@ public class MasterBalanceOverProjectInfoTest
         ids.ShouldBe([new UserIdentification(other.UserId)]);
         summary.ShouldHaveSingleItem();
         summary.Single().Master.UserId.ShouldBe(new UserIdentification(other.UserId));
-        summary.Single().ExpensesBalance.ShouldBe(100);
+        summary.Single().ExpensesBalance.ShouldBe(-100);
         summary.Single().Total.ShouldBe(-100);
     }
 }

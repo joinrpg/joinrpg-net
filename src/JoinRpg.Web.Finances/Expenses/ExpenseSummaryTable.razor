@@ -1,4 +1,6 @@
-<h3>Расходы</h3>
+@inject IExpensesUriLocator ExpensesUriLocator
+
+<h3>Расходы <a href="@ExpensesUriLocator.GetExpensesUri(new ProjectIdentification(ProjectId))">(подробнее)</a></h3>
 
 <JoinBorderedTable Items="Rows" Context="row">
     <HeadContent>
@@ -11,10 +13,20 @@
     </HeadContent>
     <ItemTemplate>
         <tr>
-            <td>@row.CategoryPath</td>
-            <td><PriceElement Price="row.ApprovedPlannedCost" /></td>
-            <td><PriceElement Price="row.ApprovedActualCost" /></td>
-            <td><PriceElement Price="row.ProposedCost" /></td>
+            @if (row.IsTotal)
+            {
+                <td><b>@row.CategoryPath</b></td>
+                <td><b><PriceElement Price="row.ApprovedPlannedCost" /></b></td>
+                <td><b><PriceElement Price="row.ApprovedActualCost" /></b></td>
+                <td><b><PriceElement Price="row.ProposedCost" /></b></td>
+            }
+            else
+            {
+                <td>@row.CategoryPath</td>
+                <td><PriceElement Price="row.ApprovedPlannedCost" /></td>
+                <td><PriceElement Price="row.ApprovedActualCost" /></td>
+                <td><PriceElement Price="row.ProposedCost" /></td>
+            }
         </tr>
     </ItemTemplate>
     <EmptyContent>
@@ -44,4 +56,9 @@
     [Parameter]
     [EditorRequired]
     public decimal MastersTotal { get; set; }
+
+    /// <summary>Id проекта: для ссылки на страницу расходов.</summary>
+    [Parameter]
+    [EditorRequired]
+    public int ProjectId { get; set; }
 }
