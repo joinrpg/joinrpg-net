@@ -10,6 +10,9 @@
 ### Изменено
 - `AddJoinDataProtection()` — health check БД ключей Data Protection (регистрируется через `AddJoinEfCoreDbContext`) по умолчанию помечается тегом `ready` и включается в readiness-пробу `/health/ready`. ([#6173](https://github.com/joinrpg/joinrpg-net/pull/6173))
 
+### Исправлено
+- `AddMidnightJobs()`: ошибки журнала DailyJobRuns, скоупа и конфигурации больше не роняют хост — джоба просто пропускает запуск; сбой записи о неуспехе после падения джобы (например, при недоступной БД) больше не маскирует исходную ошибку. ([#6217](https://github.com/joinrpg/joinrpg-net/pull/6217))
+
 ## 2026.9.668 — 2026-11-08
 
 ### Добавлено

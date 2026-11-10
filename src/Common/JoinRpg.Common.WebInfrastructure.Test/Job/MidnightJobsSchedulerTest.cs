@@ -26,9 +26,19 @@ public class MidnightJobsSchedulerTest
         /// <summary>Разрешить вставку: «мы первые», дальше планировщик запускает раннер.</summary>
         public bool WinInsertRace { get; set; }
 
+        /// <summary>Имитировать падение журнала (например, БД недоступна).</summary>
+        public Exception? ThrowOnInsert { get; set; }
+
+        /// <summary>Имитировать падение записи о неуспехе (например, БД недоступна).</summary>
+        public Exception? ThrowOnMarkFailed { get; set; }
+
         // false — «джоба уже запущена на другом экземпляре»: так проверяем запись в журнал, не поднимая JobRunner.
         public Task<bool> TryInsertJobRecord(JobId jobId)
         {
+            if (ThrowOnInsert is not null)
+            {
+                return Task.FromException<bool>(ThrowOnInsert);
+            }
             Inserted.Add(jobId);
             return Task.FromResult(WinInsertRace);
         }
@@ -41,6 +51,10 @@ public class MidnightJobsSchedulerTest
 
         public Task<bool> TrySetJobFailed(JobId jobId)
         {
+            if (ThrowOnMarkFailed is not null)
+            {
+                return Task.FromException<bool>(ThrowOnMarkFailed);
+            }
             Failed.Add(jobId);
             return Task.FromResult(true);
         }
@@ -177,6 +191,35 @@ public class MidnightJobsSchedulerTest
         await service.RunScheduledOnce(typeof(SampleJob), Today, CancellationToken.None);
 
         repository.Failed.ShouldBe([new JobId(typeof(SampleJob).FullName!, Today)]);
+        repository.Completed.ShouldBeEmpty();
+    }
+
+    // В .NET 11 упавший BackgroundService останавливает хост целиком:
+    // инфраструктурные ошибки вокруг джобы (журнал, скоуп) не должны вылетать наружу.
+
+    [Fact]
+    public async Task JobRepositoryInsertFailureDoesNotEscapeScheduler()
+    {
+        repository.ThrowOnInsert = new InvalidOperationException("БД недоступна");
+        var service = CreateService(new FakeOptionsMonitor(new JobsOptions()));
+
+        await service.RunScheduledOnce(typeof(SampleJob), Today, CancellationToken.None);
+
+        repository.Completed.ShouldBeEmpty();
+        repository.Failed.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task FailureToMarkJobFailedDoesNotEscapeScheduler()
+    {
+        repository.WinInsertRace = true;
+        repository.ThrowOnMarkFailed = new InvalidOperationException("БД всё ещё недоступна");
+        var runner = new FakeJobRunner(typeof(SampleJob), new InvalidOperationException("boom"));
+        var service = CreateService(new FakeOptionsMonitor(new JobsOptions()), runner);
+
+        await service.RunScheduledOnce(typeof(SampleJob), Today, CancellationToken.None);
+
+        runner.RunCount.ShouldBe(1);
         repository.Completed.ShouldBeEmpty();
     }
 }
