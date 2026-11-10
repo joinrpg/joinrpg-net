@@ -20,7 +20,7 @@ public enum PlayerColumnMode
     None = 0,
     /// <summary>Имя игрока и контакты, которые он открыл в профиле</summary>
     PublicOnly = 1,
-    /// <summary>Имя игрока и все контакты (просмотр от имени мастера)</summary>
+    /// <summary>Имя игрока и все контакты (не только общедоступные)</summary>
     All = 2,
     /// <summary>Только имя игрока, без контактов</summary>
     NameOnly = 3,
