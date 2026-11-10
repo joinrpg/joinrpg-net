@@ -77,11 +77,12 @@ public class RoomTypeOccupancySummaryTest
     }
 
     /// <summary>
-    /// Гостевой тип: комнат нет, поэтому каждый купивший считается заселённым — «нерасселённых»
-    /// и ждущих оплаты не остаётся (#1945). Иначе строка врала бы: «Занято: нет, N нерасселённых».
+    /// Гостевой тип: комнат нет, место занято оплатой — «Занято» это оплаченные, а «нерасселённые»
+    /// это неоплатившие (#1945). Среди неоплативших оплаченных нет, поэтому PaidCount обнуляем:
+    /// иначе AcceptedNotPaid ушёл бы в минус.
     /// </summary>
     [Fact]
-    public void GuestType_OccupiedIsAllApprovedAndPendingIsZero()
+    public void GuestType_OccupiedIsPaidAndPendingIsUnpaid()
     {
         var guestEntity = mock.CreateAccommodationType("Гостевое поселение", capacity: 1, isInfinite: true);
         mock.ReInitProjectInfo();
@@ -98,11 +99,10 @@ public class RoomTypeOccupancySummaryTest
 
         var summary = RoomTypeOccupancySummary.FromPlan(plan, guest.Id, paidCount: 2);
 
-        summary.Occupied.ShouldBe(3);
+        summary.Occupied.ShouldBe(2);
         summary.ApprovedClaims.ShouldBe(3);
-        summary.PendingRequests.ShouldBe(0);
-        // Оплаченность нерасселённых не считается: нерасселённых нет, иначе AcceptedNotPaid ушёл бы в минус.
+        summary.PendingRequests.ShouldBe(1);
         summary.PaidCount.ShouldBe(0);
-        summary.AcceptedNotPaidCount.ShouldBe(0);
+        summary.AcceptedNotPaidCount.ShouldBe(1);
     }
 }

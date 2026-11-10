@@ -59,10 +59,11 @@ public record RoomTypeOccupancySummary(
         var type = plan.GetAccommodationType(typeId);
         var groupsOfType = plan.Groups.Where(group => group.AccommodationTypeId == typeId).ToList();
         var fullRooms = plan.Rooms.Where(room => room.IsOccupied && plan.IsFull(room.Id)).ToList();
-        // Гостевой тип: комнат нет, каждый купивший заселён по определению — «нерасселённых» нет,
-        // а оплаченность нерасселённых не считается (иначе AcceptedNotPaid ушёл бы в минус) (#1945).
+        // Гостевой тип: комнат нет, место занято оплатой — «Занято» показывает оплаченных,
+        // «нерасселённые» — неоплативших. Среди неоплативших оплаченных нет, поэтому PaidCount
+        // для гостя обнуляем: иначе AcceptedNotPaid ушёл бы в минус (#1945).
         var occupied = type.IsInfinite
-            ? groupsOfType.Sum(group => group.SubjectsCount)
+            ? paidCount
             : groupsOfType.Where(group => group.RoomId is not null).Sum(group => group.SubjectsCount);
         return new(
             Capacity: plan.RoomCapacity,
