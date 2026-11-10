@@ -22,11 +22,13 @@ else
         <JoinAlert Variation="VariationStyleEnum.Danger">@actionError</JoinAlert>
     }
     <p>
-        @if (editing is null)
-        {
-            <JoinButton Preset="ButtonPreset.Add" Label="Новый расход" AutoProgress="false" OnClick="@StartCreate" />
-        }
-        <JoinButton Link="@($"/webapi/{ProjectId.Value}/expenses/export?export=xlsx")" Preset="ButtonPreset.Download" Label="Скачать Excel" />
+        <JoinButtonGroup>
+            @if (editing is null)
+            {
+                <JoinButton Preset="ButtonPreset.Add" Label="Новый расход" AutoProgress="false" OnClick="@StartCreate" />
+            }
+            <JoinButton Link="@($"/webapi/{ProjectId.Value}/expenses/export?export=xlsx")" Preset="ButtonPreset.Download" Label="Скачать Excel" />
+        </JoinButtonGroup>
     </p>
     @if (editing is not null)
     {

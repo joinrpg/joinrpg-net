@@ -84,10 +84,12 @@ public class ExpensesPageTest : BunitContext
     {
         // Расход не мой и нет права на деньги — ни одной кнопки действия,
         // пустая JoinButtonGroup не должна оставлять пустой div в строке.
+        // Группа кнопок в шапке страницы (Новый расход / Скачать Excel) не считается —
+        // проверяем только строки таблицы.
         expensesClient.MyExpenses = [];
         var cut = Render<ExpensesPage>(p => p.Add(x => x.ProjectId, ProjectId));
 
-        cut.FindAll("div[role=group]").ShouldBeEmpty();
+        cut.FindAll("tr div[role=group]").ShouldBeEmpty();
     }
 
     [Fact]
