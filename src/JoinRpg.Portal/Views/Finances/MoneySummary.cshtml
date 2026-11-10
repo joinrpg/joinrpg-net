@@ -3,14 +3,25 @@
 
 @{
     ViewBag.Title = "Сводка по деньгам";
-    ViewBag.ShowLinks = true;
 }
 
 <h2>@ViewBag.Title</h2>
 
-<h3>Итого</h3>
-
-@await Html.PartialAsync("_MasterBalance", Model.Balance)
+@(await Html.RenderComponentAsync<MasterBalanceTable>(RenderMode.Static, new
+{
+    Rows = Model.Balance
+        .Select(balance => new MasterBalanceRowViewModel(
+            new UserLinkViewModel(balance.Master.ToUserInfoHeader()),
+            balance.Total,
+            balance.FeeBalance,
+            balance.ReceiveBalance,
+            balance.SendBalance,
+            balance.ExpensesBalance,
+            balance.PlannedExpenses,
+            Url.Action("ByMaster", "Finances", new { balance.ProjectId, MasterId = balance.Master.UserId.Value })))
+        .ToArray(),
+    ShowTotal = true,
+}))
 
 @if (Model.ExpenseSummary is { } expenseSummary)
 {
