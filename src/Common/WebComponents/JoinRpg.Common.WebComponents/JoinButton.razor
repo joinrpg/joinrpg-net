@@ -16,15 +16,7 @@ else
 }
 @if (AutoConfirm)
 {
-    DialogButton[] dialogButtons = [DialogButton.FromJoinButton(this), new DialogButton(ButtonPreset.Cancel)];
-    <JoinMessageDialog
-      @ref="_confirmDialogRef"
-      Type="@MessageDialogType.Confirmation"
-      Caption="@DialogCaption"
-      Buttons="dialogButtons"
-    >
-      @AutoConfirmMessage
-    </JoinMessageDialog>
+    <AutoConfirmDialog @ref="_confirmDialogRef" Caption="@DialogCaption" ConfirmButton="DialogButton.FromJoinButton(this)">@AutoConfirmMessage</AutoConfirmDialog>
 }
 @code {
     /// <summary>
@@ -182,7 +174,7 @@ else
     public IReadOnlyDictionary<string, object>? AdditionalAttributes { get; set; }
 
 
-    private JoinMessageDialog? _confirmDialogRef;
+    private AutoConfirmDialog? _confirmDialogRef;
 
     private string ButtonType => Submit ? "submit" : "button";
     private string RenderedStyle => JoinButtonStyle.Build(ActualStyle, Size ?? GroupSize);
@@ -229,7 +221,7 @@ else
         if (AutoConfirm)
         {
             Debug.Assert(_confirmDialogRef is not null);
-            confirmed = await _confirmDialogRef.ShowBoolModalAsync();
+            confirmed = await _confirmDialogRef.ConfirmAsync();
         }
 
         var args = new ButtonClickEventArgs { MouseEvent = e };

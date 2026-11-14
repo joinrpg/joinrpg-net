@@ -1,5 +1,13 @@
+@using System.Diagnostics
+@using JoinRpg.Common.WebComponents.Dialog
+
 <li>
-    <a href="@Href">
+    <a href="@(OnClick.HasDelegate ? null : Href)"
+       role="@(OnClick.HasDelegate ? "button" : null)"
+       tabindex="@(OnClick.HasDelegate ? "0" : null)"
+       @onclick="OnClickHappened"
+       @onclick:preventDefault="OnClick.HasDelegate"
+       @onkeydown="OnKeyDownHappened">
         @if (ChildContent is not null)
         {
             @ChildContent
@@ -14,11 +22,101 @@
             @Label
         }
     </a>
+    @* Диалог внутри <li>, а не рядом: <ul> допускает только <li>, а <li> — flow content; закрытый <dialog> не отображается. *@
+    @if (AutoConfirm)
+    {
+        <AutoConfirmDialog @ref="_confirmDialogRef" Caption="@(Label?.Trim() ?? "Подтверждение")"
+                           ConfirmButton="ConfirmDialogButton">@AutoConfirmMessage</AutoConfirmDialog>
+    }
 </li>
 
 @code {
-    [Parameter, EditorRequired] public string Href { get; set; } = "";
-    [Parameter] public RenderFragment? ChildContent { get; set; }
-    [Parameter] public string? Label { get; set; }
-    [Parameter] public JoinIconType? Icon { get; set; }
+    /// <summary>
+    /// Ссылка пункта меню. Не должна быть задана одновременно с <see cref="OnClick"/>.
+    /// </summary>
+    [Parameter]
+    public string Href { get; set; } = "";
+
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    [Parameter]
+    public string? Label { get; set; }
+
+    [Parameter]
+    public JoinIconType? Icon { get; set; }
+
+    /// <summary>
+    /// Invoked when user clicks the menu item. When set, the item is rendered as a button-like link
+    /// (without href) instead of a navigation link.
+    /// </summary>
+    [Parameter]
+    public EventCallback<ButtonClickEventArgs> OnClick { get; set; }
+
+    /// <summary>
+    /// When true, the confirmation dialog appears when user clicks the menu item.
+    /// </summary>
+    [Parameter]
+    public bool AutoConfirm { get; set; }
+
+    /// <summary>
+    /// Automatic confirmation dialog message. Required when <see cref="AutoConfirm"/> is true.
+    /// </summary>
+    [Parameter]
+    public string? AutoConfirmMessage { get; set; }
+
+    /// <summary>
+    /// Style of the confirmation dialog button.
+    /// </summary>
+    /// <seealso cref="VariationStyleEnum"/>
+    [Parameter]
+    public VariationStyleEnum? ConfirmStyle { get; set; }
+
+    private AutoConfirmDialog? _confirmDialogRef;
+
+    private DialogButton ConfirmDialogButton => new(name: "menu-item", label: string.IsNullOrWhiteSpace(Label) ? "Да" : Label.Trim(), style: ConfirmStyle);
+
+    private async Task OnClickHappened(MouseEventArgs e) => await ActivateAsync(e);
+
+    private async Task OnKeyDownHappened(KeyboardEventArgs e)
+    {
+        if (OnClick.HasDelegate && (e.Key is "Enter" or " "))
+        {
+            await ActivateAsync(mouseEvent: null);
+        }
+    }
+
+    private async Task ActivateAsync(MouseEventArgs? mouseEvent)
+    {
+        if (AutoConfirm)
+        {
+            Debug.Assert(_confirmDialogRef is not null);
+            var confirmed = await _confirmDialogRef.ConfirmAsync();
+            if (!confirmed)
+            {
+                return;
+            }
+        }
+        await OnClick.InvokeAsync(new ButtonClickEventArgs { MouseEvent = mouseEvent });
+    }
+
+    /// <inheritdoc />
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+        if (OnClick.HasDelegate && !string.IsNullOrWhiteSpace(Href))
+        {
+            throw new InvalidOperationException($"The {nameof(OnClick)} event handler and {nameof(Href)} property can not be both set in the same time");
+        }
+
+        if (AutoConfirm && !OnClick.HasDelegate)
+        {
+            throw new InvalidOperationException($"The {nameof(OnClick)} event handler is required when {nameof(AutoConfirm)} is true");
+        }
+
+        if (AutoConfirm && string.IsNullOrWhiteSpace(AutoConfirmMessage))
+        {
+            throw new InvalidOperationException($"The {nameof(AutoConfirmMessage)} is required when {nameof(AutoConfirm)} is true");
+        }
+    }
 }

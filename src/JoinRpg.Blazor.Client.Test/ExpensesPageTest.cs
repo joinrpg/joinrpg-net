@@ -248,6 +248,67 @@ public class ExpensesPageTest : BunitContext
         expensesClient.Created.PlannedPrice.ShouldBe(1400); // план подставился из факта
     }
 
+    [Fact]
+    public void ApprovedExpenseForMoneyMaster_DeclineLivesInDropdown()
+    {
+        // Одобренный расход: «Отклонить» — редкое действие, живёт в выпадашке кнопки «Изменить»
+        expensesClient.Expenses = [Expense with { State = ExpenseStateView.Approved }];
+        expensesClient.ManageMoney = true;
+        var cut = Render<ExpensesPage>(p => p.Add(x => x.ProjectId, ProjectId));
+
+        var row = cut.FindAll("tr").Single(row => row.TextContent.Contains("Аренда зала"));
+        row.QuerySelector("details.join-dropdown li a[role=button]")!.TextContent.Trim().ShouldBe("Отклонить");
+        // Факта нет — рядом на месте кнопка «Потратил»
+        row.QuerySelectorAll("button").Any(button => button.TextContent.Trim() == "Потратил").ShouldBeTrue();
+    }
+
+    [Fact]
+    public async Task ApprovedExpenseForMoneyMaster_ConfirmedDeclineCallsReject()
+    {
+        expensesClient.Expenses = [Expense with { State = ExpenseStateView.Approved }];
+        expensesClient.ManageMoney = true;
+        var cut = Render<ExpensesPage>(p => p.Add(x => x.ProjectId, ProjectId));
+
+        cut.Find("details.join-dropdown li a[role=button]").Click();
+
+        cut.Markup.ShouldContain("Отклонить расход «Аренда зала»?");
+        var confirmButton = cut.FindAll(".join-dialog-footer button").Single(button => button.TextContent.Trim() == "Отклонить");
+        await confirmButton.ClickAsync(new Microsoft.AspNetCore.Components.Web.MouseEventArgs());
+        // onclose — только на диалоге подтверждения: в разметке всегда есть ещё диалог редактирования
+        var confirmDialog = cut.FindAll("dialog").Single(dialog => dialog.TextContent.Contains("Отклонить расход"));
+        await confirmDialog.TriggerEventAsync("onclose", EventArgs.Empty);
+
+        expensesClient.Rejected.ShouldBe(Expense.ExpenseId);
+    }
+
+    [Fact]
+    public void ProposedExpenseForMoneyMaster_NoDropdownAndInlineButtonsStay()
+    {
+        // Предложенный расход решается прямыми кнопками «Одобрить»/«Отклонить» — выпадашки нет
+        expensesClient.ManageMoney = true; // Expense по умолчанию Proposed
+        var cut = Render<ExpensesPage>(p => p.Add(x => x.ProjectId, ProjectId));
+
+        var row = cut.FindAll("tr").Single(row => row.TextContent.Contains("Аренда зала"));
+        row.QuerySelector("details.join-dropdown").ShouldBeNull();
+        row.QuerySelectorAll("button").Any(button => button.TextContent.Trim() == "Одобрить").ShouldBeTrue();
+        row.QuerySelectorAll("button").Any(button => button.TextContent.Trim() == "Отклонить").ShouldBeTrue();
+    }
+
+    [Fact]
+    public void ApprovedOwnExpenseForRegularMaster_ShowsEditWithoutDecline()
+    {
+        // Свой одобренный расход, но нет права на деньги: кнопка «Изменить» есть,
+        // выпадашки и текста «Отклонить» нет
+        expensesClient.Expenses = [Expense with { State = ExpenseStateView.Approved }];
+        expensesClient.ManageMoney = false;
+        var cut = Render<ExpensesPage>(p => p.Add(x => x.ProjectId, ProjectId));
+
+        var row = cut.FindAll("tr").Single(row => row.TextContent.Contains("Аренда зала"));
+        row.QuerySelectorAll("button").Any(button => button.TextContent.Trim() == "Изменить").ShouldBeTrue();
+        row.QuerySelector("details.join-dropdown").ShouldBeNull();
+        row.TextContent.ShouldNotContain("Отклонить");
+    }
+
     private static string DialogCaption(IRenderedComponent<ExpensesPage> cut)
         => cut.Find(".join-dialog-caption").TextContent.Trim();
 
@@ -298,6 +359,12 @@ public class ExpensesPageTest : BunitContext
         /// <summary>Модель последнего вызова <c>CreateExpense</c>.</summary>
         public ExpenseEditViewModel? Created { get; private set; }
 
+        /// <summary>Есть ли право на деньги в проекте (управляет видимостью кнопок согласования).</summary>
+        public bool ManageMoney { get; set; }
+
+        /// <summary>Id расхода, отклонённого через <c>RejectExpense</c>.</summary>
+        public ExpenseIdentification? Rejected { get; private set; }
+
         public Task<IReadOnlyList<ExpenseViewModel>> GetExpenses(ProjectIdentification projectId)
             => Task.FromResult<IReadOnlyList<ExpenseViewModel>>(Expenses);
 
@@ -307,7 +374,7 @@ public class ExpensesPageTest : BunitContext
         public Task<IReadOnlyCollection<ExpenseCategoryInfo>> GetCategories(ProjectIdentification projectId)
             => Task.FromResult<IReadOnlyCollection<ExpenseCategoryInfo>>([]);
 
-        public Task<bool> CanManageMoney(ProjectIdentification projectId) => Task.FromResult(false);
+        public Task<bool> CanManageMoney(ProjectIdentification projectId) => Task.FromResult(ManageMoney);
 
         public Task<IReadOnlyCollection<string>> GetCategoryPathSuggestions(ProjectIdentification projectId)
             => Task.FromResult<IReadOnlyCollection<string>>([]);
@@ -338,7 +405,10 @@ public class ExpensesPageTest : BunitContext
             => throw new NotSupportedException();
 
         public Task RejectExpense(ExpenseIdentification expenseId, string? comment)
-            => throw new NotSupportedException();
+        {
+            Rejected = expenseId;
+            return Task.CompletedTask;
+        }
     }
 
     private sealed class FakeMasterClient(UserInfoHeader[] masters) : IMasterClient
