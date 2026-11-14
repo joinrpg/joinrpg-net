@@ -72,9 +72,14 @@ public class MasterBalanceTableTest : BunitContext
                        "1000,5", "1500", "200", "-200", "-500", "-300"]);
 
         var totalRow = cut.FindAll("tr").Single(tr => tr.TextContent.Contains("Итого"));
-        // Строка «Итого» целиком жирная, включая саму подпись.
-        totalRow.QuerySelectorAll("b").Length.ShouldBe(7);
+        // Строка «Итого» выделена классом, жирность задаётся стилем для ячеек.
+        totalRow.ClassList.ShouldContain("total");
+        totalRow.QuerySelectorAll("b").ShouldBeEmpty();
         totalRow.QuerySelectorAll("a").ShouldBeEmpty();
+
+        // PriceElement — прямой потомок ячеек: обёртка вокруг него ломает
+        // scoped-правило td:has(> .price-value), выравнивающее суммы вправо.
+        totalRow.QuerySelectorAll("td > .price-value").Count.ShouldBe(6);
     }
 
     [Fact]

@@ -13,14 +13,14 @@
     <ItemTemplate>
         @if (row.IsTotal)
         {
-            <tr>
-                <td><b>Итого</b></td>
-                <td><b><PriceElement Price="row.Total" /></b></td>
-                <td><b><PriceElement Price="row.FeeBalance" /></b></td>
-                <td><b><PriceElement Price="row.ReceiveBalance" /></b></td>
-                <td><b><PriceElement Price="row.SendBalance" /></b></td>
-                <td><b><PriceElement Price="row.ExpensesBalance" /></b></td>
-                <td><b><PriceElement Price="row.PlannedExpenses" /></b></td>
+            <tr class="total">
+                <td>Итого</td>
+                <td><PriceElement Price="row.Total" /></td>
+                <td><PriceElement Price="row.FeeBalance" /></td>
+                <td><PriceElement Price="row.ReceiveBalance" /></td>
+                <td><PriceElement Price="row.SendBalance" /></td>
+                <td><PriceElement Price="row.ExpensesBalance" /></td>
+                <td><PriceElement Price="row.PlannedExpenses" /></td>
             </tr>
         }
         else
