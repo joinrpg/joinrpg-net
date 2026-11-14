@@ -115,4 +115,27 @@ public class JoinTextAreaTest
         cut.Find("textarea").GetAttribute("maxlength").ShouldBe("5000");
         cut.Find(".text-muted").TextContent.ShouldBe("0/5000");
     }
+
+    private class ScopeModel
+    {
+        public string Name { get; set; } = "";
+    }
+
+    /// <summary>Внутри JoinEditForm (область InputNameScope) производное имя поля получает префикс FormName.</summary>
+    [Fact]
+    public void NameScope_RendersPrefixedName()
+    {
+        using var ctx = NewContext();
+        ctx.SetRendererInfo(new Microsoft.AspNetCore.Components.RendererInfo("WebAssembly", isInteractive: true));
+        var model = new ScopeModel();
+        var cut = ctx.Render<JoinEditForm>(p => p
+            .Add(x => x.FormName, "AddPaymentType")
+            .Add(x => x.EditContext, new Microsoft.AspNetCore.Components.Forms.EditContext(model))
+            .AddChildContent<JoinTextArea>(f => f
+                .Add(x => x.Value, model.Name)
+                .Add(x => x.ValueChanged, _ => { })
+                .Add(x => x.ValueExpression, () => model.Name)));
+
+        cut.Find("textarea").GetAttribute("name").ShouldBe("AddPaymentType.Name");
+    }
 }
