@@ -63,7 +63,7 @@ public class LeaderElectedHostedServiceTest : IAsyncLifetime
 
     async Task IAsyncLifetime.DisposeAsync() => await postgres.DisposeAsync();
 
-    private (ServiceProvider Provider, IHostedService Hosted) BuildHost<TTag>(long lockKey, TimeSpan? retryDelay = null)
+    private (ServiceProvider Provider, IHostedService Hosted) BuildHost<TTag>(string? lockKey, TimeSpan? retryDelay = null)
     {
         var config = new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?>
@@ -97,8 +97,8 @@ public class LeaderElectedHostedServiceTest : IAsyncLifetime
     [Fact]
     public async Task OnlyOneInstanceRunsAtATime()
     {
-        var (provider1, hosted1) = BuildHost<Host1>(lockKey: 6220);
-        var (provider2, hosted2) = BuildHost<Host2>(lockKey: 6220);
+        var (provider1, hosted1) = BuildHost<Host1>(lockKey: "test.only-one");
+        var (provider2, hosted2) = BuildHost<Host2>(lockKey: "test.only-one");
         try
         {
             await hosted1.StartAsync(CancellationToken.None);
@@ -122,8 +122,8 @@ public class LeaderElectedHostedServiceTest : IAsyncLifetime
     [Fact]
     public async Task SecondTakesOverAfterFirstStops()
     {
-        var (provider1, hosted1) = BuildHost<Host1>(lockKey: 6221);
-        var (provider2, hosted2) = BuildHost<Host2>(lockKey: 6221);
+        var (provider1, hosted1) = BuildHost<Host1>(lockKey: "test.takeover");
+        var (provider2, hosted2) = BuildHost<Host2>(lockKey: "test.takeover");
         try
         {
             await hosted1.StartAsync(CancellationToken.None);
@@ -137,6 +137,33 @@ public class LeaderElectedHostedServiceTest : IAsyncLifetime
 
             await PollUntilAsync(() => TotalRuns == 2, "второй инстанс не подхватил после остановки лидера");
             (CountingService<Host1>.Concurrent + CountingService<Host2>.Concurrent).ShouldBe(1);
+        }
+        finally
+        {
+            await hosted1.StopAsync(CancellationToken.None);
+            await hosted2.StopAsync(CancellationToken.None);
+            provider1.Dispose();
+            provider2.Dispose();
+        }
+    }
+
+    [Fact]
+    public async Task DefaultKeyIsServiceTypeName()
+    {
+        // lockKey не передан: оба хоста регистрируют один и тот же тип сервиса —
+        // дефолтный ключ (имя типа) у них совпадает, конкурировать они должны.
+        var (provider1, hosted1) = BuildHost<Host1>(lockKey: null);
+        var (provider2, hosted2) = BuildHost<Host1>(lockKey: null);
+        try
+        {
+            await hosted1.StartAsync(CancellationToken.None);
+            await hosted2.StartAsync(CancellationToken.None);
+
+            await PollUntilAsync(() => CountingService<Host1>.Runs == 1, "ни один инстанс не стал лидером");
+            await Task.Delay(TimeSpan.FromSeconds(2));
+
+            CountingService<Host1>.Concurrent.ShouldBe(1, "лидеров больше одного");
+            CountingService<Host1>.Runs.ShouldBe(1, "второй инстанс тоже запустился");
         }
         finally
         {
@@ -178,14 +205,14 @@ public class LeaderElectedHostedServiceTest : IAsyncLifetime
         var services = new ServiceCollection();
 
         Should.Throw<InvalidOperationException>(
-            () => services.AddLeaderElectedHostedService<CountingService<Host1>>(emptyConfig, lockKey: 1, connectionStringName: "Missing"));
+            () => services.AddLeaderElectedHostedService<CountingService<Host1>>(emptyConfig, lockKey: "test.missing", connectionStringName: "Missing"));
     }
 
     [Fact]
     public async Task StopReleasesLock()
     {
-        var (provider1, hosted1) = BuildHost<Host1>(lockKey: 6223);
-        var (provider2, hosted2) = BuildHost<Host2>(lockKey: 6223);
+        var (provider1, hosted1) = BuildHost<Host1>(lockKey: "test.stop-releases");
+        var (provider2, hosted2) = BuildHost<Host2>(lockKey: "test.stop-releases");
         try
         {
             await hosted1.StartAsync(CancellationToken.None);
@@ -201,7 +228,7 @@ public class LeaderElectedHostedServiceTest : IAsyncLifetime
         }
 
         var lockC = new PostgresLeaderLock(postgres.GetConnectionString());
-        (await lockC.TryAcquireAsync(6223)).ShouldNotBeNull("лок не освободился после остановки хостов");
+        (await lockC.TryAcquireAsync(LockKeyEncoding.FromString("test.stop-releases"))).ShouldNotBeNull("лок не освободился после остановки хостов");
     }
 
     [Fact]
@@ -241,7 +268,7 @@ public class LeaderElectedHostedServiceTest : IAsyncLifetime
         var provider = new ServiceCollection()
             .AddLogging()
             .AddScoped<ScopedResource>()
-            .AddLeaderElectedHostedService<SlowCleanupService>(config, lockKey: 6225, retryDelay: TimeSpan.FromMilliseconds(100))
+            .AddLeaderElectedHostedService<SlowCleanupService>(config, lockKey: "test.stop-cleanup", retryDelay: TimeSpan.FromMilliseconds(100))
             .BuildServiceProvider();
         var hosted = provider.GetRequiredService<IHostedService>();
 
@@ -295,7 +322,8 @@ public class LeaderElectedHostedServiceTest : IAsyncLifetime
             }
 
             resource.EnsureAlive();
-            await Task.Delay(100, cancellationToken);
+            // Дочистка намеренно неотменяема: токен уже отменён, а завершить надо.
+            await Task.Delay(100, CancellationToken.None);
             Interlocked.Increment(ref CleanupCompleted);
         }
     }

@@ -155,7 +155,7 @@ Bot API допускает одного активного poller'а на бот
 ```csharp
 using JoinRpg.Common.WebInfrastructure.LeaderElection;
 
-services.AddLeaderElectedHostedService<MyPoller>(configuration, lockKey: 6220);
+services.AddLeaderElectedHostedService<MyPoller>(configuration);
 
 internal class MyPoller : ILeaderElectedService
 {
@@ -175,8 +175,12 @@ internal class MyPoller : ILeaderElectedService
   параметром `connectionStringName`). Отдельная база и миграции не нужны: advisory locks не требуют таблиц.
 - **Лок живёт на выделенном непулинговом соединении** (`Pooling=false` выставляет `PostgresLeaderLock`
   сам): advisory lock привязан к сессии, а пулинговое соединение EF Core вернулось бы в пул раньше unlock'а.
-- `lockKey` (bigint) одинаковый у всех реплик одного сервиса и разный у разных сервисов — локи с разными
-  ключами независимы.
+- Ключ лока — строка: advisory lock принимает только `bigint`, строка кодируется стабильным
+  SHA-256-хешем (первые 8 байт). Параметр можно не передавать — по умолчанию ключом будет имя
+  типа сервиса (`typeof(TService).FullName`): уникально per сервис. Явный `lockKey` нужен, только
+  если несколько независимых сервисов должны делить один лок. Не берите appName: несколько
+  лидер-выбираемых сервисов одного приложения поделили бы один лок и мешали бы друг другу.
+  Учтите: в `pg_locks` ключ виден как число, а не как исходная строка.
 - `retryDelay` — пауза между попытками перехвата, по умолчанию 5 секунд.
 - Лидерство — best-effort: при сетевом разрыве без смерти процесса две реплики могут на короткое время
   считать себя лидерами (probe-проверка соединения каждые 5 секунд сокращает окно). Для строгой

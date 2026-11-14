@@ -26,7 +26,11 @@ PostgreSQL уже есть у всех хостов через EF Core, отде
   вернулось бы в пул раньше unlock'а. При смерти владельца сервер освобождает лок при обрыве
   сессии — вторая реплика подхватывает без ручного вмешательства.
 - **Публичный API намеренно минимален** (packable-библиотека): `ILeaderElectedService` +
-  `LeaderElectedRegistration.AddLeaderElectedHostedService<TService>(configuration, lockKey)`.
+  `LeaderElectedRegistration.AddLeaderElectedHostedService<TService>(configuration, lockKey = null)`:
+  ключ лока — строка, кодируется стабильным SHA-256-хешем в `bigint` (advisory lock принимает
+  только bigint; `string.GetHashCode()` нельзя — рандомизирован per-process); по умолчанию ключ —
+  имя типа `TService` (appName не используется: несколько лидер-выбираемых сервисов приложения
+  поделили бы один лок).
   `ILeaderLock`, `PostgresLeaderLock`, hosted-сервис — internal; тесты ходят через
   `InternalsVisibleTo`.
 - `LeaderElectedHostedService<TService>` крутит scoped `TService` с linked-CTS; рядом крутится
