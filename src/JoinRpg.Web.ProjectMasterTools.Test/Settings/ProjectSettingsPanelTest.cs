@@ -19,6 +19,8 @@ public class ProjectSettingsPanelTest : BunitContext
     {
         Services.AddSingleton<IProjectSettingsClient>(client);
         Services.AddSingleton(typeof(ILogger<>), typeof(NullLogger<>));
+        // Панели на JoinEditForm: содержимое гейтится до интерактивности, статический рендер дал бы заглушку.
+        SetRendererInfo(new Microsoft.AspNetCore.Components.RendererInfo("WebAssembly", isInteractive: true));
     }
 
     [Fact]
@@ -109,7 +111,7 @@ public class ProjectSettingsPanelTest : BunitContext
     public void HiddenPlayerInvitesEnabledIsSavedUnchanged()
     {
         var cut = Render<ProjectMainSettingsPanel>(p => p.Add(x => x.ProjectId, new ProjectIdentification(1)));
-        cut.FindAll("input[type=checkbox][name=PlayerInvitesEnabled]").ShouldBeEmpty();
+        cut.FindAll("input[type=checkbox][name=\"ProjectMainSettings.PlayerInvitesEnabled\"]").ShouldBeEmpty();
 
         cut.Find("form").Submit();
 
@@ -121,7 +123,7 @@ public class ProjectSettingsPanelTest : BunitContext
     {
         client.EnableAccommodation = true;
         var cut = Render<ProjectMainSettingsPanel>(p => p.Add(x => x.ProjectId, new ProjectIdentification(1)));
-        cut.Find("input[type=checkbox][name=PlayerInvitesEnabled]").Change(false);
+        cut.Find("input[type=checkbox][name=\"ProjectMainSettings.PlayerInvitesEnabled\"]").Change(false);
 
         cut.Find("form").Submit();
 
@@ -162,7 +164,7 @@ public class ProjectSettingsPanelTest : BunitContext
     {
         var cut = Render<ProjectCheckInSettingsPanel>(p => p.Add(x => x.ProjectId, new ProjectIdentification(1)));
 
-        cut.Find("input[type=checkbox][name=ShowCheckInBlockersToPlayers]").Change(true);
+        cut.Find("input[type=checkbox][name=\"ProjectCheckInSettings.ShowCheckInBlockersToPlayers\"]").Change(true);
         cut.Find("form").Submit();
 
         client.SavedCheckInSettings.ShouldNotBeNull().ShowCheckInBlockersToPlayers.ShouldBeTrue();
@@ -174,7 +176,7 @@ public class ProjectSettingsPanelTest : BunitContext
     {
         var cut = Render<ProjectCheckInSettingsPanel>(p => p.Add(x => x.ProjectId, new ProjectIdentification(1)));
 
-        cut.Find("input[type=checkbox][name=InProgress]").Change(true);
+        cut.Find("input[type=checkbox][name=\"ProjectCheckInSettings.InProgress\"]").Change(true);
         cut.Find("form").Submit();
 
         var saved = client.SavedCheckInSettings.ShouldNotBeNull();

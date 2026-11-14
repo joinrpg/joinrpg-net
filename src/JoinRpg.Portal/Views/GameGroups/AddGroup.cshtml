@@ -1,4 +1,4 @@
-﻿@using JoinRpg.Helpers
+@using JoinRpg.Helpers
 @using JoinRpg.DomainTypes
 @using JoinRpg.Web.Helpers
 @using JoinRpg.Web.Models
@@ -14,8 +14,10 @@
 
 @Html.ValidationSummary(true, "", new { @class = "text-danger" })
 
-@using (Html.BeginForm()) 
+@using (Html.BeginForm())
 {
+    @* Префикс имён полей: без него name="Name" браузерное автодополнение принимает за персональное поле. *@
+    ViewData.TemplateInfo.HtmlFieldPrefix = "group";
     @Html.AntiForgeryToken()
     @Html.HiddenFor(model => model.ProjectId)
     
@@ -33,7 +35,7 @@
             <div class="col-md-10">
                 <component type="typeof(JoinRpg.Web.ProjectCommon.CharacterGroupSelector)"
                            param-ProjectId="Model.ProjectId"
-                           param-Name="@nameof(Model.ParentCharacterGroupIds)"
+                           param-Name='@("group." + nameof(Model.ParentCharacterGroupIds))'
                            param-IncludeSpecial="false"
                            param-SelectedGroupIds="@Model.ParentCharacterGroupIds"
                            render-mode="WebAssembly" />

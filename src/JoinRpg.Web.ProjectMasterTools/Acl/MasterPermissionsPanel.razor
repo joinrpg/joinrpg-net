@@ -12,7 +12,7 @@
 <JoinPanel>
     <Header>Права доступа</Header>
     <Body>
-        <EditForm FormName="MasterPermissions" EditContext="@editContext" OnValidSubmit="HandleValidSubmit">
+        <JoinEditForm FormName="MasterPermissions" EditContext="@editContext" OnValidSubmit="HandleValidSubmit">
             <FormHorizontal>
                 @* @key: после сохранения модель перечитывается, а CheckboxInput берёт значение только при создании. *@
                 <MasterPermissionFields @key="Model" Permissions="Model.Permissions" />
@@ -28,7 +28,7 @@
                     }
                 </FormRow>
             </FormHorizontal>
-        </EditForm>
+        </JoinEditForm>
     </Body>
 </JoinPanel>
 

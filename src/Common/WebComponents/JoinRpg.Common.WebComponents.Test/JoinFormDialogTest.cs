@@ -11,6 +11,15 @@ public class JoinFormDialogTest
         public string Value { get; set; } = "";
     }
 
+    private static BunitContext NewContext()
+    {
+        var ctx = new BunitContext();
+        ctx.JSInterop.Mode = JSRuntimeMode.Loose;
+        // JoinEditForm внутри диалога гейтит содержимое до интерактивности: без WASM тесты видели бы заглушку.
+        ctx.SetRendererInfo(new RendererInfo("WebAssembly", isInteractive: true));
+        return ctx;
+    }
+
     private static IRenderedComponent<JoinFormDialog<FormModel>> RenderDialog(BunitContext ctx, FormModel model)
         => ctx.Render<JoinFormDialog<FormModel>>(p => p
             .Add(x => x.Model, model)
@@ -28,8 +37,7 @@ public class JoinFormDialogTest
     [Fact]
     public void SubmitButton_FollowsModelValidity()
     {
-        using var ctx = new BunitContext();
-        ctx.JSInterop.Mode = JSRuntimeMode.Loose;
+        using var ctx = NewContext();
         var model = new FormModel();
 
         var cut = RenderDialog(ctx, model);
@@ -62,8 +70,7 @@ public class JoinFormDialogTest
     [Fact]
     public void ParentRerender_KeepsEditContext()
     {
-        using var ctx = new BunitContext();
-        ctx.JSInterop.Mode = JSRuntimeMode.Loose;
+        using var ctx = NewContext();
         EditContextProbe.Seen.Clear();
         var model = new FormModel();
         RenderFragment content = builder =>
@@ -95,8 +102,7 @@ public class JoinFormDialogTest
     [Fact]
     public async Task Submit_ClosesWithoutRenderFailure_AndReturnsModel()
     {
-        using var ctx = new BunitContext();
-        ctx.JSInterop.Mode = JSRuntimeMode.Loose;
+        using var ctx = NewContext();
         var model = new FormModel { Value = "заполнено" };
         var cut = RenderDialog(ctx, model);
 
@@ -105,5 +111,24 @@ public class JoinFormDialogTest
         await cut.Find("dialog").TriggerEventAsync("onclose", EventArgs.Empty);
 
         (await shown).ShouldBeSameAs(model);
+    }
+
+    /// <summary>Поля диалога получают имена с префиксом FormName — браузерное автодополнение
+    /// не принимает служебные поля за персональные данные.</summary>
+    [Fact]
+    public void ChildInput_NameIsPrefixedWithFormName()
+    {
+        using var ctx = NewContext();
+        var model = new FormModel { Value = "заполнено" };
+        var cut = ctx.Render<JoinFormDialog<FormModel>>(p => p
+            .Add(x => x.Model, model)
+            .Add(x => x.FormName, "Test")
+            .Add(x => x.SubmitButtonPreset, ButtonPreset.Save)
+            .AddChildContent<JoinTextInput>(f => f
+                .Add(x => x.Value, model.Value)
+                .Add(x => x.ValueChanged, _ => { })
+                .Add(x => x.ValueExpression, () => model.Value)));
+
+        cut.Find("input").GetAttribute("name").ShouldBe("Test.Value");
     }
 }

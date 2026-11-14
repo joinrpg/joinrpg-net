@@ -34,10 +34,9 @@
 <JoinPanel>
     <Header>Создание новой базы заявок</Header>
     <Body>
-        @* До загрузки WebAssembly форма не показывается: пререндеренная разметка собрала бы ввод,
+        @* До загрузки WebAssembly форма не показывается (гейт внутри JoinEditForm): пререндеренная разметка собрала бы ввод,
            который Blazor при гидратации острова тихо стер бы (селектор снова «(нет)», поля пустые). *@
-        <JoinInteractiveGate Message="Загружаем форму...">
-        <EditForm FormName="CreateProject" EditContext="@editContext" OnValidSubmit="HandleValidSubmit">
+        <JoinEditForm FormName="CreateProject" EditContext="@editContext" OnValidSubmit="HandleValidSubmit" GateMessage="Загружаем форму...">
             <FormHorizontal>
                 <DataAnnotationsValidator />
                 <FormRowFor For="@(() => Model.ProjectName)">
@@ -85,8 +84,7 @@
                     <JoinButton Preset="ButtonPreset.Create" Submit="true" Disabled="@formInvalid" />
                 </FormRow>
             </FormHorizontal>
-        </EditForm>
-        </JoinInteractiveGate>
+        </JoinEditForm>
     </Body>
 </JoinPanel>
 

@@ -11,7 +11,7 @@
 <JoinPanel>
     <Header>Профиль мастера</Header>
     <Body>
-        <EditForm FormName="MasterProfile" EditContext="@editContext" OnValidSubmit="HandleValidSubmit">
+        <JoinEditForm FormName="MasterProfile" EditContext="@editContext" OnValidSubmit="HandleValidSubmit">
             <FormHorizontal>
                 <ValidationSummary />
                 <DataAnnotationsValidator />
@@ -22,7 +22,7 @@
                     <JoinButton Preset="ButtonPreset.Save" Submit="true" Disabled="@formInvalid" />
                 </FormRow>
             </FormHorizontal>
-        </EditForm>
+        </JoinEditForm>
     </Body>
 </JoinPanel>
 

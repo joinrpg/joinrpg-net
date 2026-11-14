@@ -22,7 +22,7 @@
             <JoinLoadingMessage />
             return;
         }
-        <EditForm FormName="FinanceGeneralSettings" EditContext="@editContext" OnSubmit="HandleSubmit">
+        <JoinEditForm FormName="FinanceGeneralSettings" EditContext="@editContext" OnSubmit="HandleSubmit">
             <FormHorizontal>
                 <ValidationSummary Model="Model" />
                 <DataAnnotationsValidator />
@@ -39,7 +39,7 @@
                 </fieldset>
                 <SettingsSaveRow HasEditAccess="Model.HasEditAccess" Permission="Permission.CanManageMoney" Disabled="@formInvalid" />
             </FormHorizontal>
-        </EditForm>
+        </JoinEditForm>
         @if (success)
         {
             <JoinAlert Variation="VariationStyleEnum.Success">Общие настройки финансов сохранены</JoinAlert>

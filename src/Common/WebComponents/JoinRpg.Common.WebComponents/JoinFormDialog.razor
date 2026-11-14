@@ -13,12 +13,12 @@
                 Height="@Height"
                 MaxHeight="@MaxHeight"
     >
-        <EditForm FormName="@FormName" EditContext="@editContext">
+        <JoinEditForm FormName="@FormName" EditContext="@editContext">
             <DataAnnotationsValidator />
             <FormHorizontal>
               @ChildContent
             </FormHorizontal>
-        </EditForm>
+        </JoinEditForm>
     </JoinDialog>
 
 }

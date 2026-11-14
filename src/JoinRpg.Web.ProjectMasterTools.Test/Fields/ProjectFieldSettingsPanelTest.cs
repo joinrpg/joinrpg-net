@@ -29,8 +29,9 @@ public class ProjectFieldSettingsPanelTest : BunitContext
         _ = Services.AddJoinRpgWebComponents();
         _ = AddBunitPersistentComponentState();
         Services.AddSingleton<IProjectFieldUriLocator>(new NotUsedLocator());
-        // TypedSelector читает RendererInfo — без него bUnit падает при рендере.
-        SetRendererInfo(new RendererInfo("Static", isInteractive: false));
+        // TypedSelector читает RendererInfo — без него bUnit падает при рендере. Интерактивный обязателен:
+        // панель на JoinEditForm, а статический рендер гейтится до загрузки WASM.
+        SetRendererInfo(new RendererInfo("WebAssembly", isInteractive: true));
     }
 
     private const string NameFieldWarning = "похоже на имя персонажа";

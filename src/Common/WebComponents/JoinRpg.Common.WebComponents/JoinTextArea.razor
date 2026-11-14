@@ -2,7 +2,7 @@
 @inject IJSRuntime JSRuntime
 
 <div style="position: relative; display: block;">
-    <textarea @ref="textareaRef" id="@inputId" name="@FieldIdentifier.FieldName" rows="@Rows"
+    <textarea @ref="textareaRef" id="@inputId" name="@EffectiveName" rows="@Rows"
               class="form-control" placeholder="@Placeholder" maxlength="@MaxLength"
               readonly="@ReadOnly"
               style="@(HasCopyButton ? "padding-right: 24px;" : null)"
@@ -63,6 +63,12 @@
 
     [CascadingParameter]
     private FormRowLabelTarget? LabelTarget { get; set; }
+
+    /// <summary>Область имён формы (<see cref="InputNameScope"/>): квалифицирует производное имя поля.</summary>
+    [CascadingParameter]
+    private InputNameScope? NameScope { get; set; }
+
+    private string? EffectiveName => InputNameScope.Resolve(explicitName: null, NameScope, FieldIdentifier);
 
     private FieldIdentifier FieldIdentifier { get; set; }
     private string internalValue = "";

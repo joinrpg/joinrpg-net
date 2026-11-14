@@ -75,6 +75,10 @@ else
     [Parameter(CaptureUnmatchedValues = true)]
     public Dictionary<string, object>? AdditionalAttributes { get; set; }
 
+    /// <summary>Область имён формы (<see cref="InputNameScope"/>): квалифицирует производное имя поля.</summary>
+    [CascadingParameter]
+    private InputNameScope? NameScope { get; set; }
+
     /// <summary>
     /// Варианты значений для подсказки ввода (рендерится как datalist, input получает атрибут list).
     /// </summary>
@@ -92,7 +96,7 @@ else
     private string? ValidationEnabled => Required ? "true" : null;
     private string? RequiredMessageValue => Required ? RequiredMessage : null;
 
-    private string? InputName => Name ?? FieldIdentifier.FieldName;
+    private string? InputName => InputNameScope.Resolve(Name, NameScope, FieldIdentifier);
 
     private string internalValue = "";
     private string? inputId;

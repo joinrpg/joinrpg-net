@@ -14,7 +14,7 @@
             <JoinLoadingMessage />
             return;
         }
-        <EditForm FormName="ProjectContractRequirementsSettings" EditContext="@editContext" OnSubmit="HandleSubmit">
+        <JoinEditForm FormName="ProjectContractRequirementsSettings" EditContext="@editContext" OnSubmit="HandleSubmit">
             <FormHorizontal>
                 <ValidationSummary Model="Model" />
                 <DataAnnotationsValidator />
@@ -55,7 +55,7 @@
                 </fieldset>
                 <SettingsSaveRow HasEditAccess="Model.HasEditAccess" Disabled="@formInvalid" />
             </FormHorizontal>
-        </EditForm>
+        </JoinEditForm>
         @if (success)
         {
             <JoinAlert Variation="VariationStyleEnum.Success">Настройки контактов сохранены</JoinAlert>

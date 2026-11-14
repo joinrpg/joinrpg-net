@@ -4,6 +4,7 @@ using Bunit;
 using JoinRpg.DomainTypes;
 using JoinRpg.DomainTypes.ProjectMetadata;
 using JoinRpg.Web.ProjectMasterTools.Fields;
+using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -101,6 +102,8 @@ public class TimeSlotMassAddTest : BunitContext
         JSInterop.Mode = JSRuntimeMode.Loose;
         Services.AddSingleton<IProjectFieldOperationsClient>(new NotUsedClient());
         Services.AddSingleton<ILogger<TimeSlotMassAddButton>>(new NullLogger<TimeSlotMassAddButton>());
+        // Внутри диалог на JoinEditForm: содержимое гейтится до интерактивности.
+        SetRendererInfo(new RendererInfo("WebAssembly", isInteractive: true));
 
         var cut = Render<TimeSlotMassAddButton>(p => p.Add(x => x.Model, Model));
 

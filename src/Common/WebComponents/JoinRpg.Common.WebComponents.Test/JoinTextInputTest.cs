@@ -191,4 +191,85 @@ public class JoinTextInputTest
         cut.Find("span.field-validation-valid").GetAttribute("data-valmsg-for")
             .ShouldBe("CharacterTypeInfo.SlotName");
     }
+
+    private class ScopeModel
+    {
+        public string Name { get; set; } = "";
+    }
+
+    private static BunitContext InteractiveContext()
+    {
+        var ctx = new BunitContext();
+        ctx.JSInterop.Mode = JSRuntimeMode.Loose;
+        ctx.SetRendererInfo(new Microsoft.AspNetCore.Components.RendererInfo("WebAssembly", isInteractive: true));
+        return ctx;
+    }
+
+    /// <summary>Внутри JoinEditForm (область InputNameScope) производное имя поля получает префикс FormName.</summary>
+    [Fact]
+    public void NameScope_RendersPrefixedName()
+    {
+        using var ctx = InteractiveContext();
+        var model = new ScopeModel();
+        var cut = ctx.Render<JoinEditForm>(p => p
+            .Add(x => x.FormName, "AddPaymentType")
+            .Add(x => x.EditContext, new Microsoft.AspNetCore.Components.Forms.EditContext(model))
+            .AddChildContent<JoinTextInput>(f => f
+                .Add(x => x.Value, model.Name)
+                .Add(x => x.ValueChanged, _ => { })
+                .Add(x => x.ValueExpression, () => model.Name)));
+
+        cut.Find("input").GetAttribute("name").ShouldBe("AddPaymentType.Name");
+    }
+
+    /// <summary>Явный параметр Name побеждает над областью — нативный постинг MVC-форм не ломается.</summary>
+    [Fact]
+    public void NameScope_ExplicitNameWins()
+    {
+        using var ctx = InteractiveContext();
+        var model = new ScopeModel();
+        var cut = ctx.Render<JoinEditForm>(p => p
+            .Add(x => x.FormName, "AddPaymentType")
+            .Add(x => x.EditContext, new Microsoft.AspNetCore.Components.Forms.EditContext(model))
+            .AddChildContent<JoinTextInput>(f => f
+                .Add(x => x.Value, model.Name)
+                .Add(x => x.ValueChanged, _ => { })
+                .Add(x => x.ValueExpression, () => model.Name)
+                .Add(x => x.Name, "CharacterTypeInfo.SlotName")));
+
+        cut.Find("input").GetAttribute("name").ShouldBe("CharacterTypeInfo.SlotName");
+    }
+
+    /// <summary>Клиентская валидация ищет span по эффективному (квалифицированному) имени.</summary>
+    [Fact]
+    public void NameScope_Required_ValidationSpanUsesPrefixedName()
+    {
+        using var ctx = InteractiveContext();
+        var model = new ScopeModel();
+        var cut = ctx.Render<JoinEditForm>(p => p
+            .Add(x => x.FormName, "AddPaymentType")
+            .Add(x => x.EditContext, new Microsoft.AspNetCore.Components.Forms.EditContext(model))
+            .AddChildContent<JoinTextInput>(f => f
+                .Add(x => x.Value, model.Name)
+                .Add(x => x.ValueChanged, _ => { })
+                .Add(x => x.ValueExpression, () => model.Name)
+                .Add(x => x.Required, true)));
+
+        cut.Find("span.field-validation-valid").GetAttribute("data-valmsg-for")
+            .ShouldBe("AddPaymentType.Name");
+    }
+
+    /// <summary>Вне области имена не меняются: формы, не переведённые на JoinEditForm, работают как раньше.</summary>
+    [Fact]
+    public void NoScope_KeepsBareFieldName()
+    {
+        using var ctx = new BunitContext();
+        var model = new ScopeModel();
+        var cut = ctx.Render<JoinTextInput>(p => p
+            .Add(x => x.Value, model.Name)
+            .Add(x => x.ValueChanged, _ => { })
+            .Add(x => x.ValueExpression, () => model.Name));
+
+        cut.Find("input").GetAttribute("name").ShouldBe("Name");
+    }
 }

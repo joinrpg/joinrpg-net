@@ -9,7 +9,7 @@
     return;
 }
 
-<EditForm FormName="AddMaster" EditContext="@editContext" OnValidSubmit="HandleValidSubmit">
+<JoinEditForm FormName="AddMaster" EditContext="@editContext" OnValidSubmit="HandleValidSubmit">
     <DataAnnotationsValidator />
     <ValidationSummary />
 
@@ -33,7 +33,7 @@
 
     <JoinButton Preset="ButtonPreset.Add" Submit="true" Label="Добавить" Disabled="@formInvalid" />
     | <a href="@UserProfileUrl">вернуться в профиль пользователя</a>
-</EditForm>
+</JoinEditForm>
 
 @code {
     private EditContext? editContext;

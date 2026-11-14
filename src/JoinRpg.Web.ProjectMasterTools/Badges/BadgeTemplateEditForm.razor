@@ -15,7 +15,7 @@
 
 <div class="badge-template-editor">
     <div class="badge-template-editor__form">
-        <EditForm Model="model" OnValidSubmit="OnSave">
+        <JoinEditForm FormName="BadgeTemplateEdit" Model="model" OnValidSubmit="OnSave">
             <DataAnnotationsValidator />
             <ValidationSummary />
             <JoinPanel>
@@ -91,7 +91,7 @@
             {
                 <JoinAlert Variation="VariationStyleEnum.Danger">@error</JoinAlert>
             }
-        </EditForm>
+        </JoinEditForm>
     </div>
     <div class="badge-template-editor__preview">
         <h4>Превью</h4>
