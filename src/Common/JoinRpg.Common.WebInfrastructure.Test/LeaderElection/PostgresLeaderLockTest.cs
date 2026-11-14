@@ -55,6 +55,7 @@ public class PostgresLeaderLockTest : IAsyncLifetime
         first.ShouldNotBeNull();
 
         await TerminateAdvisoryLockHoldersAsync();
+        await first.DisposeAsync(); // best-effort: соединение уже убито сервером
 
         using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(10));
         (await lockB.TryAcquireAsync(Key, timeout.Token)).ShouldNotBeNull();

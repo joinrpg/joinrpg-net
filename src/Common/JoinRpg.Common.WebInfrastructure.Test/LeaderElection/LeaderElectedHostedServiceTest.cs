@@ -131,8 +131,7 @@ public class LeaderElectedHostedServiceTest : IAsyncLifetime
             await PollUntilAsync(() => TotalRuns == 1, "ни один инстанс не стал лидером");
 
             // Лидером может стать любой хост: останавливаем того, кто держит лок.
-            var (leader, follower) = CountingService<Host1>.Runs == 1 ? (hosted1, hosted2) : (hosted2, hosted1);
-            _ = follower;
+            var leader = CountingService<Host1>.Runs == 1 ? hosted1 : hosted2;
 
             await leader.StopAsync(CancellationToken.None);
 
@@ -187,16 +186,143 @@ public class LeaderElectedHostedServiceTest : IAsyncLifetime
     {
         var (provider1, hosted1) = BuildHost<Host1>(lockKey: 6223);
         var (provider2, hosted2) = BuildHost<Host2>(lockKey: 6223);
-        await hosted1.StartAsync(CancellationToken.None);
-        await hosted2.StartAsync(CancellationToken.None);
-        await PollUntilAsync(() => TotalRuns == 1, "ни один инстанс не стал лидером");
-        await hosted1.StopAsync(CancellationToken.None);
-        await hosted2.StopAsync(CancellationToken.None);
-        provider1.Dispose();
-        provider2.Dispose();
+        try
+        {
+            await hosted1.StartAsync(CancellationToken.None);
+            await hosted2.StartAsync(CancellationToken.None);
+            await PollUntilAsync(() => TotalRuns == 1, "ни один инстанс не стал лидером");
+        }
+        finally
+        {
+            await hosted1.StopAsync(CancellationToken.None);
+            await hosted2.StopAsync(CancellationToken.None);
+            provider1.Dispose();
+            provider2.Dispose();
+        }
 
         var lockC = new PostgresLeaderLock(postgres.GetConnectionString());
         (await lockC.TryAcquireAsync(6223)).ShouldNotBeNull("лок не освободился после остановки хостов");
+    }
+
+    [Fact]
+    public async Task CompletedServiceDoesNotCauseTightRetryLoop()
+    {
+        var alwaysLeaderLock = new AlwaysLeaderLock();
+        var provider = new ServiceCollection().AddScoped<ImmediateService>().BuildServiceProvider();
+        using var hosted = new LeaderElectedHostedService<ImmediateService>(
+            alwaysLeaderLock, provider, NullLogger<LeaderElectedHostedService<ImmediateService>>.Instance,
+            TimeProvider.System, lockKey: 6224, retryDelay: TimeSpan.FromMilliseconds(50));
+
+        await hosted.StartAsync(CancellationToken.None);
+        try
+        {
+            await Task.Delay(TimeSpan.FromMilliseconds(400));
+
+            // С бэкоффом после штатного завершения сервиса за 400 мс успеет ~8 итераций;
+            // без него цикл открывал бы новые соединения тысячи раз в секунду.
+            alwaysLeaderLock.Calls.ShouldBeInRange(3, 30);
+        }
+        finally
+        {
+            await hosted.StopAsync(CancellationToken.None);
+        }
+    }
+
+    [Fact]
+    public async Task StopWaitsForServiceCleanup()
+    {
+        SlowCleanupService.Reset();
+        var config = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["ConnectionStrings:DataProtection"] = postgres.GetConnectionString(),
+            })
+            .Build();
+        var provider = new ServiceCollection()
+            .AddLogging()
+            .AddScoped<ScopedResource>()
+            .AddLeaderElectedHostedService<SlowCleanupService>(config, lockKey: 6225, retryDelay: TimeSpan.FromMilliseconds(100))
+            .BuildServiceProvider();
+        var hosted = provider.GetRequiredService<IHostedService>();
+
+        await hosted.StartAsync(CancellationToken.None);
+        try
+        {
+            await PollUntilAsync(() => SlowCleanupService.Runs == 1, "сервис не стал лидером");
+
+            await hosted.StopAsync(CancellationToken.None);
+
+            SlowCleanupService.CleanupCompleted.ShouldBe(1,
+                "StopAsync вернулся до завершения дочистки сервиса (scope dispose'ился раньше времени)");
+        }
+        finally
+        {
+            await hosted.StopAsync(CancellationToken.None);
+            provider.Dispose();
+        }
+    }
+
+    private sealed class ScopedResource : IDisposable
+    {
+        private bool disposed;
+
+        public void EnsureAlive() => ObjectDisposedException.ThrowIf(disposed, this);
+
+        public void Dispose() => disposed = true;
+    }
+
+    private sealed class SlowCleanupService(ScopedResource resource) : ILeaderElectedService
+    {
+        public static int Runs;
+        public static int CleanupCompleted;
+
+        public static void Reset()
+        {
+            Runs = 0;
+            CleanupCompleted = 0;
+        }
+
+        public async Task ExecuteAsync(CancellationToken cancellationToken)
+        {
+            Interlocked.Increment(ref Runs);
+            try
+            {
+                await Task.Delay(Timeout.Infinite, cancellationToken);
+            }
+            catch (OperationCanceledException)
+            {
+                // Хост останавливается — дочищаемся.
+            }
+
+            resource.EnsureAlive();
+            await Task.Delay(100, cancellationToken);
+            Interlocked.Increment(ref CleanupCompleted);
+        }
+    }
+
+    private sealed class ImmediateService : ILeaderElectedService
+    {
+        public Task ExecuteAsync(CancellationToken cancellationToken) => Task.CompletedTask;
+    }
+
+    private sealed class AlwaysLeaderLock : ILeaderLock
+    {
+        public int Calls;
+
+        public Task<ILeaderLockHandle?> TryAcquireAsync(long lockKey, CancellationToken cancellationToken = default)
+        {
+            Interlocked.Increment(ref Calls);
+            return Task.FromResult<ILeaderLockHandle?>(FakeHandle.Instance);
+        }
+    }
+
+    private sealed class FakeHandle : ILeaderLockHandle
+    {
+        public static readonly FakeHandle Instance = new();
+
+        public Task ProbeAsync() => Task.Delay(Timeout.Infinite);
+
+        public ValueTask DisposeAsync() => ValueTask.CompletedTask;
     }
 
     private sealed class FlakyLock(int failuresLeft) : ILeaderLock

@@ -5,4 +5,10 @@ namespace JoinRpg.Common.WebInfrastructure.LeaderElection;
 /// лок и закрывает выделенное под него соединение. Если владелец умер раньше — сервер освобождает
 /// лок сам при обрыве сессии, и handle становится пустышкой.
 /// </summary>
-internal interface ILeaderLockHandle : IAsyncDisposable;
+internal interface ILeaderLockHandle : IAsyncDisposable
+{
+    /// <summary>
+    /// Проверка, что лок ещё жив (соединение, держащее его, не умерло). Бросает при мёртвом соединении.
+    /// </summary>
+    Task ProbeAsync();
+}

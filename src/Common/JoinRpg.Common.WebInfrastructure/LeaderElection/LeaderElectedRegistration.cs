@@ -21,6 +21,11 @@ public static class LeaderElectedRegistration
     /// <param name="connectionStringName">Имя строки подключения к PostgreSQL. По умолчанию —
     /// база ключей Data Protection, она есть у всех хостов.</param>
     /// <param name="retryDelay">Пауза между попытками перехватить лок и после сбоев. По умолчанию — 5 секунд.</param>
+    /// <remarks>
+    /// <c>ILeaderLock</c> регистрируется через <c>TryAddSingleton</c>: при нескольких вызовах
+    /// с разными базами повторная регистрация игнорируется и все сервисы используют лок
+    /// первого вызова.
+    /// </remarks>
     public static IServiceCollection AddLeaderElectedHostedService<TService>(
         this IServiceCollection services,
         IConfiguration configuration,

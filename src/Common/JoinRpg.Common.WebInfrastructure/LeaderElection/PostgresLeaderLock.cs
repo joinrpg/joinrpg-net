@@ -27,9 +27,9 @@ internal sealed class PostgresLeaderLock : ILeaderLock
     public async Task<ILeaderLockHandle?> TryAcquireAsync(long lockKey, CancellationToken cancellationToken = default)
     {
         var connection = new NpgsqlConnection(connectionString);
-        await connection.OpenAsync(cancellationToken);
         try
         {
+            await connection.OpenAsync(cancellationToken);
             await using var command = new NpgsqlCommand("SELECT pg_try_advisory_lock($1)", connection);
             _ = command.Parameters.AddWithValue(lockKey);
             var acquired = await command.ExecuteScalarAsync(cancellationToken);
@@ -70,7 +70,12 @@ internal sealed class PostgresLeaderLockHandle : ILeaderLockHandle
     public async Task ProbeAsync()
     {
         var current = connection ?? throw new ObjectDisposedException(nameof(PostgresLeaderLockHandle));
-        await using var command = new NpgsqlCommand("SELECT 1", current);
+        await using var command = new NpgsqlCommand("SELECT 1", current)
+        {
+            // Probe не должен зависнуть на мёртвом сокете дольше одного интервала:
+            // timeout превращает зависание в бросок, и лок перезахватывается.
+            CommandTimeout = (int)TimeSpan.FromSeconds(5).TotalSeconds,
+        };
         _ = await command.ExecuteScalarAsync();
     }
 
