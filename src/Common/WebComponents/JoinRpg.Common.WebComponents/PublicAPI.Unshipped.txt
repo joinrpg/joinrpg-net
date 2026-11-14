@@ -20,6 +20,14 @@ JoinRpg.Common.WebComponents.JoinMarkdownTextArea.MaxLength.get -> int?
 JoinRpg.Common.WebComponents.JoinMarkdownTextArea.MaxLength.set -> void
 JoinRpg.Common.WebComponents.JoinMarkdownTextArea.ShowCounter.get -> bool
 JoinRpg.Common.WebComponents.JoinMarkdownTextArea.ShowCounter.set -> void
+JoinRpg.Common.WebComponents.JoinMenuItem.AutoConfirm.get -> bool
+JoinRpg.Common.WebComponents.JoinMenuItem.AutoConfirm.set -> void
+JoinRpg.Common.WebComponents.JoinMenuItem.AutoConfirmMessage.get -> string?
+JoinRpg.Common.WebComponents.JoinMenuItem.AutoConfirmMessage.set -> void
+JoinRpg.Common.WebComponents.JoinMenuItem.ConfirmStyle.get -> JoinRpg.Common.WebComponents.VariationStyleEnum?
+JoinRpg.Common.WebComponents.JoinMenuItem.ConfirmStyle.set -> void
+JoinRpg.Common.WebComponents.JoinMenuItem.OnClick.get -> Microsoft.AspNetCore.Components.EventCallback<JoinRpg.Common.WebComponents.ButtonClickEventArgs!>
+JoinRpg.Common.WebComponents.JoinMenuItem.OnClick.set -> void
 JoinRpg.Common.WebComponents.JoinRpgDatePicker.EditContext.get -> Microsoft.AspNetCore.Components.Forms.EditContext?
 JoinRpg.Common.WebComponents.JoinRpgDatePicker.EditContext.set -> void
 JoinRpg.Common.WebComponents.JoinRpgDatePicker.ValueExpression.get -> System.Linq.Expressions.Expression<System.Func<System.DateOnly?>!>?
@@ -35,5 +43,6 @@ JoinRpg.Common.WebComponents.JoinTextArea.ShowCounter.set -> void
 ~override JoinRpg.Common.WebComponents.Dialog.AutoConfirmDialog.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
 ~override JoinRpg.Common.WebComponents.Dialog.AutoConfirmDialog.OnParametersSet() -> void
 ~override JoinRpg.Common.WebComponents.JoinInteractiveGate.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+~override JoinRpg.Common.WebComponents.JoinMenuItem.OnParametersSet() -> void
 ~override JoinRpg.Common.WebComponents.JoinRpgDatePicker.OnParametersSet() -> void
 ~override JoinRpg.Common.WebComponents.JoinRpgTimePicker.OnParametersSet() -> void
