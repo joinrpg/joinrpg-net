@@ -33,7 +33,8 @@ public class UserIdentifiersParseTest
     [Fact]
     public void TelegramShouldRoundTrip()
     {
-        var val = new TelegramSocialLink(new TelegramChatId(12), new PrefferedName("leotsarev"));
+        // Round-trip через строку теряет верификацию — сравниваем с неверифицированной ссылкой.
+        var val = new TelegramSocialLink(new TelegramChatId(12), new PrefferedName("leotsarev"), isVerified: false);
         TelegramSocialLink.TryParse(val.ToString(), provider: null, out var parseResult).ShouldBeTrue();
         parseResult.ShouldBe(val);
     }

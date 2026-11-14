@@ -31,7 +31,7 @@ public class UserFieldPrivacyTest
     private static readonly UserInfo MentionedUser = new(
         new UserIdentification(7),
         Social: new UserSocialNetworks(
-            new TelegramSocialLink(new TelegramChatId(77777), new PrefferedName("secret_telegram")),
+            new TelegramSocialLink(new TelegramChatId(77777), new PrefferedName("secret_telegram"), isVerified: false),
             LiveJournal: null,
             AllrpgInfoId: null,
             Vk: new VkSocialLink(777, new PrefferedName("secret_vk"), isVerified: true),

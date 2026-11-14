@@ -206,7 +206,7 @@ public class GetUserInfoMethodTest
     [Fact]
     public async Task WithProfileScope_UnverifiedTelegram_NoChatId()
     {
-        var telegram = new TelegramSocialLink(null, new PrefferedName("ivan_petrov"));
+        var telegram = new TelegramSocialLink(null, new PrefferedName("ivan_petrov"), isVerified: false);
         var dict = await GetOkResult(
             BuildPrincipal(UserId1.ToString(), OpenIddictConstants.Scopes.Profile),
             BuildUserInfo(telegram: telegram));

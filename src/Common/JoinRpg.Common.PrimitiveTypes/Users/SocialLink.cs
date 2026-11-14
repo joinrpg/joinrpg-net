@@ -42,9 +42,14 @@ public sealed record TelegramSocialLink : SocialLink, ISpanParsable<TelegramSoci
     /// <inheritdoc />
     public override bool CanLogin => false;
 
-    /// <summary>Нужно указать хотя бы один из параметров: <paramref name="chatId"/> или <paramref name="prettyName"/>.</summary>
+    /// <summary>
+    /// Нужно указать хотя бы один из параметров: <paramref name="chatId"/> или <paramref name="prettyName"/>.
+    /// Ссылка с <paramref name="chatId"/> по умолчанию считается верифицированной: chat id получают
+    /// только из привязанного ExternalLogin. Для неверифицированных данных (чужой ввод, legacy-поля)
+    /// передавайте <paramref name="isVerified"/>: false.
+    /// </summary>
     /// <exception cref="ArgumentException">Оба параметра пустые.</exception>
-    public TelegramSocialLink(TelegramChatId? chatId, PrefferedName? prettyName = null, bool isVerified = false)
+    public TelegramSocialLink(TelegramChatId? chatId, PrefferedName? prettyName = null, bool isVerified = true)
         : base(NormalizeUserName(prettyName), isVerified)
     {
         var normalizedPrettyName = NormalizeUserName(prettyName);
@@ -56,20 +61,24 @@ public sealed record TelegramSocialLink : SocialLink, ISpanParsable<TelegramSoci
         ChatId = chatId;
     }
 
-    /// <summary>Строит ссылку из id, если он задан; иначе возвращает <c>null</c>.</summary>
-    public static TelegramSocialLink? FromOptional(long? id, PrefferedName? userName, bool isVerified = false)
+    /// <summary>
+    /// Строит ссылку из id, если он задан; иначе возвращает <c>null</c>. Ссылка по умолчанию
+    /// считается верифицированной (chat id получают только из привязанного ExternalLogin);
+    /// для неверифицированных данных передавайте <paramref name="isVerified"/>: false.
+    /// </summary>
+    public static TelegramSocialLink? FromOptional(long? id, PrefferedName? userName, bool isVerified = true)
         => id is null ? null : new TelegramSocialLink(new TelegramChatId(id.Value), userName, isVerified);
 
     /// <inheritdoc cref="FromOptional(long?, PrefferedName?, bool)" />
-    public static TelegramSocialLink? FromOptional(string? key, PrefferedName? userName, bool isVerified = false)
+    public static TelegramSocialLink? FromOptional(string? key, PrefferedName? userName, bool isVerified = true)
         => string.IsNullOrWhiteSpace(key) ? null : new TelegramSocialLink(new TelegramChatId(long.Parse(key)), userName, isVerified);
 
     /// <inheritdoc cref="FromOptional(long?, PrefferedName?, bool)" />
-    public static TelegramSocialLink? FromOptional(long? id, string? userName, bool isVerified = false)
+    public static TelegramSocialLink? FromOptional(long? id, string? userName, bool isVerified = true)
         => FromOptional(id, PrefferedName.FromOptional(userName), isVerified);
 
     /// <inheritdoc cref="FromOptional(long?, PrefferedName?, bool)" />
-    public static TelegramSocialLink? FromOptional(string? key, string? userName, bool isVerified = false)
+    public static TelegramSocialLink? FromOptional(string? key, string? userName, bool isVerified = true)
         => FromOptional(key, PrefferedName.FromOptional(userName), isVerified);
 
     /// <summary>
@@ -88,7 +97,8 @@ public sealed record TelegramSocialLink : SocialLink, ISpanParsable<TelegramSoci
 
     /// <summary>
     /// Парсит строку вида «Telegram(123, @user)» или «123, @user». Делит только по ',': chat id
-    /// каналов/супергрупп отрицательный, '-' — часть числа, а не разделитель.
+    /// каналов/супергрупп отрицательный, '-' — часть числа, а не разделитель. Парсинг строки не
+    /// верифицирует владельца: результат всегда неверифицированный.
     /// </summary>
     public static bool TryParse([NotNullWhen(true)] ReadOnlySpan<char> value, IFormatProvider? provider, [MaybeNullWhen(false)] out TelegramSocialLink result)
     {
@@ -102,7 +112,8 @@ public sealed record TelegramSocialLink : SocialLink, ISpanParsable<TelegramSoci
         {
             if (long.TryParse(val.Trim(), provider, out var i))
             {
-                result = new TelegramSocialLink(new TelegramChatId(i));
+                // Парсинг строки не верифицирует владельца — ссылка неверифицированная.
+                result = new TelegramSocialLink(new TelegramChatId(i), isVerified: false);
                 return true;
             }
 
@@ -113,7 +124,8 @@ public sealed record TelegramSocialLink : SocialLink, ISpanParsable<TelegramSoci
         if (long.TryParse(val[..commaIndex].Trim(), provider, out var i1))
         {
             var usernameSpan = val[(commaIndex + 1)..].Trim().TrimStart('@');
-            result = new TelegramSocialLink(new TelegramChatId(i1), string.IsNullOrWhiteSpace(usernameSpan.ToString()) ? null : new PrefferedName(usernameSpan.ToString()));
+            // Парсинг строки не верифицирует владельца — ссылка неверифицированная.
+            result = new TelegramSocialLink(new TelegramChatId(i1), string.IsNullOrWhiteSpace(usernameSpan.ToString()) ? null : new PrefferedName(usernameSpan.ToString()), isVerified: false);
             return true;
         }
 
