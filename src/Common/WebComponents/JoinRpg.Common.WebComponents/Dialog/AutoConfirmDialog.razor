@@ -1,0 +1,56 @@
+@using JoinRpg.Common.WebComponents.Dialog
+<JoinMessageDialog
+    @ref="_dialogRef"
+    Type="@Type"
+    Caption="@Caption"
+    Buttons="@_buttons">
+    @ChildContent
+</JoinMessageDialog>
+@code {
+    /// <summary>
+    /// Caption of the confirmation dialog. When null, default confirmation caption is used.
+    /// </summary>
+    [Parameter]
+    public string? Caption { get; set; }
+
+    /// <summary>
+    /// Message dialog type. Default is <see cref="MessageDialogType.Confirmation"/>.
+    /// </summary>
+    [Parameter]
+    public MessageDialogType Type { get; set; } = MessageDialogType.Confirmation;
+
+    /// <summary>
+    /// Message of the confirmation dialog. The fragment is evaluated lazily, when the dialog is rendered,
+    /// so it may depend on state that is set right before showing the dialog.
+    /// </summary>
+    [Parameter, EditorRequired]
+    public RenderFragment ChildContent { get; set; } = null!;
+
+    /// <summary>
+    /// OK button of the confirmation dialog. Cancel button is added automatically.
+    /// </summary>
+    [Parameter, EditorRequired]
+    public DialogButton ConfirmButton { get; set; } = null!;
+
+    private DialogButton[] _buttons = null!;
+    private JoinMessageDialog? _dialogRef;
+
+    /// <inheritdoc />
+    protected override void OnParametersSet()
+    {
+        _buttons = [ConfirmButton, new DialogButton(ButtonPreset.Cancel)];
+        base.OnParametersSet();
+    }
+
+    /// <summary>
+    /// Shows the confirmation dialog modally. Returns true when the user confirms, false when cancels.
+    /// </summary>
+    public Task<bool> ConfirmAsync()
+    {
+        if (_dialogRef is null)
+        {
+            throw new InvalidOperationException($"{nameof(AutoConfirmDialog)} should be rendered before calling {nameof(ConfirmAsync)}");
+        }
+        return _dialogRef.ShowBoolModalAsync();
+    }
+}

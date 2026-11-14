@@ -53,6 +53,12 @@ else
                                     AutoConfirm="true" AutoConfirmMessage="@($"Отклонить расход «{expense.Name}»?")"
                                     OnClick="@(args => Decide(args, expense, Client.RejectExpense))" />
                     }
+                    @if (CanDeclineApproved(expense))
+                    {
+                        <JoinButton Label="Отклонить" Style="VariationStyleEnum.Danger"
+                                    AutoConfirm="true" AutoConfirmMessage="@($"Отклонить расход «{expense.Name}»?")"
+                                    OnClick="@(args => Decide(args, expense, Client.RejectExpense))" />
+                    }
                 </JoinButtonGroup>
             }
         </RowActions>
@@ -108,6 +114,10 @@ else
 
     private bool CanDecide(ExpenseViewModel expense)
         => canManageMoney && expense.State == ExpenseStateView.Proposed;
+
+    // Отклонять одобренное может только мастер с правом на деньги
+    private bool CanDeclineApproved(ExpenseViewModel expense)
+        => canManageMoney && expense.State == ExpenseStateView.Approved;
 
     private async Task StartCreate()
     {

@@ -193,6 +193,72 @@ public class ExpensesPageTest : BunitContext
     }
 
     [Fact]
+    public void DeclineApprovedButtonVisibleOnlyForMoneyMaster()
+    {
+        expensesClient.Expenses = [Expense with { State = ExpenseStateView.Approved }];
+
+        var playerCut = Render<ExpensesPage>(p => p.Add(x => x.ProjectId, ProjectId));
+        var playerRow = playerCut.FindAll("tr").Single(row => row.TextContent.Contains("Аренда зала"));
+        playerRow.QuerySelectorAll("button").Any(button => button.TextContent.Trim() == "Отклонить").ShouldBeFalse();
+
+        expensesClient.CanManageMoneyResult = true;
+        var masterCut = Render<ExpensesPage>(p => p.Add(x => x.ProjectId, ProjectId));
+        var masterRow = masterCut.FindAll("tr").Single(row => row.TextContent.Contains("Аренда зала"));
+        masterRow.QuerySelectorAll("button")
+            .Any(button => button.Closest("dialog") is null && button.TextContent.Trim() == "Отклонить").ShouldBeTrue();
+    }
+
+    [Fact]
+    public async Task DeclineApprovedExpenseCancelLeavesExpenseUntouched()
+    {
+        expensesClient.CanManageMoneyResult = true;
+        expensesClient.Expenses = [Expense with { State = ExpenseStateView.Approved }];
+        var cut = Render<ExpensesPage>(p => p.Add(x => x.ProjectId, ProjectId));
+
+        var row = cut.FindAll("tr").Single(row => row.TextContent.Contains("Аренда зала"));
+        // Клик синхронный: обработчик кнопки ждёт закрытия диалога
+        row.QuerySelectorAll("button")
+            .Single(button => button.Closest("dialog") is null && button.TextContent.Trim() == "Отклонить")
+            .Click();
+
+        var confirmDialog = cut.FindAll("dialog").Single(dialog => dialog.TextContent.Contains("Отклонить расход «Аренда зала»?"));
+        var cancelButton = confirmDialog.QuerySelectorAll(".join-dialog-footer button")[1];
+        await cancelButton.ClickAsync(new Microsoft.AspNetCore.Components.Web.MouseEventArgs());
+        await confirmDialog.TriggerEventAsync("onclose", EventArgs.Empty);
+
+        expensesClient.Rejected.ShouldBeNull();
+    }
+
+    [Fact]
+    public async Task DeclineApprovedExpenseConfirmsAndRejects()
+    {
+        expensesClient.CanManageMoneyResult = true;
+        expensesClient.Expenses =
+        [
+            Expense with { State = ExpenseStateView.Approved },
+            Expense with { ExpenseId = new ExpenseIdentification(ProjectId, 2), Name = "Свежий расход", State = ExpenseStateView.Approved },
+        ];
+        var cut = Render<ExpensesPage>(p => p.Add(x => x.ProjectId, ProjectId));
+
+        var row = cut.FindAll("tr").Single(row => row.TextContent.Contains("Аренда зала"));
+        // AutoConfirm-диалог кнопки рендерится внутри строки — его кнопки не считаются.
+        // Клик синхронный: обработчик кнопки ждёт закрытия диалога.
+        row.QuerySelectorAll("button")
+            .Single(button => button.Closest("dialog") is null && button.TextContent.Trim() == "Отклонить")
+            .Click();
+
+        // ExpenseEditDialog всегда присутствует в разметке, а подтверждение — у каждой
+        // кнопки «Отклонить»: ищем диалог по полному тексту сообщения
+        var confirmDialog = cut.FindAll("dialog").Single(dialog => dialog.TextContent.Contains("Отклонить расход «Аренда зала»?"));
+
+        var confirmButton = confirmDialog.QuerySelectorAll(".join-dialog-footer button")[0];
+        await confirmButton.ClickAsync(new Microsoft.AspNetCore.Components.Web.MouseEventArgs());
+        await confirmDialog.TriggerEventAsync("onclose", EventArgs.Empty);
+
+        cut.WaitForAssertion(() => expensesClient.Rejected.ShouldBe(Expense.ExpenseId));
+    }
+
+    [Fact]
     public async Task SaveSendsFilledModelToServer()
     {
         var cut = Render<ExpensesPage>(p => p.Add(x => x.ProjectId, ProjectId));
@@ -307,7 +373,10 @@ public class ExpensesPageTest : BunitContext
         public Task<IReadOnlyCollection<ExpenseCategoryInfo>> GetCategories(ProjectIdentification projectId)
             => Task.FromResult<IReadOnlyCollection<ExpenseCategoryInfo>>([]);
 
-        public Task<bool> CanManageMoney(ProjectIdentification projectId) => Task.FromResult(false);
+        /// <summary>Результат <c>CanManageMoney</c>; false — обычный игрок без права на деньги.</summary>
+        public bool CanManageMoneyResult { get; set; }
+
+        public Task<bool> CanManageMoney(ProjectIdentification projectId) => Task.FromResult(CanManageMoneyResult);
 
         public Task<IReadOnlyCollection<string>> GetCategoryPathSuggestions(ProjectIdentification projectId)
             => Task.FromResult<IReadOnlyCollection<string>>([]);
@@ -337,8 +406,14 @@ public class ExpensesPageTest : BunitContext
         public Task ApproveExpense(ExpenseIdentification expenseId, string? comment)
             => throw new NotSupportedException();
 
+        /// <summary>Id расхода из последнего вызова <c>RejectExpense</c>; null — вызова не было.</summary>
+        public ExpenseIdentification? Rejected { get; private set; }
+
         public Task RejectExpense(ExpenseIdentification expenseId, string? comment)
-            => throw new NotSupportedException();
+        {
+            Rejected = expenseId;
+            return Task.CompletedTask;
+        }
     }
 
     private sealed class FakeMasterClient(UserInfoHeader[] masters) : IMasterClient
