@@ -1,3 +1,9 @@
 #nullable enable
-static JoinRpg.Common.PrimitiveTypes.TelegramSocialLink.FromOptional(long? id, string? userName, bool isVerified = false) -> JoinRpg.Common.PrimitiveTypes.TelegramSocialLink?
-static JoinRpg.Common.PrimitiveTypes.TelegramSocialLink.FromOptional(string? key, string? userName, bool isVerified = false) -> JoinRpg.Common.PrimitiveTypes.TelegramSocialLink?
+*REMOVED*JoinRpg.Common.PrimitiveTypes.TelegramSocialLink.TelegramSocialLink(JoinRpg.Common.PrimitiveTypes.TelegramChatId? chatId, JoinRpg.Common.PrimitiveTypes.PrefferedName? prettyName = null, bool isVerified = false) -> void
+*REMOVED*static JoinRpg.Common.PrimitiveTypes.TelegramSocialLink.FromOptional(long? id, JoinRpg.Common.PrimitiveTypes.PrefferedName? userName, bool isVerified = false) -> JoinRpg.Common.PrimitiveTypes.TelegramSocialLink?
+*REMOVED*static JoinRpg.Common.PrimitiveTypes.TelegramSocialLink.FromOptional(string? key, JoinRpg.Common.PrimitiveTypes.PrefferedName? userName, bool isVerified = false) -> JoinRpg.Common.PrimitiveTypes.TelegramSocialLink?
+JoinRpg.Common.PrimitiveTypes.TelegramSocialLink.TelegramSocialLink(JoinRpg.Common.PrimitiveTypes.TelegramChatId? chatId, JoinRpg.Common.PrimitiveTypes.PrefferedName? prettyName = null, bool isVerified = true) -> void
+static JoinRpg.Common.PrimitiveTypes.TelegramSocialLink.FromOptional(long? id, JoinRpg.Common.PrimitiveTypes.PrefferedName? userName, bool isVerified = true) -> JoinRpg.Common.PrimitiveTypes.TelegramSocialLink?
+static JoinRpg.Common.PrimitiveTypes.TelegramSocialLink.FromOptional(long? id, string? userName, bool isVerified = true) -> JoinRpg.Common.PrimitiveTypes.TelegramSocialLink?
+static JoinRpg.Common.PrimitiveTypes.TelegramSocialLink.FromOptional(string? key, JoinRpg.Common.PrimitiveTypes.PrefferedName? userName, bool isVerified = true) -> JoinRpg.Common.PrimitiveTypes.TelegramSocialLink?
+static JoinRpg.Common.PrimitiveTypes.TelegramSocialLink.FromOptional(string? key, string? userName, bool isVerified = true) -> JoinRpg.Common.PrimitiveTypes.TelegramSocialLink?

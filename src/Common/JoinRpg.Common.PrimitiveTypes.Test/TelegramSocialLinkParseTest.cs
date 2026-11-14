@@ -8,7 +8,7 @@ public class TelegramSocialLinkParseTest
     public void TelegramSocialLinkShouldParseWithoutName(string val)
     {
         TelegramSocialLink.TryParse(val, provider: null, out var parseResult).ShouldBeTrue();
-        parseResult.ShouldBe(new TelegramSocialLink(new TelegramChatId(11)));
+        parseResult.ShouldBe(new TelegramSocialLink(new TelegramChatId(11), isVerified: false));
     }
 
     [Theory]
@@ -16,7 +16,7 @@ public class TelegramSocialLinkParseTest
     public void TelegramSocialLinkShouldParseSomewhatBroken(string val)
     {
         TelegramSocialLink.TryParse(val, provider: null, out var parseResult).ShouldBeTrue();
-        parseResult.ShouldBe(new TelegramSocialLink(new TelegramChatId(351484506)));
+        parseResult.ShouldBe(new TelegramSocialLink(new TelegramChatId(351484506), isVerified: false));
     }
 
     [Theory]
@@ -25,13 +25,13 @@ public class TelegramSocialLinkParseTest
     public void TelegramSocialLinkShouldParseLong(string val)
     {
         TelegramSocialLink.TryParse(val, provider: null, out var parseResult).ShouldBeTrue();
-        parseResult.ShouldBe(new TelegramSocialLink(new TelegramChatId(5159651684)));
+        parseResult.ShouldBe(new TelegramSocialLink(new TelegramChatId(5159651684), isVerified: false));
     }
 
     [Fact]
     public void TelegramSocialLinkWithoutNameShouldRoundTrip()
     {
-        var version = new TelegramSocialLink(new TelegramChatId(11));
+        var version = new TelegramSocialLink(new TelegramChatId(11), isVerified: false);
         var val = version.ToString();
         TelegramSocialLink.TryParse(val, provider: null, out var parseResult).ShouldBeTrue();
         parseResult.ShouldBe(version);
@@ -43,13 +43,14 @@ public class TelegramSocialLinkParseTest
         var version = new TelegramSocialLink(new TelegramChatId(11), new PrefferedName(""));
         var val = version.ToString();
         TelegramSocialLink.TryParse(val, provider: null, out var parseResult).ShouldBeTrue();
-        parseResult.ShouldBe(new TelegramSocialLink(new TelegramChatId(11)));
+        parseResult.ShouldBe(new TelegramSocialLink(new TelegramChatId(11), isVerified: false));
     }
 
     [Fact]
     public void TelegramSocialLinkWithNameShouldRoundTrip()
     {
-        var version = new TelegramSocialLink(new TelegramChatId(11), new PrefferedName("leo"));
+        // ToString не кодирует верификацию: round-trip через строку её теряет.
+        var version = new TelegramSocialLink(new TelegramChatId(11), new PrefferedName("leo"), isVerified: false);
         var val = version.ToString();
         TelegramSocialLink.TryParse(val, provider: null, out var parseResult).ShouldBeTrue();
         parseResult.ShouldBe(version);
@@ -61,16 +62,57 @@ public class TelegramSocialLinkParseTest
     public void TelegramSocialLinkShouldParseNegativeChannelId(string val)
     {
         TelegramSocialLink.TryParse(val, provider: null, out var parseResult).ShouldBeTrue();
-        parseResult.ShouldBe(new TelegramSocialLink(new TelegramChatId(-1004315256401)));
+        parseResult.ShouldBe(new TelegramSocialLink(new TelegramChatId(-1004315256401), isVerified: false));
     }
 
     [Fact]
     public void NegativeChannelIdShouldRoundTrip()
     {
-        var version = new TelegramSocialLink(new TelegramChatId(-1004315256401));
+        var version = new TelegramSocialLink(new TelegramChatId(-1004315256401), isVerified: false);
         var val = version.ToString();
         TelegramSocialLink.TryParse(val, provider: null, out var parseResult).ShouldBeTrue();
         parseResult.ShouldBe(version);
+    }
+
+    [Fact]
+    public void CtorWithChatIdIsVerifiedByDefault()
+    {
+        var result = new TelegramSocialLink(new TelegramChatId(12345), new PrefferedName("leo"));
+
+        result.IsVerified.ShouldBeTrue();
+    }
+
+    [Fact]
+    public void CtorExplicitIsVerifiedFalseNotVerified()
+    {
+        var result = new TelegramSocialLink(new TelegramChatId(12345), new PrefferedName("leo"), isVerified: false);
+
+        result.IsVerified.ShouldBeFalse();
+    }
+
+    [Fact]
+    public void FromOptionalIsVerifiedByDefault()
+    {
+        var result = TelegramSocialLink.FromOptional(12345L, new PrefferedName("leo"));
+
+        result.ShouldNotBeNull();
+        result.IsVerified.ShouldBeTrue();
+    }
+
+    [Fact]
+    public void FromOptionalExplicitIsVerifiedFalseNotVerified()
+    {
+        var result = TelegramSocialLink.FromOptional(12345L, new PrefferedName("leo"), isVerified: false);
+
+        result.ShouldNotBeNull();
+        result.IsVerified.ShouldBeFalse();
+    }
+
+    [Fact]
+    public void TryParseIsNotVerified()
+    {
+        TelegramSocialLink.TryParse("Telegram(11)", provider: null, out var parseResult).ShouldBeTrue();
+        parseResult.IsVerified.ShouldBeFalse();
     }
 
     [Fact]

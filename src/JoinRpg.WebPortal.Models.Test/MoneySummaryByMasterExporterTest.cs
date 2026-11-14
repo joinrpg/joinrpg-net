@@ -50,7 +50,7 @@ public class MoneySummaryByMasterExporterTest
     public void ExtractsMasterColumns_WhenTelegramPresent()
     {
         var master = BuildUserInfo(
-            telegram: new TelegramSocialLink(new TelegramChatId(123), new PrefferedName("ivan")),
+            telegram: new TelegramSocialLink(new TelegramChatId(123), new PrefferedName("ivan"), isVerified: true),
             phoneNumber: "+79001234567");
 
         var values = ExtractRow(BuildBalance(master));
