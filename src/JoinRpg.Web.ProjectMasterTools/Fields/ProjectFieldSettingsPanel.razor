@@ -18,7 +18,7 @@
             со <HelpLink Link="fields/settings_for_role_list.html" Message="справкой о связи полей и сетки ролей" />.
         </JoinAlert>
 
-        <EditForm FormName="ProjectFieldSettings" EditContext="@editContext" OnSubmit="HandleSubmit">
+        <JoinEditForm FormName="ProjectFieldSettings" EditContext="@editContext" OnSubmit="HandleSubmit">
             <FormHorizontal>
                 <ValidationSummary Model="Model" />
                 <DataAnnotationsValidator />
@@ -48,7 +48,7 @@
                 </fieldset>
                 <SettingsSaveRow HasEditAccess="Model.HasEditAccess" Permission="Permission.CanChangeFields" Disabled="@formInvalid" />
             </FormHorizontal>
-        </EditForm>
+        </JoinEditForm>
 
         @if (success)
         {

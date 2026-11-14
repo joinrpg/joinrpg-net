@@ -14,7 +14,7 @@
             <JoinLoadingMessage />
             return;
         }
-        <EditForm FormName="ProjectTimeZoneSettings" EditContext="@editContext" OnSubmit="HandleSubmit">
+        <JoinEditForm FormName="ProjectTimeZoneSettings" EditContext="@editContext" OnSubmit="HandleSubmit">
             <FormHorizontal>
                 <ValidationSummary Model="Model" />
                 <DataAnnotationsValidator />
@@ -25,7 +25,7 @@
                 </fieldset>
                 <SettingsSaveRow HasEditAccess="Model.HasEditAccess" Disabled="@formInvalid" />
             </FormHorizontal>
-        </EditForm>
+        </JoinEditForm>
         @if (success)
         {
             <JoinAlert Variation="VariationStyleEnum.Success">Часовой пояс сохранён</JoinAlert>

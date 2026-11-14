@@ -9,7 +9,7 @@
             <JoinLoadingMessage />
             return;
         }
-        <EditForm FormName="ProjectPublishSettings" EditContext="@editContext" OnSubmit="HandleSubmit">
+        <JoinEditForm FormName="ProjectPublishSettings" EditContext="@editContext" OnSubmit="HandleSubmit">
             <FormHorizontal>
                 <ValidationSummary Model="Model" />
                 <DataAnnotationsValidator />
@@ -26,7 +26,7 @@
                 </fieldset>
                 <SettingsSaveRow HasEditAccess="Model.HasEditAccess" Disabled="@formInvalid" />
             </FormHorizontal>
-        </EditForm>
+        </JoinEditForm>
         @if (success)
         {
             <JoinAlert Variation="VariationStyleEnum.Success">Настройки публикации сохранены</JoinAlert>
