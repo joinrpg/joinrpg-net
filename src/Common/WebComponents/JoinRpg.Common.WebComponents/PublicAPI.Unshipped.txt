@@ -26,3 +26,25 @@ JoinRpg.Common.WebComponents.JoinTextArea.ShowCounter.set -> void
 ~override JoinRpg.Common.WebComponents.JoinInteractiveGate.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
 ~override JoinRpg.Common.WebComponents.JoinRpgDatePicker.OnParametersSet() -> void
 ~override JoinRpg.Common.WebComponents.JoinRpgTimePicker.OnParametersSet() -> void
+JoinRpg.Common.WebComponents.JoinEditForm
+JoinRpg.Common.WebComponents.JoinEditForm.AdditionalAttributes.get -> System.Collections.Generic.Dictionary<string!, object!>?
+JoinRpg.Common.WebComponents.JoinEditForm.AdditionalAttributes.set -> void
+JoinRpg.Common.WebComponents.JoinEditForm.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment!
+JoinRpg.Common.WebComponents.JoinEditForm.ChildContent.set -> void
+JoinRpg.Common.WebComponents.JoinEditForm.EditContext.get -> Microsoft.AspNetCore.Components.Forms.EditContext?
+JoinRpg.Common.WebComponents.JoinEditForm.EditContext.set -> void
+JoinRpg.Common.WebComponents.JoinEditForm.FormName.get -> string!
+JoinRpg.Common.WebComponents.JoinEditForm.FormName.set -> void
+JoinRpg.Common.WebComponents.JoinEditForm.GateMessage.get -> string?
+JoinRpg.Common.WebComponents.JoinEditForm.GateMessage.set -> void
+JoinRpg.Common.WebComponents.JoinEditForm.JoinEditForm() -> void
+JoinRpg.Common.WebComponents.JoinEditForm.Model.get -> object?
+JoinRpg.Common.WebComponents.JoinEditForm.Model.set -> void
+JoinRpg.Common.WebComponents.JoinEditForm.OnInvalidSubmit.get -> Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.Forms.EditContext>
+JoinRpg.Common.WebComponents.JoinEditForm.OnInvalidSubmit.set -> void
+JoinRpg.Common.WebComponents.JoinEditForm.OnSubmit.get -> Microsoft.AspNetCore.Components.EventCallback
+JoinRpg.Common.WebComponents.JoinEditForm.OnSubmit.set -> void
+JoinRpg.Common.WebComponents.JoinEditForm.OnValidSubmit.get -> Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.Forms.EditContext>
+JoinRpg.Common.WebComponents.JoinEditForm.OnValidSubmit.set -> void
+override JoinRpg.Common.WebComponents.JoinEditForm.OnParametersSet() -> void
+~override JoinRpg.Common.WebComponents.JoinEditForm.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
