@@ -150,12 +150,14 @@ options.Filters.Add<SerilogRazorPagesFilter>();
 ### Leader election
 
 Для фоновой логики, которая должна работать ровно на одной реплике из N (например, Telegram long polling —
-Bot API допускает одного активного poller'а на бота, а webhook из-за сетевой блокировки невозможен):
+Bot API допускает одного активного poller'а на бота, а webhook из-за сетевой блокировки невозможен).
+Перегрузка над `WebApplicationBuilder` конфигурацию берёт из builder'а; есть и вариант над
+`IServiceCollection` (там конфигурацию передают явно):
 
 ```csharp
 using JoinRpg.Common.WebInfrastructure.LeaderElection;
 
-services.AddLeaderElectedHostedService<MyPoller>(configuration);
+builder.AddLeaderElectedHostedService<MyPoller>();
 
 internal class MyPoller : ILeaderElectedService
 {

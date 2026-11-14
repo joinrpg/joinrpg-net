@@ -50,4 +50,16 @@ public static class LeaderElectedRegistration
             sp, key, retryDelay ?? TimeSpan.FromSeconds(5)));
         return services;
     }
+
+    /// <summary>
+    /// То же, что перегрузка над <see cref="IServiceCollection"/>, но конфигурация берётся
+    /// из <paramref name="builder"/> — вызывать из Program.cs с минимальным API.
+    /// </summary>
+    public static void AddLeaderElectedHostedService<TService>(
+        this WebApplicationBuilder builder,
+        string? lockKey = null,
+        string connectionStringName = "DataProtection",
+        TimeSpan? retryDelay = null)
+        where TService : class, ILeaderElectedService
+        => builder.Services.AddLeaderElectedHostedService<TService>(builder.Configuration, lockKey, connectionStringName, retryDelay);
 }

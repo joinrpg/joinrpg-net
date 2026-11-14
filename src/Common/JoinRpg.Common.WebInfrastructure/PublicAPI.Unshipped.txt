@@ -2,4 +2,5 @@
 JoinRpg.Common.WebInfrastructure.LeaderElection.ILeaderElectedService
 JoinRpg.Common.WebInfrastructure.LeaderElection.ILeaderElectedService.ExecuteAsync(System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task!
 JoinRpg.Common.WebInfrastructure.LeaderElection.LeaderElectedRegistration
+static JoinRpg.Common.WebInfrastructure.LeaderElection.LeaderElectedRegistration.AddLeaderElectedHostedService<TService>(this Microsoft.AspNetCore.Builder.WebApplicationBuilder! builder, string? lockKey = null, string! connectionStringName = "DataProtection", System.TimeSpan? retryDelay = null) -> void
 static JoinRpg.Common.WebInfrastructure.LeaderElection.LeaderElectedRegistration.AddLeaderElectedHostedService<TService>(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, Microsoft.Extensions.Configuration.IConfiguration! configuration, string? lockKey = null, string! connectionStringName = "DataProtection", System.TimeSpan? retryDelay = null) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!

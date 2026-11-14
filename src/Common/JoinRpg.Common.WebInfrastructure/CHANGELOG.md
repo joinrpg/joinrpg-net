@@ -5,7 +5,7 @@
 ## Не выпущено
 
 ### Добавлено
-- `AddLeaderElectedHostedService<TService>(configuration, lockKey = null)`: выбор лидера из N реплик через PostgreSQL advisory lock (`pg_try_advisory_lock`) в существующей БД Data Protection (`ConnectionStrings:DataProtection` по умолчанию; отдельная база и миграции не нужны). Ключ лока — строка (кодируется стабильным SHA-256-хешем в `bigint`), по умолчанию — имя типа `TService`. Лидер держит выделенное непулинговое соединение и крутит `TService : ILeaderElectedService`; при смерти/потере лидера другая реплика подхватывает без ручного вмешательства. Снимает блокер `replicas: 1` для фоновых задач (например, Telegram long polling). ([#6220](https://github.com/joinrpg/joinrpg-net/issues/6220))
+- `AddLeaderElectedHostedService<TService>(configuration, lockKey = null)`: выбор лидера из N реплик через PostgreSQL advisory lock (`pg_try_advisory_lock`) в существующей БД Data Protection (`ConnectionStrings:DataProtection` по умолчанию; отдельная база и миграции не нужны). Перегрузка над `WebApplicationBuilder` конфигурацию берёт из builder'а. Ключ лока — строка (кодируется стабильным SHA-256-хешем в `bigint`), по умолчанию — имя типа `TService`. Лидер держит выделенное непулинговое соединение и крутит `TService : ILeaderElectedService`; при смерти/потере лидера другая реплика подхватывает без ручного вмешательства. Снимает блокер `replicas: 1` для фоновых задач (например, Telegram long polling). ([#6220](https://github.com/joinrpg/joinrpg-net/issues/6220))
 - При логине claims из `connect/user_info` мёржатся в principal (best effort): ник, аватар и другие данные IdPortal доступны в `IJoinUserLoginHandler.HandleLoginAsync` без сервисных вызовов.
 
 ### Изменено
