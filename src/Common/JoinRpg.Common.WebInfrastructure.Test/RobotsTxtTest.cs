@@ -5,8 +5,9 @@ namespace JoinRpg.Common.WebInfrastructure;
 
 public class RobotsTxtTest
 {
-    private const string AllowEverything = "User-agent: *\nDisallow: /health\nDisallow: /metrics\n";
-    private const string DisallowEverything = "User-agent: *\nDisallow: /\n";
+    private const string CrawlDelayGroup = "User-agent: Baiduspider-render\nCrawl-delay: 10\nDisallow: /health\nDisallow: /metrics\n";
+    private const string AllowEverything = CrawlDelayGroup + "\nUser-agent: *\nDisallow: /health\nDisallow: /metrics\n";
+    private const string DisallowEverything = "User-agent: Baiduspider-render\nDisallow: /\n\nUser-agent: *\nDisallow: /\n";
 
     [Fact]
     public void WithoutSettingsEverythingIsAllowed()
@@ -50,6 +51,6 @@ public class RobotsTxtTest
         var options = new RobotsTxtOptions { MainHost = "joinrpg.ru", DisallowedPaths = ["/x-api"] };
 
         RobotsTxtExtensions.BuildRobotsTxt("joinrpg.ru", options)
-            .ShouldBe("User-agent: *\nDisallow: /health\nDisallow: /metrics\nDisallow: /x-api\n");
+            .ShouldBe(CrawlDelayGroup + "Disallow: /x-api\n\nUser-agent: *\nDisallow: /health\nDisallow: /metrics\nDisallow: /x-api\n");
     }
 }

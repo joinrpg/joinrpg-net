@@ -49,20 +49,49 @@ public static class RobotsTxtExtensions
         return services.AddOptions<RobotsTxtOptions>().BindConfiguration(RobotsTxtOptions.SectionName);
     }
 
+    /// <summary>
+    /// Рендерящий бот Baidu (отдельный user-agent от обычного Baiduspider) прогоняет страницы
+    /// через браузер и создаёт заметно большую нагрузку, чем обычный краулер.
+    /// </summary>
+    private const string BaiduspiderRenderUserAgent = "Baiduspider-render";
+
+    /// <summary>
+    /// Пауза между запросами для <see cref="BaiduspiderRenderUserAgent"/> (секунд).
+    /// </summary>
+    private const int BaiduspiderRenderCrawlDelaySeconds = 10;
+
     internal static string BuildRobotsTxt(string requestHost, RobotsTxtOptions options)
     {
-        var builder = new StringBuilder();
-        _ = builder.Append("User-agent: *\n");
-
         var isMainHost = string.IsNullOrEmpty(options.MainHost) || IsSameHost(requestHost, options.MainHost);
 
         if (options.DisallowAll || !isMainHost)
         {
-            _ = builder.Append("Disallow: /\n");
-            return builder.ToString();
+            // См. комментарий ниже про порядок групп: «*» не соответствует Baiduspider-render (RFC 9309),
+            // поэтому запрет ему дублируется явно.
+            return new StringBuilder()
+                .Append("User-agent: ").Append(BaiduspiderRenderUserAgent).Append('\n')
+                .Append("Disallow: /\n")
+                .Append('\n')
+                .Append("User-agent: *\n")
+                .Append("Disallow: /\n")
+                .ToString();
         }
 
-        foreach (var path in InfrastructureEndpoints.PathPrefixes.Concat(options.DisallowedPaths))
+        var disallowedPaths = InfrastructureEndpoints.PathPrefixes.Concat(options.DisallowedPaths).ToList();
+
+        // Специфичная группа идёт первой: у парсеров с семантикой «первая совпавшая группа»
+        // (не RFC 9309) у Baiduspider-render не должны пропадать запреты из общей группы.
+        var builder = new StringBuilder()
+            .Append("User-agent: ").Append(BaiduspiderRenderUserAgent).Append('\n')
+            .Append("Crawl-delay: ").Append(BaiduspiderRenderCrawlDelaySeconds).Append('\n');
+        foreach (var path in disallowedPaths)
+        {
+            _ = builder.Append("Disallow: ").Append(path).Append('\n');
+        }
+        _ = builder.Append('\n');
+
+        _ = builder.Append("User-agent: *\n");
+        foreach (var path in disallowedPaths)
         {
             _ = builder.Append("Disallow: ").Append(path).Append('\n');
         }

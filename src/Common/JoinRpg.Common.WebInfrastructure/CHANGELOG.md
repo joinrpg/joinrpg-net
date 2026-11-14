@@ -10,6 +10,7 @@
 - При логине claims из `connect/user_info` мёржатся в principal (best effort): ник, аватар и другие данные IdPortal доступны в `IJoinUserLoginHandler.HandleLoginAsync` без сервисных вызовов.
 
 ### Изменено
+- `/robots.txt`: для `Baiduspider-render` (рендерящий бот Baidu, отдельный user-agent) добавлена своя группа с `Crawl-delay: 10` — замедление самого тяжёлого краулера; запреты из общей группы дублируются, поведение остальных ботов не меняется. ([#6231](https://github.com/joinrpg/joinrpg-net/pull/6231))
 - `AddJoinDataProtection()` — health check БД ключей Data Protection (регистрируется через `AddJoinEfCoreDbContext`) по умолчанию помечается тегом `ready` и включается в readiness-пробу `/health/ready`. ([#6173](https://github.com/joinrpg/joinrpg-net/pull/6173))
 
 ### Исправлено
