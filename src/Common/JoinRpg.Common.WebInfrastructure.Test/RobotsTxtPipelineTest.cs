@@ -26,7 +26,7 @@ public class RobotsTxtPipelineTest
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
         response.Content.Headers.ContentType?.MediaType.ShouldBe("text/plain");
         response.Headers.Contains(AppMiddlewareHeader).ShouldBeFalse();
-        (await response.Content.ReadAsStringAsync()).ShouldBe("User-agent: *\nDisallow: /health\nDisallow: /metrics\nDisallow: /fromcode\nDisallow: /fromconfig\n");
+        (await response.Content.ReadAsStringAsync()).ShouldBe("User-agent: Baiduspider-render\nCrawl-delay: 10\nDisallow: /health\nDisallow: /metrics\nDisallow: /fromcode\nDisallow: /fromconfig\n\nUser-agent: *\nDisallow: /health\nDisallow: /metrics\nDisallow: /fromcode\nDisallow: /fromconfig\n");
     }
 
     [Fact]
