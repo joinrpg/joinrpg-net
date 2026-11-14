@@ -54,6 +54,7 @@
 - [ADR028: Автоматическое восстановление потерянных платежей ПСКБ](adr028-pscb-lost-payments-restore.md)
 - [ADR029: Вводная «сетка ролей»](adr029-roles-grid-plot-element.md)
 - [ADR030: Расходы проекта](adr030-expenses.md)
+- [ADR031: Leader election для фоновых сервисов](adr031-leader-election.md)
 
 ## Быстрые ссылки
 
