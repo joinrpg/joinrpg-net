@@ -22,13 +22,13 @@
             @Label
         }
     </a>
+    @* Диалог внутри <li>, а не рядом: <ul> допускает только <li>, а <li> — flow content; закрытый <dialog> не отображается. *@
+    @if (AutoConfirm)
+    {
+        <AutoConfirmDialog @ref="_confirmDialogRef" Caption="@(Label?.Trim() ?? "Подтверждение")"
+                           ConfirmButton="ConfirmDialogButton">@AutoConfirmMessage</AutoConfirmDialog>
+    }
 </li>
-@* Диалог рядом с <li>, а не внутри: <ul> допускает только <li>; закрытый <dialog> не отображается. *@
-@if (AutoConfirm)
-{
-    <AutoConfirmDialog @ref="_confirmDialogRef" Caption="@(Label?.Trim() ?? "Подтверждение")"
-                       ConfirmButton="ConfirmDialogButton">@AutoConfirmMessage</AutoConfirmDialog>
-}
 
 @code {
     /// <summary>
