@@ -37,7 +37,22 @@ else
                 <JoinButtonGroup Size="SizeStyleEnum.Small">
                     @if (CanEdit(expense))
                     {
-                        <JoinButton Preset="ButtonPreset.Edit" AutoProgress="false" OnClick="@(args => StartEdit(expense))" />
+                        @if (CanDeclineApproved(expense))
+                        {
+                            @* Одобренный расход можно отклонить — редкое действие прячем в меню кнопки «Изменить» *@
+                            <JoinButtonGroup Size="SizeStyleEnum.Small">
+                                <JoinButton Preset="ButtonPreset.Edit" AutoProgress="false" OnClick="@(args => StartEdit(expense))" />
+                                <JoinDropdownButton AriaLabel="Другие действия" Split="true">
+                                    <JoinMenuItem Label="Отклонить" ConfirmStyle="VariationStyleEnum.Danger"
+                                                  AutoConfirm="true" AutoConfirmMessage="@($"Отклонить расход «{expense.Name}»?")"
+                                                  OnClick="@(args => Decide(args, expense, Client.RejectExpense))" />
+                                </JoinDropdownButton>
+                            </JoinButtonGroup>
+                        }
+                        else
+                        {
+                            <JoinButton Preset="ButtonPreset.Edit" AutoProgress="false" OnClick="@(args => StartEdit(expense))" />
+                        }
                         @if (expense.ActualCost is null)
                         {
                             @* «Потратил»: факта ещё нет — диалог открывается с фактом, предзаполненным из плана *@
@@ -108,6 +123,10 @@ else
 
     private bool CanDecide(ExpenseViewModel expense)
         => canManageMoney && expense.State == ExpenseStateView.Proposed;
+
+    // Отклонять одобренное может только мастер с правом на деньги — из меню кнопки «Изменить»
+    private bool CanDeclineApproved(ExpenseViewModel expense)
+        => canManageMoney && expense.State == ExpenseStateView.Approved;
 
     private async Task StartCreate()
     {
