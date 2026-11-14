@@ -295,19 +295,18 @@ public class ExpensesPageTest : BunitContext
     }
 
     [Fact]
-    public void ApprovedExpenseForRegularMaster_NoDeclineAction()
+    public void ApprovedOwnExpenseForRegularMaster_ShowsEditWithoutDecline()
     {
-        // Мастер без права на деньги не видит никаких действий над чужим расходом,
-        // даже одобренным: ни выпадашки, ни текста «Отклонить», ни группы кнопок
+        // Свой одобренный расход, но нет права на деньги: кнопка «Изменить» есть,
+        // выпадашки и текста «Отклонить» нет
         expensesClient.Expenses = [Expense with { State = ExpenseStateView.Approved }];
         expensesClient.ManageMoney = false;
-        expensesClient.MyExpenses = [];
         var cut = Render<ExpensesPage>(p => p.Add(x => x.ProjectId, ProjectId));
 
         var row = cut.FindAll("tr").Single(row => row.TextContent.Contains("Аренда зала"));
+        row.QuerySelectorAll("button").Any(button => button.TextContent.Trim() == "Изменить").ShouldBeTrue();
         row.QuerySelector("details.join-dropdown").ShouldBeNull();
         row.TextContent.ShouldNotContain("Отклонить");
-        row.QuerySelector("div[role=group]").ShouldBeNull();
     }
 
     private static string DialogCaption(IRenderedComponent<ExpensesPage> cut)

@@ -37,6 +37,31 @@ public class JoinMenuItemTest
     }
 
     [Fact]
+    public void OnClickMode_IsFocusable()
+    {
+        using var ctx = new BunitContext();
+        var cut = ctx.Render<JoinMenuItem>(p => p
+            .Add(x => x.Label, "Удалить")
+            .Add(x => x.OnClick, () => { }));
+
+        cut.Find("a").GetAttribute("tabindex").ShouldBe("0");
+    }
+
+    [Fact]
+    public void OnClickMode_EnterKeyInvokesCallback()
+    {
+        using var ctx = new BunitContext();
+        var clicked = false;
+        var cut = ctx.Render<JoinMenuItem>(p => p
+            .Add(x => x.Label, "Удалить")
+            .Add(x => x.OnClick, () => clicked = true));
+
+        cut.Find("a").KeyDown(new Microsoft.AspNetCore.Components.Web.KeyboardEventArgs { Key = "Enter" });
+
+        clicked.ShouldBeTrue();
+    }
+
+    [Fact]
     public void OnClickAndHref_Throws()
     {
         using var ctx = new BunitContext();

@@ -4,8 +4,10 @@
 <li>
     <a href="@(OnClick.HasDelegate ? null : Href)"
        role="@(OnClick.HasDelegate ? "button" : null)"
+       tabindex="@(OnClick.HasDelegate ? "0" : null)"
        @onclick="OnClickHappened"
-       @onclick:preventDefault="OnClick.HasDelegate">
+       @onclick:preventDefault="OnClick.HasDelegate"
+       @onkeydown="OnKeyDownHappened">
         @if (ChildContent is not null)
         {
             @ChildContent
@@ -21,6 +23,7 @@
         }
     </a>
 </li>
+@* Диалог рядом с <li>, а не внутри: <ul> допускает только <li>; закрытый <dialog> не отображается. *@
 @if (AutoConfirm)
 {
     <AutoConfirmDialog @ref="_confirmDialogRef" Caption="@(Label?.Trim() ?? "Подтверждение")"
@@ -73,7 +76,17 @@
 
     private DialogButton ConfirmDialogButton => new(name: "menu-item", label: string.IsNullOrWhiteSpace(Label) ? "Да" : Label.Trim(), style: ConfirmStyle);
 
-    private async Task OnClickHappened(MouseEventArgs e)
+    private async Task OnClickHappened(MouseEventArgs e) => await ActivateAsync(e);
+
+    private async Task OnKeyDownHappened(KeyboardEventArgs e)
+    {
+        if (OnClick.HasDelegate && (e.Key is "Enter" or " "))
+        {
+            await ActivateAsync(mouseEvent: null);
+        }
+    }
+
+    private async Task ActivateAsync(MouseEventArgs? mouseEvent)
     {
         if (AutoConfirm)
         {
@@ -84,7 +97,7 @@
                 return;
             }
         }
-        await OnClick.InvokeAsync(new ButtonClickEventArgs { MouseEvent = e });
+        await OnClick.InvokeAsync(new ButtonClickEventArgs { MouseEvent = mouseEvent });
     }
 
     /// <inheritdoc />
