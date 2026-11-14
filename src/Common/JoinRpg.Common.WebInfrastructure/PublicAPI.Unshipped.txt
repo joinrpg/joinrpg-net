@@ -1,1 +1,5 @@
 #nullable enable
+JoinRpg.Common.WebInfrastructure.LeaderElection.ILeaderElectedService
+JoinRpg.Common.WebInfrastructure.LeaderElection.ILeaderElectedService.ExecuteAsync(System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task!
+JoinRpg.Common.WebInfrastructure.LeaderElection.LeaderElectedRegistration
+static JoinRpg.Common.WebInfrastructure.LeaderElection.LeaderElectedRegistration.AddLeaderElectedHostedService<TService>(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, Microsoft.Extensions.Configuration.IConfiguration! configuration, long lockKey, string! connectionStringName = "DataProtection", System.TimeSpan? retryDelay = null) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
