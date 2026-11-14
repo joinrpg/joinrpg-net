@@ -138,11 +138,50 @@ options.Filters.Add<SerilogRazorPagesFilter>();
 | **HTTPS** | вызывается из `AddJoinWebPlatform` | Редирект http → https (307, вне Development на порт 443) сразу после Forwarded Headers, кроме `/health*` и `/metrics`; HSTS вне Development (пока `max-age` 1 день). Перед редиректом схемы `wss`/`ws` (Traefik шлёт `X-Forwarded-Proto: wss` для WebSocket-апгрейдов, traefik/traefik#6388) нормализуются в `https`/`http` — иначе редирект рвёт WebSocket-handshake. Рубильник `HttpsRedirection:Enabled` (по умолчанию `true`; `HttpsRedirection__Enabled=false` в окружении отключает редирект и HSTS) |
 | **DbContext** | `AddJoinEfCoreDbContext<T>()` | PostgreSQL + EntityFramework.Exceptions + health check для каждого контекста. Метод живёт в пакете `JoinRpg.Common.EntityFrameworkCore` (namespace `JoinRpg.Common.EntityFrameworkCore`) |
 | **Ежедневные джобы** | `AddMidnightJobs()` | Единый планировщик: находит все джобы, зарегистрированные через `AddJob<T>()` из пакета `JoinRpg.Common.WebInfrastructure.Interfaces`, и запускает каждую at-most-once в сутки (полночь UTC плюс `JobDelay`; журнал — `IJobRepository`, выключение — секция `DailyJobs:Disabled`). Активности — источник `BackgroundJobService`, подключается `AddJoinOpenTelemetry` автоматически |
+| **Лидер-выборка** | `AddLeaderElectedHostedService<T>()` | Крутит `TService : ILeaderElectedService` ровно на одной реплике из N через PostgreSQL advisory lock в существующей БД Data Protection. Снимает блокер `replicas: 1` для фоновых задач; подробности — раздел ниже |
 | **Миграции** | `RegisterMigrator<T>()` | Регистрация DbContext + `IMigratorService` для применения миграций |
 | **Логин через id.joinrpg.ru** | `AddJoinRpgAuthentication<T>()`, `MapAuthEndpoints()`, `IJoinUserLoginHandler` | OpenIddict client (authorization code flow), cookie-схема, эндпойнты `/login`, `/signin-joinrpg`, `/logout` |
 | **Конфигурация хостов** | `JoinRpgHostNamesOptions` | Имена хостов всех сервисов JoinRpg (основной сайт, IdPortal, KogdaIgra, рейтинг) |
 | **MVC фильтры** | `SerilogMvcFilter`, `SerilogRazorPagesFilter` | Обогащение логов данными из HTTP-контекста для MVC и Razor Pages |
 | **HTML-санитайзеры** | `AddJoinHtmlSanitizers()` (вызывается из `AddJoinWebPlatform`) | Transient-регистрации `IJoinSimpleHtmlSanitizer`, `IJoinRemoveAllHtmlSanitizer`, `IJoinTelegramHtmlSanitizer` (контракты — в пакете `JoinRpg.Common.WebInfrastructure.Interfaces`) поверх пула `Microsoft.Extensions.ObjectPool`: экземпляр берётся из пула при создании и возвращается при `Dispose`. Используются при рендеринге markdown и для подготовки сообщений Telegram |
+
+---
+
+### Leader election
+
+Для фоновой логики, которая должна работать ровно на одной реплике из N (например, Telegram long polling —
+Bot API допускает одного активного poller'а на бота, а webhook из-за сетевой блокировки невозможен):
+
+```csharp
+using JoinRpg.Common.WebInfrastructure.LeaderElection;
+
+services.AddLeaderElectedHostedService<MyPoller>(configuration, lockKey: 6220);
+
+internal class MyPoller : ILeaderElectedService
+{
+    public async Task ExecuteAsync(CancellationToken cancellationToken)
+    {
+        // Работаем, пока реплика — лидер. Токен отменяется при потере лидерства
+        // и при остановке хоста: завершайтесь по отмене (Task.Delay(..., cancellationToken)).
+    }
+}
+```
+
+Реплика-лидер держит PostgreSQL advisory lock (`pg_try_advisory_lock`). Пока лок занят другой репликой,
+эта периодически пытается его перехватить; при смерти лидера (process kill, обрыв соединения) сервер
+освобождает лок сам, и следующая реплика подхватывает без ручного вмешательства.
+
+- **База — существующая БД Data Protection** (`ConnectionStrings:DataProtection`, имя переопределяется
+  параметром `connectionStringName`). Отдельная база и миграции не нужны: advisory locks не требуют таблиц.
+- **Лок живёт на выделенном непулинговом соединении** (`Pooling=false` выставляет `PostgresLeaderLock`
+  сам): advisory lock привязан к сессии, а пулинговое соединение EF Core вернулось бы в пул раньше unlock'а.
+- `lockKey` (bigint) одинаковый у всех реплик одного сервиса и разный у разных сервисов — локи с разными
+  ключами независимы.
+- `retryDelay` — пауза между попытками перехвата, по умолчанию 5 секунд.
+- Лидерство — best-effort: при сетевом разрыве без смерти процесса две реплики могут на короткое время
+  считать себя лидерами (probe-проверка соединения каждые 5 секунд сокращает окно). Для строгой
+  взаимной блокировки одновременных исполнений на уровне БД это не замена — только гарантия «один
+  активный экземпляр» в норме. Это не заменяет Data Protection для интерактивных сценариев.
 
 ---
 
