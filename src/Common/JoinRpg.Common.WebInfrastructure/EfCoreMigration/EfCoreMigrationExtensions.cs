@@ -23,5 +23,18 @@ public static class EfCoreMigrationExtensions
         _ = services.AddScoped<IMigratorService, MigrateEfCoreHostService<TContext>>();
     }
 
+    /// <summary>
+    /// Зарегистрировать мигратор БД, беря конфигурацию и окружение из <paramref name="builder"/>.
+    /// </summary>
+    public static void RegisterMigrator<TContext>(
+        this WebApplicationBuilder builder,
+        string connectionStringName,
+        Action<DbContextOptionsBuilder>? optionsBuilder = null)
+        where TContext : DbContext
+    {
+        builder.Services.RegisterMigrator<TContext>(builder.Configuration, builder.Environment, connectionStringName, optionsBuilder);
+    }
+
+
     public static IServiceCollection AddMigrationsLauncher(this IServiceCollection services) => services.AddHostedService<MigrationsLauncher>();
 }
