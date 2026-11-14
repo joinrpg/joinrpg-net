@@ -31,7 +31,13 @@ else if (Items.Length > 0)
 
 @if (AutoConfirm)
 {
-    <AutoConfirmDialog @ref="_confirmDialogRef" ConfirmButton="new DialogButton(ButtonPreset.Yes)">@ActualConfirmMessage</AutoConfirmDialog>
+    <JoinMessageDialog
+        @ref="_confirmDialogRef"
+        Type="@MessageDialogType.Confirmation"
+        Buttons="@(new DialogButton[] { new(ButtonPreset.Yes), new(ButtonPreset.Cancel) })"
+    >
+        @ActualConfirmMessage
+    </JoinMessageDialog>
 }
 
 @code {
@@ -64,7 +70,7 @@ else if (Items.Length > 0)
     /// </summary>
     [Parameter] public string? AutoConfirmMessage { get; set; }
 
-    private AutoConfirmDialog? _confirmDialogRef;
+    private JoinMessageDialog? _confirmDialogRef;
     private TItem? _pendingItem;
 
     private string? ActualConfirmMessage =>
@@ -100,7 +106,7 @@ else if (Items.Length > 0)
         var confirmed = true;
         if (AutoConfirm)
         {
-            confirmed = await _confirmDialogRef!.ConfirmAsync();
+            confirmed = await _confirmDialogRef!.ShowBoolModalAsync();
         }
 
         if (confirmed)
