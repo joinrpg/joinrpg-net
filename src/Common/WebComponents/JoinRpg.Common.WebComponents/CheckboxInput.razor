@@ -1,12 +1,12 @@
-﻿@using System.Linq.Expressions
+@using System.Linq.Expressions
 @*
     Классическая схема MVC: checkbox со значением true стоит ПЕРЕД hidden. MVC биндит bool по первому значению,
     поэтому отмеченная галочка постит ["true", "false"], снятая — ["false"]. Так правка галочки доходит до сервера
     и без JS — пока остров пререндерен, а WASM ещё не загрузился.
     Отключённый checkbox не постится, поэтому тогда hidden несёт текущее значение, а не false.
 *@
-<input type="checkbox" id="@inputId" name="@Name" value="true" @onchange="UpdateValue" checked="@internalValue" @attributes="AdditionalAttributes"/>
-<input type="hidden" name="@Name" value="@(IsDisabled && internalValue ? "true" : "false")" />
+<input type="checkbox" id="@inputId" name="@EffectiveName" value="true" @onchange="UpdateValue" checked="@internalValue" @attributes="AdditionalAttributes"/>
+<input type="hidden" name="@EffectiveName" value="@(IsDisabled && internalValue ? "true" : "false")" />
 
 @code {
     [CascadingParameter]
@@ -34,6 +34,16 @@
     [CascadingParameter]
     private FormRowLabelTarget? LabelTarget { get; set; }
 
+    /// <summary>Область имён формы (<see cref="InputNameScope"/>): квалифицирует производное имя поля.</summary>
+    [CascadingParameter]
+    private InputNameScope? NameScope { get; set; }
+
+    private string? EffectiveName
+        => Name
+            ?? (FieldIdentifier.FieldName is { } fieldName && NameScope is { } scope
+                ? scope.Qualify(fieldName)
+                : FieldIdentifier.FieldName);
+
     protected internal FieldIdentifier FieldIdentifier { get; set; }
 
     private bool internalValue;
@@ -52,7 +62,6 @@
     {
         internalValue = Value;
         FieldIdentifier = FieldIdentifier.Create(ValueExpression);
-        Name ??= FieldIdentifier.FieldName;
     }
 
     private async Task UpdateValue(ChangeEventArgs eventArgs)

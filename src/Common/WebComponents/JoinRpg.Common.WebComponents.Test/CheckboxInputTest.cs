@@ -110,6 +110,30 @@ public class CheckboxInputTest
         public bool Flag { get; set; }
     }
 
+    /// <summary>Внутри JoinEditForm (область InputNameScope) оба input получают имя с префиксом FormName.</summary>
+    [Fact]
+    public void NameScope_BothInputsPrefixed()
+    {
+        using var ctx = new BunitContext();
+        ctx.SetRendererInfo(new RendererInfo("WebAssembly", isInteractive: true));
+        var model = new ScopeModel();
+        var cut = ctx.Render<JoinEditForm>(p => p
+            .Add(x => x.FormName, "EditPaymentType")
+            .Add(x => x.EditContext, new Microsoft.AspNetCore.Components.Forms.EditContext(model))
+            .AddChildContent<CheckboxInput>(f => f
+                .Add(x => x.Value, model.IsDefault)
+                .Add(x => x.ValueChanged, _ => { })
+                .Add(x => x.ValueExpression, () => model.IsDefault)));
+
+        cut.Find("input[type=checkbox]").GetAttribute("name").ShouldBe("EditPaymentType.IsDefault");
+        cut.Find("input[type=hidden]").GetAttribute("name").ShouldBe("EditPaymentType.IsDefault");
+    }
+
+    private sealed class ScopeModel
+    {
+        public bool IsDefault { get; set; }
+    }
+
     private static IRenderedComponent<CheckboxInput> Render(BunitContext ctx, bool value, Action<bool>? onChange = null, bool? disabled = null)
     {
         var model = new Model { Flag = value };
