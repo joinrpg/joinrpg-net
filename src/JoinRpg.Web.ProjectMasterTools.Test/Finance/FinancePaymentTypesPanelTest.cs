@@ -124,7 +124,7 @@ public class FinancePaymentTypesPanelTest : BunitContext
         // Клик не awaited: обработчик ждёт закрытия диалога, заполнение — до завершения (как ClickAndConfirm)
         var click = RowActions(cut).Single(b => b.TextContent.Trim() == "Изменить").ClickAsync(new MouseEventArgs());
         var dialog = cut.FindAll("dialog").Single(d => d.TextContent.Contains("Изменение метода оплаты"));
-        await dialog.QuerySelectorAll("input").Single(i => i.GetAttribute("name") == "PaymentLink")
+        await dialog.QuerySelectorAll("input").Single(i => i.GetAttribute("name") == "EditPaymentType.PaymentLink")
             .TriggerEventAsync("oninput", new ChangeEventArgs { Value = "https://pay.example.com/1" });
         var description = dialog.QuerySelector("textarea").ShouldNotBeNull();
         await description.ChangeAsync(new ChangeEventArgs { Value = "Перевод на карту банка" });
@@ -150,9 +150,9 @@ public class FinancePaymentTypesPanelTest : BunitContext
 
         // Название и «по умолчанию» — только у произвольного метода, у остальных они не редактируются
         var dialog = cut.FindAll("dialog").Single(d => d.TextContent.Contains("Изменение метода оплаты"));
-        dialog.QuerySelectorAll("input").Select(i => i.GetAttribute("name")).ShouldNotContain("Name");
-        dialog.QuerySelectorAll("input").Select(i => i.GetAttribute("name")).ShouldNotContain("IsDefault");
-        dialog.QuerySelectorAll("input").Select(i => i.GetAttribute("name")).ShouldContain("PaymentLink");
+        dialog.QuerySelectorAll("input").Select(i => i.GetAttribute("name")).ShouldNotContain("EditPaymentType.Name");
+        dialog.QuerySelectorAll("input").Select(i => i.GetAttribute("name")).ShouldNotContain("EditPaymentType.IsDefault");
+        dialog.QuerySelectorAll("input").Select(i => i.GetAttribute("name")).ShouldContain("EditPaymentType.PaymentLink");
 
         // Диалог закрываем: кнопка «Отмена», затем onclose — обработчик клика завершается
         await dialog.QuerySelectorAll(".join-dialog-footer button").Last(b => b.TextContent.Contains("Отмен")).ClickAsync(new MouseEventArgs());

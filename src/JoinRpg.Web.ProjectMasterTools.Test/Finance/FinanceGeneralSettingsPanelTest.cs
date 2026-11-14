@@ -2,6 +2,7 @@ using Bunit;
 using JoinRpg.DomainTypes;
 using JoinRpg.DomainTypes.ProjectMetadata;
 using JoinRpg.Web.ProjectMasterTools.Finance;
+using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -18,6 +19,8 @@ public class FinanceGeneralSettingsPanelTest : BunitContext
     {
         Services.AddSingleton<IFinanceSettingsClient>(client);
         Services.AddSingleton(typeof(ILogger<>), typeof(NullLogger<>));
+        // Панель на JoinEditForm: содержимое гейтится до интерактивности, статический рендер дал бы заглушку.
+        SetRendererInfo(new RendererInfo("WebAssembly", isInteractive: true));
     }
 
     [Fact]

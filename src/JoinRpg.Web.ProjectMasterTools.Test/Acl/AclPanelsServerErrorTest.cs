@@ -4,6 +4,7 @@ using JoinRpg.Common.WebComponents;
 using JoinRpg.DomainTypes;
 using JoinRpg.DomainTypes.ProjectMetadata;
 using JoinRpg.Web.ProjectMasterTools.Acl;
+using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -30,6 +31,8 @@ public class AclPanelsServerErrorTest : BunitContext
         Services.AddSingleton<IMasterAccessClient>(client);
         Services.AddSingleton<IMasterProfileClient>(client);
         Services.AddSingleton(typeof(ILogger<>), typeof(NullLogger<>));
+        // Панели на JoinEditForm: содержимое гейтится до интерактивности, статический рендер дал бы заглушку.
+        SetRendererInfo(new RendererInfo("WebAssembly", isInteractive: true));
     }
 
     [Fact]
