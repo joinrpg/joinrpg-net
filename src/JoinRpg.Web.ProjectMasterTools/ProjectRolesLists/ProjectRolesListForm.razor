@@ -1,7 +1,7 @@
 @using Microsoft.AspNetCore.Components.Forms
 @inject ILogger<ProjectRolesListForm> Logger
 
-<EditForm Model="_model" OnValidSubmit="OnAdd">
+<JoinEditForm FormName="ProjectRolesList" Model="_model" OnValidSubmit="OnAdd">
     <FormHorizontal>
         <FormRow Label="Название">
             <JoinTextInput @bind-Value="_model.Name" />
@@ -14,7 +14,7 @@
         <JoinButton Preset="ButtonPreset.Add" Submit="true" /> |
         <JoinButton Preset="ButtonPreset.Cancel" OnClick="OnCancelAdd" />
     </FormHorizontal>
-</EditForm>
+</JoinEditForm>
 
 @code {
 

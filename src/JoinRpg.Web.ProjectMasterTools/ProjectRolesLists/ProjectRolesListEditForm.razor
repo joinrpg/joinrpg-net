@@ -6,7 +6,7 @@
 @inject IProjectRolesListClient Client
 @inject NavigationManager NavigationManager
 
-<EditForm Model="_model" OnValidSubmit="OnSave">
+<JoinEditForm FormName="ProjectRolesListEdit" Model="_model" OnValidSubmit="OnSave">
     <DataAnnotationsValidator />
     <ValidationSummary />
     <FormHorizontal>
@@ -51,7 +51,7 @@
             <div class="alert alert-danger">@_error</div>
         }
     </FormHorizontal>
-</EditForm>
+</JoinEditForm>
 
 @code {
 

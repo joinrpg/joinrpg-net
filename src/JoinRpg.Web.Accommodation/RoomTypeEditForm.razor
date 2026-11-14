@@ -11,7 +11,7 @@
 }
 else
 {
-    <EditForm Model="model" OnValidSubmit="OnSave">
+    <JoinEditForm FormName="RoomTypeEdit" Model="model" OnValidSubmit="OnSave">
         <DataAnnotationsValidator />
         @* Отступ от вкладок страницы изменения — как был у MVC-формы. *@
         <div style="margin-top: 1em;">
@@ -124,7 +124,7 @@ else
                 </FormRow>
             </FormHorizontal>
         </div>
-    </EditForm>
+    </JoinEditForm>
 
     @* Вне EditForm типа: у диалога своя форма, а вложенные формы HTML не допускает. *@
     @if (model.RoomCategory is not null)
