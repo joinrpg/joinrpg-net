@@ -33,7 +33,7 @@
                     }
                     @if (row.DetailsLink is { } detailsLink)
                     {
-                        <a href="@detailsLink">(подробнее)</a>
+                        <text> (<a href="@detailsLink">подробнее</a>)</text>
                     }
                 </td>
                 <td><PriceElement Price="row.Total" /></td>

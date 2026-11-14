@@ -46,10 +46,12 @@ public class MasterBalanceTableTest : BunitContext
         cut.Markup.ShouldContain("Вася");
         cut.Markup.ShouldContain("Марья");
         cut.Markup.ShouldContain("/1/money/bymaster?masterId=1");
-        cut.Markup.ShouldContain("(подробнее)");
 
-        // У второй строки ссылки нет
-        cut.FindAll("a").Count(a => a.TextContent.Contains("(подробнее)")).ShouldBe(1);
+        // Скобки — обычный текст вокруг ссылки, а не часть текста ссылки
+        var detailsLink = cut.FindAll("a").Single(a => a.TextContent == "подробнее");
+        detailsLink.GetAttribute("href").ShouldBe("/1/money/bymaster?masterId=1");
+        // Текст ячейки вокруг ссылки сохраняет скобки
+        detailsLink.ParentElement!.TextContent.ShouldContain("(подробнее)");
 
         // Таблица с рамками
         cut.Find("table").ClassList.ShouldContain("table-bordered");
