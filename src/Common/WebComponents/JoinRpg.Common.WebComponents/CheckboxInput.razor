@@ -38,11 +38,7 @@
     [CascadingParameter]
     private InputNameScope? NameScope { get; set; }
 
-    private string? EffectiveName
-        => Name
-            ?? (FieldIdentifier.FieldName is { } fieldName && NameScope is { } scope
-                ? scope.Qualify(fieldName)
-                : FieldIdentifier.FieldName);
+    private string? EffectiveName => InputNameScope.Resolve(Name, NameScope, FieldIdentifier);
 
     protected internal FieldIdentifier FieldIdentifier { get; set; }
 

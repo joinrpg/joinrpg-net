@@ -96,10 +96,7 @@ else
     private string? ValidationEnabled => Required ? "true" : null;
     private string? RequiredMessageValue => Required ? RequiredMessage : null;
 
-    private string? InputName => Name
-        ?? (FieldIdentifier.FieldName is { } fieldName && NameScope is { } scope
-            ? scope.Qualify(fieldName)
-            : FieldIdentifier.FieldName);
+    private string? InputName => InputNameScope.Resolve(Name, NameScope, FieldIdentifier);
 
     private string internalValue = "";
     private string? inputId;
