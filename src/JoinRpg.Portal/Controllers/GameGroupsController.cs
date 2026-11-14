@@ -121,7 +121,7 @@ public class GameGroupsController(
 
 
     [HttpPost, ValidateAntiForgeryToken, MasterAuthorize(Permission.CanEditRoles), ProjectShouldNotBeArchived]
-    public async Task<ActionResult> Edit(EditCharacterGroupViewModel viewModel)
+    public async Task<ActionResult> Edit([Bind(Prefix = "group")] EditCharacterGroupViewModel viewModel)
     {
         ProjectIdentification projectId = new(viewModel.ProjectId);
         CharacterGroupIdentification charGroupId = new(projectId, viewModel.CharacterGroupId);
@@ -221,7 +221,7 @@ public class GameGroupsController(
     [MasterAuthorize(Permission.CanEditRoles)]
     [ValidateAntiForgeryToken]
     [ProjectShouldNotBeArchived]
-    public async Task<ActionResult> AddGroup(AddCharacterGroupViewModel viewModel, int charactergroupid)
+    public async Task<ActionResult> AddGroup([Bind(Prefix = "group")] AddCharacterGroupViewModel viewModel, int charactergroupid)
     {
         ProjectIdentification projectId = new(viewModel.ProjectId);
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId);

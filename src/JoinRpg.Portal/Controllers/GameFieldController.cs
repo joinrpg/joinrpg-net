@@ -63,7 +63,7 @@ public class GameFieldController(
     [HttpPost]
     [ValidateAntiForgeryToken]
     [MasterAuthorize(Permission.CanChangeFields)]
-    public async Task<ActionResult> Create(GameFieldCreateViewModel viewModel)
+    public async Task<ActionResult> Create([Bind(Prefix = "field")] GameFieldCreateViewModel viewModel)
     {
         if (!ModelState.IsValid)
         {
@@ -109,7 +109,7 @@ public class GameFieldController(
 
     [HttpPost, MasterAuthorize(Permission.CanChangeFields)]
     [ValidateAntiForgeryToken]
-    public async Task<ActionResult> Edit(GameFieldEditViewModel viewModel)
+    public async Task<ActionResult> Edit([Bind(Prefix = "field")] GameFieldEditViewModel viewModel)
     {
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(new(viewModel.ProjectId));
         var field = projectInfo.UnsortedFields.SingleOrDefault(f => f.Id.ProjectFieldId == viewModel.ProjectFieldId);

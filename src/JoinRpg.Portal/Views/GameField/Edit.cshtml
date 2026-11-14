@@ -11,6 +11,8 @@
 
 @using (Html.BeginForm())
 {
+    @* Префикс имён полей: без него name="Name" браузерное автодополнение принимает за персональное поле. *@
+    ViewData.TemplateInfo.HtmlFieldPrefix = "field";
     @Html.ValidationSummary(true, "", new { @class = "text-danger" })
     @Html.AntiForgeryToken()
     @Html.HiddenFor(model => model.ProjectId)
@@ -115,7 +117,7 @@
             <div class="col-md-9">
                 <component type="typeof(JoinRpg.Web.ProjectCommon.CharacterGroupSelector)"
                    param-ProjectId="Model.ProjectId"
-                   param-Name="@nameof(Model.ShowForGroups)"
+                   param-Name='@("field." + nameof(Model.ShowForGroups))'
                    param-Mode="CharacterGroupSelectorMode.RootMeansEmpty"
                    param-SelectedGroupIds="@(Model.ShowForGroups)"
                    param-IncludeSpecial="true"
