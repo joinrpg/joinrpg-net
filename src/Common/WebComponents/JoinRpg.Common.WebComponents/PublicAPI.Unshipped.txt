@@ -1,5 +1,14 @@
 #nullable enable
 *REMOVED*JoinRpg.Common.WebComponents.EnumRadioButtonGroup<TValue>.SelectedValueExpression.get -> System.Linq.Expressions.Expression<System.Func<TValue>!>!
+JoinRpg.Common.WebComponents.Dialog.AutoConfirmDialog
+JoinRpg.Common.WebComponents.Dialog.AutoConfirmDialog.AutoConfirmDialog() -> void
+JoinRpg.Common.WebComponents.Dialog.AutoConfirmDialog.Caption.get -> string?
+JoinRpg.Common.WebComponents.Dialog.AutoConfirmDialog.Caption.set -> void
+JoinRpg.Common.WebComponents.Dialog.AutoConfirmDialog.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment!
+JoinRpg.Common.WebComponents.Dialog.AutoConfirmDialog.ChildContent.set -> void
+JoinRpg.Common.WebComponents.Dialog.AutoConfirmDialog.ConfirmAsync() -> System.Threading.Tasks.Task<bool>!
+JoinRpg.Common.WebComponents.Dialog.AutoConfirmDialog.ConfirmButton.get -> JoinRpg.Common.WebComponents.DialogButton!
+JoinRpg.Common.WebComponents.Dialog.AutoConfirmDialog.ConfirmButton.set -> void
 JoinRpg.Common.WebComponents.EnumRadioButtonGroup<TValue>.SelectedValueExpression.get -> System.Linq.Expressions.Expression<System.Func<TValue>!>?
 JoinRpg.Common.WebComponents.JoinInteractiveGate
 JoinRpg.Common.WebComponents.JoinInteractiveGate.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment!
@@ -23,6 +32,8 @@ JoinRpg.Common.WebComponents.JoinTextArea.MaxLength.get -> int?
 JoinRpg.Common.WebComponents.JoinTextArea.MaxLength.set -> void
 JoinRpg.Common.WebComponents.JoinTextArea.ShowCounter.get -> bool
 JoinRpg.Common.WebComponents.JoinTextArea.ShowCounter.set -> void
+~override JoinRpg.Common.WebComponents.Dialog.AutoConfirmDialog.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+~override JoinRpg.Common.WebComponents.Dialog.AutoConfirmDialog.OnParametersSet() -> void
 ~override JoinRpg.Common.WebComponents.JoinInteractiveGate.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
 ~override JoinRpg.Common.WebComponents.JoinRpgDatePicker.OnParametersSet() -> void
 ~override JoinRpg.Common.WebComponents.JoinRpgTimePicker.OnParametersSet() -> void
