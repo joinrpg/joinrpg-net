@@ -1,0 +1,83 @@
+<JoinBorderedTable Items="items" Context="row">
+    <HeadContent>
+        <tr>
+            <th>Мастер</th>
+            <th>Денег на руках</th>
+            <th>Собрано взносов</th>
+            <th>Получено от других мастеров</th>
+            <th>Отправлено другим мастерам</th>
+            <th>Расходы</th>
+            <th>Запланировано</th>
+        </tr>
+    </HeadContent>
+    <ItemTemplate>
+        @if (row.IsTotal)
+        {
+            <tr>
+                <td><b>Итого</b></td>
+                <td><b><PriceElement Price="row.Total" /></b></td>
+                <td><b><PriceElement Price="row.FeeBalance" /></b></td>
+                <td><b><PriceElement Price="row.ReceiveBalance" /></b></td>
+                <td><b><PriceElement Price="row.SendBalance" /></b></td>
+                <td><b><PriceElement Price="row.ExpensesBalance" /></b></td>
+                <td><b><PriceElement Price="row.PlannedExpenses" /></b></td>
+            </tr>
+        }
+        else
+        {
+            <tr>
+                <td>
+                    @if (row.MasterLink is { } masterLink)
+                    {
+                        <UserLink Model="masterLink" />
+                    }
+                    @if (row.DetailsLink is { } detailsLink)
+                    {
+                        <a href="@detailsLink">(подробнее)</a>
+                    }
+                </td>
+                <td><PriceElement Price="row.Total" /></td>
+                <td><PriceElement Price="row.FeeBalance" /></td>
+                <td><PriceElement Price="row.ReceiveBalance" /></td>
+                <td><PriceElement Price="row.SendBalance" /></td>
+                <td><PriceElement Price="row.ExpensesBalance" /></td>
+                <td><PriceElement Price="row.PlannedExpenses" /></td>
+            </tr>
+        }
+    </ItemTemplate>
+    <EmptyContent>
+        <tr>
+            <td colspan="7">Движений денег пока нет</td>
+        </tr>
+    </EmptyContent>
+</JoinBorderedTable>
+
+@code {
+    /// <summary>Балансы мастеров по одной строке на мастера.</summary>
+    [Parameter]
+    [EditorRequired]
+    public IReadOnlyList<MasterBalanceRowViewModel> Rows { get; set; } = default!;
+
+    /// <summary>Добавлять ли последней строкой «Итого» с суммами по колонкам.</summary>
+    [Parameter]
+    public bool ShowTotal { get; set; }
+
+    private IReadOnlyList<MasterBalanceRowViewModel> items = [];
+
+    protected override void OnParametersSet() =>
+        items = ShowTotal && Rows.Count > 0
+            ? [.. Rows, TotalRow()]
+            : Rows;
+
+    private MasterBalanceRowViewModel TotalRow() => new(
+        MasterLink: null,
+        Total: Rows.Sum(row => row.Total),
+        FeeBalance: Rows.Sum(row => row.FeeBalance),
+        ReceiveBalance: Rows.Sum(row => row.ReceiveBalance),
+        SendBalance: Rows.Sum(row => row.SendBalance),
+        ExpensesBalance: Rows.Sum(row => row.ExpensesBalance),
+        PlannedExpenses: Rows.Sum(row => row.PlannedExpenses))
+    {
+        IsTotal = true,
+    };
+}
