@@ -12,21 +12,11 @@
         </tr>
     </HeadContent>
     <ItemTemplate>
-        <tr>
-            @if (row.IsTotal)
-            {
-                <td><b>@row.CategoryPath</b></td>
-                <td class="text-right"><b><PriceElement Price="row.ApprovedPlannedCost" /></b></td>
-                <td class="text-right"><b><PriceElement Price="row.ApprovedActualCost" /></b></td>
-                <td class="text-right"><b><PriceElement Price="row.ProposedCost" /></b></td>
-            }
-            else
-            {
-                <td>@row.CategoryPath</td>
-                <td class="text-right"><PriceElement Price="row.ApprovedPlannedCost" /></td>
-                <td class="text-right"><PriceElement Price="row.ApprovedActualCost" /></td>
-                <td class="text-right"><PriceElement Price="row.ProposedCost" /></td>
-            }
+        <tr class="@(row.IsTotal ? "total" : null)">
+            <td>@row.CategoryPath</td>
+            <td class="text-right"><PriceElement Price="row.ApprovedPlannedCost" /></td>
+            <td class="text-right"><PriceElement Price="row.ApprovedActualCost" /></td>
+            <td class="text-right"><PriceElement Price="row.ProposedCost" /></td>
         </tr>
     </ItemTemplate>
     <EmptyContent>

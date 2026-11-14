@@ -30,7 +30,9 @@ public class ExpenseSummaryTableTest : BunitContext
 
         cut.Markup.ShouldContain("Расходы");
         // Ссылкой являются только «подробнее», скобки — вне ссылки
-        cut.Markup.ShouldContain("""(<a href="/7/money/expenses">подробнее</a>)""");
+        var expensesLink = cut.Find("a[href='/7/money/expenses']");
+        expensesLink.TextContent.ShouldBe("подробнее");
+        cut.Find("h3").InnerHtml.ShouldContain("(<a");
         cut.Markup.ShouldContain("Аренда базы\\Жилые корпуса");
         cut.Markup.ShouldContain("План (одобрено)");
         cut.Markup.ShouldContain("Факт (одобрено)");
@@ -44,9 +46,10 @@ public class ExpenseSummaryTableTest : BunitContext
         cut.FindAll("th.text-right").Count.ShouldBe(3);
         cut.FindAll("td.text-right").Count.ShouldBe(9);
 
-        // Строка «Итого» целиком жирная.
+        // Строка «Итого» выделена классом, жирность задаётся стилем для ячеек.
         var totalRow = cut.FindAll("tr").Single(tr => tr.TextContent.Contains("Итого"));
-        totalRow.QuerySelectorAll("b").Length.ShouldBe(4);
+        totalRow.ClassList.ShouldContain("total");
+        totalRow.QuerySelectorAll("b").ShouldBeEmpty();
     }
 
     [Fact]
