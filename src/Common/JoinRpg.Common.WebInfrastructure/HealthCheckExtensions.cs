@@ -62,7 +62,11 @@ public static class HealthCheckExtensions
         HealthCheckOptions options)
     {
         var builder = endpoints.MapHealthChecks(pattern, options)
-            .WithMetadata(new AllowAnonymousAttribute());
+            .WithMetadata(new AllowAnonymousAttribute())
+            // k8s-пробы обязаны дойти до чеков при любой нагрузке: глобальный лимитер анонимных
+            // запросов не должен отсекать health-endpoint'ы (иначе пробы получат 429 и под уйдёт
+            // в unready, см. #6232).
+            .DisableRateLimiting();
         builder.Add(IgnoreAbortedRequest);
         return builder;
     }

@@ -27,6 +27,7 @@ public class WebApiClientErrorTitlesTest
     [InlineData(StatusCodes.Status400BadRequest, "Некорректный запрос")]
     [InlineData(StatusCodes.Status403Forbidden, "Недостаточно прав для этого действия")]
     [InlineData(StatusCodes.Status404NotFound, "Не найдено")]
+    [InlineData(StatusCodes.Status429TooManyRequests, "Слишком много запросов — подождите минуту и обновите страницу")]
     public void ClientError_HasRussianTitle(int status, string title)
         => CreateProblem(status).Title.ShouldBe(title);
 
@@ -34,10 +35,11 @@ public class WebApiClientErrorTitlesTest
     public void ClientError_KeepsLink()
         => CreateProblem(StatusCodes.Status404NotFound).Type.ShouldNotBeNullOrEmpty();
 
-    // Ветвь StatusCodePages для XApi берёт заголовок по коду напрямую из словаря
+    // Ветвь StatusCodePages для API берёт заголовок по коду напрямую из словаря
     [Theory]
     [InlineData(StatusCodes.Status404NotFound, "Не найдено")]
     [InlineData(StatusCodes.Status405MethodNotAllowed, "Метод не поддерживается")]
+    [InlineData(StatusCodes.Status429TooManyRequests, "Слишком много запросов — подождите минуту и обновите страницу")]
     [InlineData(StatusCodes.Status418ImATeapot, "Ошибка")]
     public void GetTitle_ReturnsRussianTitleOrFallback(int status, string title)
         => WebApiClientErrorTitles.GetTitle(status).ShouldBe(title);

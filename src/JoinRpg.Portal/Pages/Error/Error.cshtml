@@ -1,38 +1,68 @@
 @page "/error/{HttpStatusCode:int?}"
 @model JoinRpg.Portal.Pages.Error.ErrorPageModel
 @{
+    // 429 при перегрузке генерируется массово: общий layout рендерит меню, которые дёргают БД,
+    // и страница ошибки сама становится нагрузкой — рендерим её автономно (#6232).
+    Layout = Model.HttpStatusCode == 429 ? null : "~/Views/Shared/_Layout.cshtml";
     ViewBag.Title = Model.IsProjectNotFound ? "Проект не найден"
         : Model.IsEntityNotFound ? "Объект не найден"
         : Model.HttpStatusCode == 404 ? "Страница не найдена"
+        : Model.HttpStatusCode == 429 ? "Высокая нагрузка"
         : "Ошибка";
     var info = Model.SupportInfo;
 }
 
-<h1 class="text-danger">@ViewBag.Title</h1>
-@if (Model.IsProjectNotFound)
+@if (Model.HttpStatusCode == 429)
 {
-    <h3>Проекта с таким номером нет — возможно, ошибка в ссылке.</h3>
-}
-else if (Model.IsEntityNotFound)
-{
-    <h3>Такого объекта нет — возможно, ошибка в ссылке или объект был удалён.</h3>
-}
-else if (Model.HttpStatusCode == 404)
-{
-    <h3 class="text-danger">
-        Если вы перешли на эту страницу по ссылке с нашего сайта, обратитесь в техподдержку.
-    </h3>
+    <!DOCTYPE html>
+    <html lang="ru">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>Высокая нагрузка</title>
+        <style>
+            body { font-family: system-ui, sans-serif; margin: 0; background: #f5f5f5; color: #333; }
+            main { max-width: 40em; margin: 4rem auto; padding: 2rem; background: #fff; border-radius: 8px; }
+            h1 { margin-top: 0; color: #a94442; }
+        </style>
+    </head>
+    <body>
+        <main>
+            <h1>Высокая нагрузка</h1>
+            <p>На сайт сейчас заходит очень много людей, и сервер не успевает всем отвечать. Подождите минуту и обновите страницу — ничего не сломалось.</p>
+            <img src="/images/stub-kitten.jpg" alt="Котёнок ждёт, пока сервер отдохнёт" style="max-width: 100%; border-radius: 8px; box-shadow: 0 2px 8px rgba(0, 0, 0, .15);" />
+        </main>
+    </body>
+    </html>
 }
 else
 {
-    <h3 class="text-danger">При обработке вашего запроса возникла ошибка.</h3>
-}
+    <h1 class="text-danger">@ViewBag.Title</h1>
+    if (Model.IsProjectNotFound)
+    {
+        <h3>Проекта с таким номером нет — возможно, ошибка в ссылке.</h3>
+    }
+    else if (Model.IsEntityNotFound)
+    {
+        <h3>Такого объекта нет — возможно, ошибка в ссылке или объект был удалён.</h3>
+    }
+    else if (Model.HttpStatusCode == 404)
+    {
+        <h3 class="text-danger">
+            Если вы перешли на эту страницу по ссылке с нашего сайта, обратитесь в техподдержку.
+        </h3>
+    }
+    else
+    {
+        <h3 class="text-danger">При обработке вашего запроса возникла ошибка.</h3>
+    }
 
-<component type="typeof(SupportInfoPanel)" render-mode="Static"
-           param-ActivityId="info.ActivityId"
-           param-RequestId="info.RequestId"
-           param-Path="info.Path"
-           param-Referer="info.Referer"
-           param-PodName="info.PodName"
-           param-Version="info.Version.Version"
-           param-CommitSha="info.Version.CommitSha" />
+    <component type="typeof(SupportInfoPanel)" render-mode="Static"
+               param-ActivityId="info.ActivityId"
+               param-RequestId="info.RequestId"
+               param-Path="info.Path"
+               param-Referer="info.Referer"
+               param-PodName="info.PodName"
+               param-Version="info.Version.Version"
+               param-CommitSha="info.Version.CommitSha" />
+}

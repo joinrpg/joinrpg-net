@@ -4,11 +4,13 @@ using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace JoinRpg.Portal.Pages.Error;
 
 [AllowAnonymous]
 [IgnoreAntiforgeryToken]
+[DisableRateLimiting] // Страница не трогает БД: перезапуск /error/429 при переполненном бакете не должен снова получать 429 (#6232)
 public class ErrorPageModel(ILogger<ErrorPageModel> logger) : PageModel
 {
     // Не OnGet/OnPost: страница перезапускается тем же методом, что и упавший запрос, а для
