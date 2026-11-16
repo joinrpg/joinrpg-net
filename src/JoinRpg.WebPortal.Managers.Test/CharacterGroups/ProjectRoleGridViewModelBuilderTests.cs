@@ -771,7 +771,7 @@ public class ProjectRoleGridViewModelBuilderTests
     }
 
     [Fact]
-    public void Build_ApprovedClaim_Master_ApprovedClaimIdSet()
+    public void Build_ApprovedClaim_Master_ClaimIdSet()
     {
         var character = _mock.CreateCharacter("Вася");
         var claim = _mock.CreateApprovedClaim(character, _mock.Player);
@@ -779,23 +779,23 @@ public class ProjectRoleGridViewModelBuilderTests
         var result = BuildGrid(Config(), [character]);
 
         var approvedClaimId = result.Rows.ShouldHaveSingleItem().ShouldBeOfType<ProjectRoleGridCharacterRowViewModel>()
-            .Character.ApprovedClaimId.ShouldNotBeNull();
+            .Character.ClaimId.ShouldNotBeNull();
         approvedClaimId.ClaimId.ShouldBe(claim.ClaimId);
     }
 
     [Fact]
-    public void Build_NoApprovedClaim_ApprovedClaimIdNull()
+    public void Build_NoApprovedClaim_ClaimIdNull()
     {
         var character = _mock.CreateCharacter("Вася");
 
         var result = BuildGrid(Config(), [character]);
 
         result.Rows.ShouldHaveSingleItem().ShouldBeOfType<ProjectRoleGridCharacterRowViewModel>()
-            .Character.ApprovedClaimId.ShouldBeNull();
+            .Character.ClaimId.ShouldBeNull();
     }
 
     [Fact]
-    public void Build_ApprovedClaim_NonMaster_ApprovedClaimIdNull()
+    public void Build_ApprovedClaim_NonMaster_ClaimIdNull()
     {
         var character = _mock.CreateCharacter("Вася");
         character.IsPublic = true;
@@ -804,7 +804,7 @@ public class ProjectRoleGridViewModelBuilderTests
         var result = BuildGrid(Config(), [character], canViewPrivate: false);
 
         result.Rows.ShouldHaveSingleItem().ShouldBeOfType<ProjectRoleGridCharacterRowViewModel>()
-            .Character.ApprovedClaimId.ShouldBeNull();
+            .Character.ClaimId.ShouldBeNull();
     }
 
     // --- GroupsViewMode ---

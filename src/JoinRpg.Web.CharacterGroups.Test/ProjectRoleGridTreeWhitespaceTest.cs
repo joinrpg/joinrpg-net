@@ -53,7 +53,7 @@ public class ProjectRoleGridTreeWhitespaceTest
             new CharacterLinkWithEditViewModel(
                 new CharacterLinkSlimViewModel(CharacterId, "Хочу на игру", IsActive: true, ViewMode.Show),
                 CanEdit: false,
-                ApprovedClaimId: null),
+                ClaimId: null),
             new PlayerCellViewModel(
                 new CharacterApplyViewModel(CharacterId, CharacterBusyStatusView.Slot, SlotCount: null, IsHot: false, IsAvailable: true),
                 Contacts: null),
