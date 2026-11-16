@@ -16,6 +16,8 @@
   @* Префикс имён полей: без него name="Name" браузерное автодополнение принимает за персональное поле. *@
   ViewData.TemplateInfo.HtmlFieldPrefix = "field";
   @Html.AntiForgeryToken()
+  @* Без скрытого поля ProjectId в POST не доезжает: route-значение не биндится с префиксом "field", получаем ProjectId = 0 (#6236) *@
+  @Html.HiddenFor(model => model.ProjectId)
 
   <div class="form-horizontal">
     @Html.ValidationSummary(true, "", new { @class = "text-danger" })
