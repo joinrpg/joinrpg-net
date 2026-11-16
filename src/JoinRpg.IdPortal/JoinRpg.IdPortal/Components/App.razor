@@ -18,7 +18,15 @@
 
 <body>
     <Routes />
-    <script src="_framework/blazor.web.js"></script>
+    @* См. _Layout.cshtml Portal: disableNoCacheFetch, #6234 *@
+    <script src="_framework/blazor.web.js" autostart="false"></script>
+    <script>
+        Blazor.start({
+            webAssembly: {
+                configureRuntime: dotnet => dotnet.withConfig({ disableNoCacheFetch: true })
+            }
+        });
+    </script>
 </body>
 
 </html>

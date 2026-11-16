@@ -57,7 +57,19 @@
     <component type="typeof(JoinRpg.Portal.Components.Layout.BlazorErrorUi)" render-mode="Static" />
 
     <script src="~/Scripts/edit-funcs.js" type="text/javascript"></script>
-    <script src="/_framework/blazor.web.js" type="text/javascript"></script>
+    @* Рантайм .NET по умолчанию качает boot-ресурсы WASM fetch'ем с cache:"no-cache" — браузер
+        ревалидирует каждый файл при каждом буте в обход immutable-кеша. Отключаем: fingerprinted
+        ассеты из _framework пойдут из HTTP-кеша без запросов. #6234.
+        ВАЖНО: когда страницы переедут на хост Components/App.razor, этот скрипт отсюда убрать
+        (иначе два Blazor.start на странице → "Blazor has already started"). *@
+    <script src="/_framework/blazor.web.js" type="text/javascript" autostart="false"></script>
+    <script type="text/javascript">
+        Blazor.start({
+            webAssembly: {
+                configureRuntime: dotnet => dotnet.withConfig({ disableNoCacheFetch: true })
+            }
+        });
+    </script>
     <partial name="Layout/_WebComponentsScriptPartial" />
 
     <script src="~/Scripts/blazor-interop.js" type="module"></script>
