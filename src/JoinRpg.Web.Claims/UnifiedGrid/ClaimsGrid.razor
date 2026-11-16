@@ -125,14 +125,14 @@
                            не шлёт, но скоуп здесь проверяем явно, а не контрактом сервера. *@
                         @if (IsMaster)
                         {
-                            <UnreadCommentsCountBadge Count="claim.UnreadCommentsCount" /><text> </text>
+                            <UnreadCommentsCountBadge Count="claim.UnreadCommentsCount" />@Space
                         }
                         <EventTime Model="claim.UpdateDate" />
                         @* Автор последнего обновления («мной»/«игроком»/ссылка): сервер шлёт его
                            только в мастерском скоупе (ADR027 §4), у капитана поле пустое. *@
                         @if (claim.LastModifiedBy is { } lastModifiedBy)
                         {
-                            <text> </text><UserLink Model="lastModifiedBy" ShowIcon="false" />
+                            @Space<UserLink Model="lastModifiedBy" ShowIcon="false" />
                         }
                     </td>
 
@@ -194,6 +194,10 @@
     public UgScopeView Scope { get; set; } = UgScopeView.Captain;
 
     private bool IsMaster => Scope == UgScopeView.Master;
+
+    // Статическую разметку из одних пробелов (включая <text> </text>) Blazor вырезает
+    // (#5324), поэтому пробел в разметке задаётся выражением.
+    private const string Space = " ";
 
     /// <summary>Номер последнего запроса: ответ на более ранний, пришедший позже, не нужен.</summary>
     private int lastRequest;

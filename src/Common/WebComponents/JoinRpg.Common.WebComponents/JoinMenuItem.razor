@@ -9,7 +9,7 @@
             @if (Icon is not null)
             {
                 <JoinIcon Icon="@Icon.Value" />
-                <text> </text>
+                @Space
             }
             @Label
         }
@@ -17,6 +17,10 @@
 </li>
 
 @code {
+    // Статическую разметку из одних пробелов (включая <text> </text>) Blazor вырезает
+    // (#5324), поэтому пробел в разметке задаётся выражением.
+    private const string Space = " ";
+
     [Parameter, EditorRequired] public string Href { get; set; } = "";
     [Parameter] public RenderFragment? ChildContent { get; set; }
     [Parameter] public string? Label { get; set; }

@@ -252,6 +252,39 @@ public class ClaimsGridTest : BunitContext
         equal.WaitForAssertion(() => equal.FindAll("span.label").Single(label => label.TextContent.Trim() == "1"));
     }
 
+    /// <summary>
+    /// Между датой обновления и автором («мной»/ссылка) — пробел: это одна мысль («что нового
+    /// с прошлого визита»), но слова не должны склеиваться в «02 ноябрямной».
+    /// </summary>
+    [Fact]
+    public void UpdateDateIsSeparatedFromLastModifiedByWithSpace()
+    {
+        var now = DateTimeOffset.UtcNow;
+        var updated = now.AddDays(-10);
+        var item = NewItem(unreadCommentsCount: 3);
+        var claim = item.Claims[0] with
+        {
+            UpdateDate = updated,
+            LastModifiedBy = new UserLinkViewModel(new(2), "мной", ViewMode.Show),
+        };
+        client.Item = item with { Claims = [claim] };
+
+        var cut = RenderGrid(UgScopeView.Master);
+
+        // У границы года (≈24.12–01.01 UTC) дата уходит в прошлый год, и EventTime рисует
+        // полную дату вместо «dd MMMM» — ожидание считаем по той же логике.
+        var expectedDate = updated.Year != now.Year ? updated.Date.ToShortDateString() : updated.ToString("dd MMMM");
+        cut.WaitForAssertion(() =>
+        {
+            var cell = cut.FindAll("td").Single(td => td.InnerHtml.Contains("мной"));
+            // Пробелы стоят и после бейджа непрочитанных, и между датой и автором —
+            // «3 06 ноября мной», а не «306 ноябрямной». Статические узлы из одних пробелов
+            // Blazor вырезает, поэтому держимся за InnerHtml.
+            cell.InnerHtml.ShouldContain($" {expectedDate}");
+            cell.InnerHtml.ShouldContain($"{expectedDate} <a");
+        });
+    }
+
     private static UgItemViewModel NewItem(int unreadCommentsCount)
         => new(
             new UgCharacterViewModel(
