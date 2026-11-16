@@ -15,8 +15,7 @@
                     <br />
                     foreach (var tagName in Item.TagNames)
                     {
-                        <a href="@("/" + Item.PlotFolderId.ProjectId.Value.ToString() + "/plots/bytag?tagName=" + tagName)">#@tagName</a>
-                        <text> </text>
+                        <a href="@("/" + Item.PlotFolderId.ProjectId.Value.ToString() + "/plots/bytag?tagName=" + tagName)">#@tagName</a>@Space
                     }
                 }
             </td>
@@ -60,6 +59,10 @@
 
 @code
 {
+    // Статическую разметку из одних пробелов (включая <text> </text>) Blazor вырезает
+    // (#5324), поэтому пробел в разметке задаётся выражением.
+    private const string Space = " ";
+
     [Parameter]
     [EditorRequired]
     public PlotFolderListItemViewModel Item { get; set; } = null!;
