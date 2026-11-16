@@ -49,7 +49,7 @@ public class ProjectRoleGridPlayerCellAvatarTest
             new CharacterLinkWithEditViewModel(
                 new CharacterLinkSlimViewModel(CharacterId, "Вася", IsActive: true, ViewMode.Show),
                 CanEdit: false,
-                ApprovedClaimId: null),
+                ClaimId: null),
             player,
             Groups: null,
             FieldValues: [],

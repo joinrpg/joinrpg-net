@@ -6,9 +6,9 @@
     {
         <JoinIconButton Preset="ButtonPreset.Edit" Link="@characterUriLocator.GetEditUri(Model.Character.CharacterId).ToString()" Title="Редактировать персонажа" />
     }
-    @if (Model.ApprovedClaimId is { } claimId)
+    @if (Model.ClaimId is { } claimId)
     {
-        <JoinIconButton Preset="ButtonPreset.Claim" Link="@claimUriLocator.GetUri(claimId).ToString()" Title="Принятая заявка" />
+        <JoinIconButton Preset="ButtonPreset.Claim" Link="@claimUriLocator.GetUri(claimId).ToString()" Title="Заявка" />
     }</span>
 </span>
 

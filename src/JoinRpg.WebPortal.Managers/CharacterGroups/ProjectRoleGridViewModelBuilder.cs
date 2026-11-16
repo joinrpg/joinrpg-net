@@ -202,7 +202,7 @@ internal static class ProjectRoleGridViewModelBuilder
         // Ссылку на принятую заявку показываем только мастеру (canViewPrivate).
         var approvedClaimId = canViewPrivate ? character.ApprovedClaimId : null;
 
-        var characterLink = new CharacterLinkWithEditViewModel(characterSlim, canEditRoles, approvedClaimId);
+        var characterLink = new CharacterLinkWithEditViewModel(characterSlim, canEditRoles, ClaimId: approvedClaimId);
 
         // Колонку «Игрок» скрыли (например, у сетки мероприятий есть своё поле «Ведущий») —
         // данные игрока на клиент не отдаём вовсе, вместе с ними пропадает и кнопка «Заявиться».
