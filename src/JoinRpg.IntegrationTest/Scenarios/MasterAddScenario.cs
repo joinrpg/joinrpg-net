@@ -162,9 +162,10 @@ public class MasterAddScenario(JoinApplicationFactory factory) : IClassFixture<J
             Permissions = [],
         });
 
-        // Отказ атрибута авторизации, а не сервиса: сервис тоже отвечает 403, но с ProblemDetails, а у атрибута тело пустое.
+        // Отказ атрибута авторизации: тело — ProblemDetails, как у всех ошибок /webapi
+        // (ветвь StatusCodePages в Startup отдаёт его и для отказов атрибута).
         response.StatusCode.ShouldBe(HttpStatusCode.Forbidden);
-        response.Content.Headers.ContentType?.MediaType.ShouldNotBe("application/problem+json");
+        response.Content.Headers.ContentType?.MediaType.ShouldBe("application/problem+json");
         (await client.GetAsync(AccessUrl(projectId, "GetAddMaster") + $"?userId={newMasterId.Value}"))
             .StatusCode.ShouldBe(HttpStatusCode.Forbidden);
         (await GetProjectInfo(projectId)).HasMasterAccess(newMasterId).ShouldBeFalse();
