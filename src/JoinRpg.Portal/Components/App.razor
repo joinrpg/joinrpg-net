@@ -1,5 +1,8 @@
 <!DOCTYPE html>
-@* TODO: not used yet, will be when we are start moving pages to Blazor *@
+@* TODO: not used yet, will be when we are start moving pages to Blazor.
+   При переезде страниц сюда удалить скрипт старта Blazor (autostart/disableNoCacheFetch)
+   из Views/Shared/_Layout.cshtml — иначе на одной странице будет два Blazor.start
+   и второй бросит "Blazor has already started". *@
 <html lang="en">
 
 <head>
@@ -18,7 +21,15 @@
 </head>
 
 <body>
-    <script src="_framework/blazor.web.js"></script>
+    @* См. _Layout.cshtml: disableNoCacheFetch, #6234 *@
+    <script src="_framework/blazor.web.js" autostart="false"></script>
+    <script>
+        Blazor.start({
+            webAssembly: {
+                configureRuntime: dotnet => dotnet.withConfig({ disableNoCacheFetch: true })
+            }
+        });
+    </script>
 </body>
 
 </html>
