@@ -73,6 +73,9 @@ public static class WebInfrastructureRegistration
 
         _ = services.AddJoinRobotsTxt();
 
+        // После robots.txt: фильтры применяются в порядке регистрации, этот должен быть после ForwardedHeaders
+        services.AddJoinFrameworkCacheControl();
+
         services.AddOptions<SiteBannerOptions>().BindConfiguration(SiteBannerOptions.SectionName);
 
         services

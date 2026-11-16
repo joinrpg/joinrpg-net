@@ -7,6 +7,7 @@ builder.Services.AddJoinHealthChecks();
 // в SPA-фоллбэк и отдавал index.html
 _ = builder.Services.AddJoinRobotsTxt().Configure(robots => robots.DisallowAll = true);
 builder.Services.ConfigureForwardedHeaders();
+builder.Services.AddJoinFrameworkCacheControl();
 builder.Host.UseJoinSerilog("ComponentBook");
 
 var app = builder.Build();
