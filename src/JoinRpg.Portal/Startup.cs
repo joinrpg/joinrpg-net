@@ -65,6 +65,9 @@ public class Startup(WebApplicationBuilder builder)
             .Configure<RoleTimeOptions>(Configuration.GetSection("RoleTime"))
             .Configure<KogdaIgraOptions>(Configuration.GetSection("KogdaIgra"));
 
+        // Глобальный лимитер одновременных анонимных запросов — защита SQL Server от ботнета (#6232)
+        _ = services.AddJoinAnonymousRateLimiter(Configuration);
+
         services.AddOptions<RobotsTxtOptions>()
             .Configure<IOptions<JoinRpgHostNamesOptions>>((robots, hostNames) =>
             {
@@ -211,19 +214,20 @@ public class Startup(WebApplicationBuilder builder)
         _ = app.UseExceptionHandler(PortalExceptionHandling.CreateOptions());
         // Re-execute должен стоять прямо на app — иначе не сработает повторный route matching страницы /error/{код}.
         _ = app.UseStatusCodePagesWithReExecute(PortalExceptionHandling.ErrorPagePath + "/{0}");
-        // Внешнему API (x-api / x-game-api) вместо re-execute — ProblemDetails: re-execute отключаем
-        // через IStatusCodePagesFeature и пишем тело сами, только если никто его ещё не написал.
+        // API (/webapi островов Blazor и внешнее x-api / x-game-api) вместо re-execute — ProblemDetails:
+        // re-execute отключаем через IStatusCodePagesFeature и пишем тело сами, только если никто
+        // его ещё не написал. Иначе острова получили бы HTML-страницу, которую WASM не распарсит.
         _ = app.Use(async (context, next) =>
         {
-            var isExternalApi = context.Request.Path.IsExternalApiPath();
-            if (isExternalApi && context.Features.Get<IStatusCodePagesFeature>() is { } statusCodePages)
+            var isApi = context.Request.Path.IsApiPath();
+            if (isApi && context.Features.Get<IStatusCodePagesFeature>() is { } statusCodePages)
             {
                 statusCodePages.Enabled = false;
             }
 
             await next();
 
-            if (isExternalApi
+            if (isApi
                 && context.Response.StatusCode is >= 400 and < 600
                 && !context.Response.HasStarted
                 && (!context.Response.Body.CanSeek || context.Response.Body.Length == 0))
@@ -252,6 +256,9 @@ public class Startup(WebApplicationBuilder builder)
 
         _ = app.UseAuthentication();
         _ = app.UseAuthorization()
+            // После UseAuthorization: principal из политик (x-api JWT, MCP) появляется только
+            // в AuthorizationMiddleware, до него такие запросы лимитировались бы как анонимные (#6232).
+            .UseJoinAnonymousRateLimiter()
             .UseMiddleware<CsrfTokenCookieMiddleware>();
 
         // Хостовая страница — дело серверного проекта: ImportMap и Assets живут в

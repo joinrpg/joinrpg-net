@@ -33,6 +33,8 @@ public static class OpenTelemetryRegistration
                     // независимо от имени приложения
                     .AddMeter("JoinRpg")
                     .AddMeter(WebInfrastructureMetrics.MeterName)
+                    // Метрики rate limiting middleware (active_leases, queued_requests, rejected-запросы)
+                    .AddMeter("Microsoft.AspNetCore.RateLimiting")
                     // Metrics provides by ASP.NET Core in .NET 8
                     .AddMeter("Microsoft.AspNetCore.Hosting")
                     .AddPrometheusExporter();

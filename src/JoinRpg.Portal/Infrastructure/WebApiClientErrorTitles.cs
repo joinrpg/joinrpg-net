@@ -22,6 +22,7 @@ internal static class WebApiClientErrorTitles
         [StatusCodes.Status412PreconditionFailed] = "Данные изменились — обновите страницу",
         [StatusCodes.Status415UnsupportedMediaType] = "Формат запроса не поддерживается",
         [StatusCodes.Status422UnprocessableEntity] = "Запрос не удалось обработать",
+        [StatusCodes.Status429TooManyRequests] = "Слишком много запросов — подождите минуту и обновите страницу",
         [StatusCodes.Status500InternalServerError] = "Неизвестная ошибка на сервере",
     };
 
@@ -37,6 +38,6 @@ internal static class WebApiClientErrorTitles
         }
     }
 
-    /// <summary>Заголовок ProblemDetails по коду — для ветви <c>UseStatusCodePages</c> внешнего API (см. Startup).</summary>
+    /// <summary>Заголовок ProblemDetails по коду — для ветви <c>UseStatusCodePages</c> API (см. Startup).</summary>
     public static string GetTitle(int statusCode) => Titles.TryGetValue(statusCode, out var title) ? title : "Ошибка";
 }
