@@ -967,6 +967,47 @@ public class UnifiedGridViewServiceTest
 
     #endregion
 
+    #region Иконка редактирования персонажа
+
+    /// <summary>Мастеру с правом CanEditRoles грид даёт иконку редактирования — как сетка ролей.</summary>
+    [Fact]
+    public async Task MasterWithEditRolesRightGetsCanEdit()
+    {
+        var item = (await GetItems(UgStatusFilterView.Active, UgScopeView.Master))
+            .Single(x => x.Character.Name.Name == Mock.Character.CharacterName);
+
+        item.Character.CanEdit.ShouldBeTrue();
+    }
+
+    /// <summary>Мастеру без права CanEditRoles иконки редактирования нет.</summary>
+    [Fact]
+    public async Task MasterWithoutEditRolesRightGetsNoCanEdit()
+    {
+        var master = Mock.CreateMaster();
+        Mock.Project.ProjectAcls.Single(acl => acl.UserId == master.UserId).CanEditRoles = false;
+        Mock.ReInitProjectInfo();
+
+        var item = (await GetItems(UgStatusFilterView.Active, UgScopeView.Master, userId: master.UserId))
+            .Single(x => x.Character.Name.Name == Mock.Character.CharacterName);
+
+        item.Character.CanEdit.ShouldBeFalse();
+    }
+
+    /// <summary>
+    /// Капитанский скоуп иконки редактирования не даёт — даже если капитан зашёл мастером:
+    /// редактирование ролей даёт только мастерский скоуп (зеркально сетке ролей).
+    /// </summary>
+    [Fact]
+    public async Task CaptainGetsNoCanEdit()
+    {
+        var item = (await GetItems(UgStatusFilterView.Active))
+            .Single(x => x.Character.Name.Name == Mock.Character.CharacterName);
+
+        item.Character.CanEdit.ShouldBeFalse();
+    }
+
+    #endregion
+
     #region Выгрузка (ADR027 §5, ревью #6025)
 
     private async Task<IReadOnlyList<ClaimInfo>> GetExport(

@@ -29,11 +29,13 @@ public static class ItemBuilder
     /// <param name="unreadComments">
     /// Непрочитанные комментарии по обсуждениям заявок (мастерский скоуп, ADR027 §4), иначе <c>null</c>.
     /// </param>
+    /// <param name="projectInfo">Метаданные проекта — для проверки права на редактирование ролей.</param>
     public static UgItemViewModel? BuildItem(
         CharacterInfo character,
         IReadOnlyCollection<CharacterClaimInfo> claims,
         ICurrentUserAccessor currentUserId,
         UgScopeView scope,
+        ProjectInfo projectInfo,
         IReadOnlyDictionary<ClaimIdentification, IReadOnlyCollection<ClaimProblem>>? problems = null,
         IReadOnlyDictionary<CommentDiscussionId, int>? unreadComments = null)
     {
@@ -48,6 +50,10 @@ public static class ItemBuilder
             return null;
         }
 
+        // Иконка редактирования персонажа — как в сетке ролей: право CanEditRoles в мастерском
+        // скоупе; капитану редактирование не положено.
+        var canEdit = scope == UgScopeView.Master && projectInfo.HasEditRolesAccess(currentUserId.UserIdentificationOrDefault);
+
         var characterViewModel = new UgCharacterViewModel(
            new CharacterLinkSlimViewModel(
                character.Id, character.CharacterName, character.IsActive, ViewModeSelector.Create(character.IsPublic, accessArguments.CanViewCharacterName)),
@@ -57,7 +63,8 @@ public static class ItemBuilder
                character.CharacterTypeInfo.SlotLimit,
                character.CharacterTypeInfo.IsHot,
                ClaimValidator.IsAvailableForPlayer(character)),
-           BuildGroups(character, accessArguments)
+           BuildGroups(character, accessArguments),
+           canEdit
            );
 
         return new UgItemViewModel(
