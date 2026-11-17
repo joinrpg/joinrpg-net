@@ -21,6 +21,12 @@ public interface IProjectUriLocator
     /// <summary>Бейджи выбранных персонажей; шаблон выбирается на открывшейся странице, если их несколько.</summary>
     Uri GetPrintBadgesUri(ProjectIdentification projectId, IReadOnlyCollection<CharacterIdentification> characterIds);
 
+    /// <summary>Только раздатка выбранных персонажей.</summary>
+    Uri GetPrintHandoutUri(ProjectIdentification projectId, IReadOnlyCollection<CharacterIdentification> characterIds);
+
+    /// <summary>Наклейки на конверты выбранных персонажей.</summary>
+    Uri GetPrintStickersUri(ProjectIdentification projectId, IReadOnlyCollection<CharacterIdentification> characterIds);
+
     /// <summary>Печатная версия сохранённой сетки ролей (ADR029).</summary>
     Uri GetRoleGridPrintUri(ProjectRolesListIdentification rolesListId);
 

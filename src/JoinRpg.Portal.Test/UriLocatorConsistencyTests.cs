@@ -106,6 +106,8 @@ public class UriLocatorConsistencyTests(IntegrationTestPortalFactory factory)
         ["GetMassMailUri", (Func<IProjectUriLocator, Uri>)(l => l.GetMassMailUri(ProjectId, [new(ProjectId, 13), new(ProjectId, 451), new(ProjectId, 452)]))],
         ["GetPrintCharactersUri", (Func<IProjectUriLocator, Uri>)(l => l.GetPrintCharactersUri(ProjectId, [CharId, new(ProjectId, 1000), new(ProjectId, 1358)]))],
         ["GetPrintBadgesUri", (Func<IProjectUriLocator, Uri>)(l => l.GetPrintBadgesUri(ProjectId, [CharId, new(ProjectId, 1000), new(ProjectId, 1358)]))],
+        ["GetPrintHandoutUri", (Func<IProjectUriLocator, Uri>)(l => l.GetPrintHandoutUri(ProjectId, [CharId, new(ProjectId, 1000), new(ProjectId, 1358)]))],
+        ["GetPrintStickersUri", (Func<IProjectUriLocator, Uri>)(l => l.GetPrintStickersUri(ProjectId, [CharId, new(ProjectId, 1000), new(ProjectId, 1358)]))],
         ["GetRoleGridPrintUri", (Func<IProjectUriLocator, Uri>)(l => l.GetRoleGridPrintUri(RolesListId))],
         ["GetClassicRoleGridPrintUri", (Func<IProjectUriLocator, Uri>)(l => l.GetClassicRoleGridPrintUri(ProjectId, GroupId, hotOnly: false))],
         ["GetClassicRoleGridPrintUri hot", (Func<IProjectUriLocator, Uri>)(l => l.GetClassicRoleGridPrintUri(ProjectId, GroupId, hotOnly: true))],

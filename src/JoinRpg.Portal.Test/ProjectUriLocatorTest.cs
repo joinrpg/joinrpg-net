@@ -42,6 +42,26 @@ public class ProjectUriLocatorTest(IntegrationTestPortalFactory factory) : IClas
         ParseQueryList(uri, "characterIds").ShouldBe(ids, ignoreOrder: true);
     }
 
+    [Fact]
+    public void PrintHandoutKeepsCharacterIds()
+    {
+        int[] ids = [1, 2, 3, 1358, 1359];
+        var uri = Locator.GetPrintHandoutUri(ProjectId, [.. ids.Select(id => new CharacterIdentification(ProjectId, id))]);
+
+        uri.AbsolutePath.ShouldBe("/1620/print/HandoutOnly", StringCompareShould.IgnoreCase);
+        ParseQueryList(uri, "characterIds").ShouldBe(ids, ignoreOrder: true);
+    }
+
+    [Fact]
+    public void PrintStickersKeepsCharacterIds()
+    {
+        int[] ids = [1, 2, 3, 1358, 1359];
+        var uri = Locator.GetPrintStickersUri(ProjectId, [.. ids.Select(id => new CharacterIdentification(ProjectId, id))]);
+
+        uri.AbsolutePath.ShouldBe("/1620/print/Stickers", StringCompareShould.IgnoreCase);
+        ParseQueryList(uri, "characterIds").ShouldBe(ids, ignoreOrder: true);
+    }
+
     private static IReadOnlyCollection<int> ParseQueryList(Uri uri, string name)
     {
         var query = HttpUtility.ParseQueryString(uri.Query);

@@ -166,6 +166,12 @@ public static class UriLocatorExtensions
         Uri IProjectUriLocator.GetPrintBadgesUri(ProjectIdentification projectId, IReadOnlyCollection<CharacterIdentification> characterIds) =>
             new($"/{projectId.Value}/print/Badges?CharacterIds={new CompressedIntList(characterIds)}", UriKind.Relative);
 
+        Uri IProjectUriLocator.GetPrintHandoutUri(ProjectIdentification projectId, IReadOnlyCollection<CharacterIdentification> characterIds) =>
+            new($"/{projectId.Value}/print/HandoutOnly?CharacterIds={new CompressedIntList(characterIds)}", UriKind.Relative);
+
+        Uri IProjectUriLocator.GetPrintStickersUri(ProjectIdentification projectId, IReadOnlyCollection<CharacterIdentification> characterIds) =>
+            new($"/{projectId.Value}/print/Stickers?CharacterIds={new CompressedIntList(characterIds)}", UriKind.Relative);
+
         Uri IProjectUriLocator.GetRoleGridPrintUri(ProjectRolesListIdentification rolesListId) =>
             new($"/{rolesListId.ProjectId.Value}/roleslist/{rolesListId.ProjectRolesListId}/print", UriKind.Relative);
 
