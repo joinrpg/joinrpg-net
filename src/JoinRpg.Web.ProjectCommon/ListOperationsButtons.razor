@@ -29,6 +29,8 @@
                 <JoinButton Link="@ProjectUriLocator.GetPrintCharactersUri(ProjectId, CharacterIds).ToString()" Preset="ButtonPreset.Print" Label="Распечатать все" />
                 <JoinDropdownButton AriaLabel="Другие варианты печати" Split="true">
                     <JoinMenuItem Href="@ProjectUriLocator.GetPrintBadgesUri(ProjectId, CharacterIds).ToString()" Icon="JoinIconType.Print" Label="Распечатать бейджи" />
+                    <JoinMenuItem Href="@ProjectUriLocator.GetPrintHandoutUri(ProjectId, CharacterIds).ToString()" Icon="JoinIconType.Print" Label="Распечатать раздатку" />
+                    <JoinMenuItem Href="@ProjectUriLocator.GetPrintStickersUri(ProjectId, CharacterIds).ToString()" Icon="JoinIconType.Print" Label="Распечатать наклейки на конверты" />
                 </JoinDropdownButton>
             </JoinButtonGroup>
         }

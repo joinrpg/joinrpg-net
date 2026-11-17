@@ -27,6 +27,12 @@ public class ListOperationsButtonsTest
         public Uri GetPrintBadgesUri(ProjectIdentification projectId, IReadOnlyCollection<CharacterIdentification> characterIds)
             => UriFor($"badges/{characterIds.Count}");
 
+        public Uri GetPrintHandoutUri(ProjectIdentification projectId, IReadOnlyCollection<CharacterIdentification> characterIds)
+            => UriFor($"handout/{characterIds.Count}");
+
+        public Uri GetPrintStickersUri(ProjectIdentification projectId, IReadOnlyCollection<CharacterIdentification> characterIds)
+            => UriFor($"stickers/{characterIds.Count}");
+
         public Uri GetRoleGridPrintUri(ProjectRolesListIdentification rolesListId) => UriFor("print-grid");
         public Uri GetClassicRoleGridPrintUri(ProjectIdentification projectId, CharacterGroupIdentification? groupId, bool hotOnly) => UriFor("print-classic-grid");
 
@@ -122,7 +128,7 @@ public class ListOperationsButtonsTest
     }
 
     [Fact]
-    public void PrintAndBadges_ForCharacters()
+    public void PrintVariants_ForCharacters()
     {
         using var ctx = CreateContext();
         var cut = ctx.Render<ListOperationsButtons>(p => p
@@ -130,8 +136,14 @@ public class ListOperationsButtonsTest
             .Add(x => x.ProjectId, ProjectId)
             .Add(x => x.CharacterIds, [new CharacterIdentification(ProjectId, 7)]));
 
-        Links(cut).ShouldBe(["/export", "https://example.org/print/1", "https://example.org/badges/1"]);
-        // Основное действие — «Распечатать все», бейджи — в выпадающем меню рядом.
+        Links(cut).ShouldBe([
+            "/export",
+            "https://example.org/print/1",
+            "https://example.org/badges/1",
+            "https://example.org/handout/1",
+            "https://example.org/stickers/1",
+        ]);
+        // Основное действие — «Распечатать все», остальные варианты — в выпадающем меню рядом.
         cut.Find("details.join-dropdown a").GetAttribute("href").ShouldBe("https://example.org/badges/1");
     }
 }

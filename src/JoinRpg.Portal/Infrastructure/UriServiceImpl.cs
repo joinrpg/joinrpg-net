@@ -182,6 +182,10 @@ internal class UriServiceImpl(
         new(GetBaseDomain(), linkGenerator.GetPathByAction("CharacterList", "Print", new { ProjectId = projectId.Value, CharacterIds = new CompressedIntList(characterIds).ToString() }));
     Uri IProjectUriLocator.GetPrintBadgesUri(ProjectIdentification projectId, IReadOnlyCollection<CharacterIdentification> characterIds) =>
         new(GetBaseDomain(), linkGenerator.GetPathByAction("Badges", "Print", new { ProjectId = projectId.Value, CharacterIds = new CompressedIntList(characterIds).ToString() }));
+    Uri IProjectUriLocator.GetPrintHandoutUri(ProjectIdentification projectId, IReadOnlyCollection<CharacterIdentification> characterIds) =>
+        new(GetBaseDomain(), linkGenerator.GetPathByAction("HandoutOnly", "Print", new { ProjectId = projectId.Value, CharacterIds = new CompressedIntList(characterIds).ToString() }));
+    Uri IProjectUriLocator.GetPrintStickersUri(ProjectIdentification projectId, IReadOnlyCollection<CharacterIdentification> characterIds) =>
+        new(GetBaseDomain(), linkGenerator.GetPathByAction("Stickers", "Print", new { ProjectId = projectId.Value, CharacterIds = new CompressedIntList(characterIds).ToString() }));
 
     Uri IProjectUriLocator.GetRoleGridPrintUri(ProjectRolesListIdentification rolesListId) =>
         new(GetBaseDomain(), linkGenerator.GetPathByPage("/GamePages/RoleGridPrint",

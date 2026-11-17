@@ -69,6 +69,8 @@ public class ProjectRoleGridLoadFailureTest
         public Uri GetMassMailUri(ProjectIdentification projectId, IReadOnlyCollection<ClaimIdentification> claimIds) => Stub(projectId, "mass-mail");
         public Uri GetPrintCharactersUri(ProjectIdentification projectId, IReadOnlyCollection<CharacterIdentification> characterIds) => Stub(projectId, "print");
         public Uri GetPrintBadgesUri(ProjectIdentification projectId, IReadOnlyCollection<CharacterIdentification> characterIds) => Stub(projectId, "badges");
+        public Uri GetPrintHandoutUri(ProjectIdentification projectId, IReadOnlyCollection<CharacterIdentification> characterIds) => Stub(projectId, "handout");
+        public Uri GetPrintStickersUri(ProjectIdentification projectId, IReadOnlyCollection<CharacterIdentification> characterIds) => Stub(projectId, "stickers");
         public Uri GetRoleGridPrintUri(ProjectRolesListIdentification rolesListId) => Stub(rolesListId.ProjectId, "roleslist-print");
         public Uri GetClassicRoleGridPrintUri(ProjectIdentification projectId, CharacterGroupIdentification? groupId, bool hotOnly) => Stub(projectId, "classic-print");
     }
