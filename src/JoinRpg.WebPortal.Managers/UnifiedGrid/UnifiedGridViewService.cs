@@ -56,7 +56,7 @@ internal class UnifiedGridViewService(
 
         var sorted = Sort(
             rows
-                .Select(row => (Row: row, Item: ItemBuilder.BuildItem(row.Character, row.Claims, currentUserAccessor, scope)))
+                .Select(row => (Row: row, Item: ItemBuilder.BuildItem(row.Character, row.Claims, currentUserAccessor, scope, filtered.ProjectInfo)))
                 .Where(x => x.Item is not null),
             x => x.Item!);
 
@@ -78,7 +78,7 @@ internal class UnifiedGridViewService(
                 [.. pageRows.SelectMany(x => x.Row.Claims.Select(claim => claim.ClaimId))],
                 currentUserAccessor.UserIdentification,
                 hasMasterAccess: true);
-            items = [.. pageRows.Select(x => ItemBuilder.BuildItem(x.Row.Character, x.Row.Claims, currentUserAccessor, scope, problems, unread)!)];
+            items = [.. pageRows.Select(x => ItemBuilder.BuildItem(x.Row.Character, x.Row.Claims, currentUserAccessor, scope, filtered.ProjectInfo, problems, unread)!)];
         }
         else
         {
@@ -115,7 +115,10 @@ internal class UnifiedGridViewService(
         Dictionary<ClaimIdentification, IReadOnlyCollection<ClaimProblem>>? Problems,
 
         /// <summary>Профили игроков результата — <c>null</c>, пока фильтру они были не нужны.</summary>
-        IReadOnlyDictionary<UserIdentification, UserInfo>? Players);
+        IReadOnlyDictionary<UserIdentification, UserInfo>? Players,
+
+        /// <summary>Метаданные проекта — нужны сборке строк (права на редактирование ролей).</summary>
+        ProjectInfo ProjectInfo);
 
     /// <summary>
     /// Общие шаги конвейера (ADR027 §3, §5, ревью #6025): загрузка скоупа и фильтрация. Дальше ветки
@@ -136,7 +139,10 @@ internal class UnifiedGridViewService(
 
         var status = ToDomain(filter.Status);
 
-        var characters = await LoadScope(projectId, scope, status.GetCharacterStatusSpec(), filter.Group);
+        // Метаданные нужны и скоупу, и сборке строк — грузим один раз и отдаём дальше.
+        var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId);
+
+        var characters = await LoadScope(projectId, scope, status.GetCharacterStatusSpec(), filter.Group, projectInfo);
 
         IReadOnlyList<GridRow> rows =
             [.. characters
@@ -159,7 +165,7 @@ internal class UnifiedGridViewService(
             rows = KeepClaims(rows, claim => HasWarnings(problems[claim.ClaimId]));
         }
 
-        return new FilteredGrid(rows, problems, players);
+        return new FilteredGrid(rows, problems, players, projectInfo);
     }
 
     // Явно, а не по текущей культуре: порядок страниц не должен зависеть от настроек потока.
@@ -185,9 +191,9 @@ internal class UnifiedGridViewService(
         ProjectIdentification projectId,
         UgScopeView scope,
         CharacterStatusSpec spec,
-        CharacterGroupIdentification? group)
+        CharacterGroupIdentification? group,
+        ProjectInfo projectInfo)
     {
-        var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId);
         var groupsWithAccess = await GetGroupsAccess(scope, projectInfo);
 
         if (groupsWithAccess is not null && groupsWithAccess.Count == 0)

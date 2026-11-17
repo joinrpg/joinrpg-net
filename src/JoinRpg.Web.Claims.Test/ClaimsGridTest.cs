@@ -1,3 +1,4 @@
+using AngleSharp.Dom;
 using Bunit.TestDoubles;
 using JoinRpg.Common.PrimitiveTypes;
 using JoinRpg.Common.PrimitiveTypes.Users;
@@ -36,6 +37,9 @@ public class ClaimsGridTest : BunitContext
         Services.AddSingleton<ICharacterGroupUriLocator>(new FakeGroupUriLocator());
         Services.AddSingleton<IUriLocator<CharacterLinkSlimViewModel>>(new FakeCharacterLinkLocator());
         Services.AddSingleton<IUriLocator<UserLinkViewModel>>(new FakeUserLinkLocator());
+        // CharacterLinkWithEdit в ячейке персонажа и ссылка «(заявка)» в колонке игрока.
+        Services.AddSingleton<IUriLocator<ClaimIdentification>>(new FakeClaimUriLocator());
+        Services.AddSingleton<ICharacterUriLocator>(new FakeCharacterUriLocator());
         Services.AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance);
         Services.AddSingleton(typeof(ILogger<>), typeof(NullLogger<>));
         _ = Services.AddJoinRpgWebComponents();
@@ -192,6 +196,63 @@ public class ClaimsGridTest : BunitContext
         });
     }
 
+    /// <summary>Ссылка «(заявка)» в колонке «Игрок» ведёт на заявку строки — как в старом гриде заявок.</summary>
+    [Fact]
+    public void ClaimLinkInPlayerColumnGoesToClaim()
+    {
+        client.Item = NewItem(0);
+
+        var cut = RenderGrid(UgScopeView.Master);
+
+        cut.WaitForAssertion(() =>
+        {
+            var link = cut.FindAll("a").Single(a => a.TextContent.Trim() == "заявка");
+            link.GetAttribute("href").ShouldBe("https://example.org/claim/1");
+            // Между именем игрока и скобкой — ровно один пробел: статическую разметку из одних
+            // пробелов Blazor вырезает (#5324), поэтому проверяем фактический текстовый узел.
+            link.PreviousSibling.ShouldBeAssignableTo<IText>().TextContent.ShouldBe(" (");
+        });
+
+        // В капитанском скоупе ссылки нет — она только для мастеров.
+        var captain = RenderGrid(UgScopeView.Captain);
+        captain.WaitForAssertion(
+            () => captain.FindAll("a").ShouldAllBe(a => a.TextContent.Trim() != "заявка"));
+    }
+
+    /// <summary>Иконка редактирования персонажа показывается по флагу CanEdit из ответа сервера.</summary>
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void CharacterEditIconFollowsCanEditFromServer(bool canEdit)
+    {
+        client.Item = NewItem(0, canEdit);
+
+        var cut = RenderGrid(UgScopeView.Master);
+
+        cut.WaitForAssertion(
+            () => cut.FindAll("a[aria-label='Редактировать персонажа']").Count.ShouldBe(canEdit ? 1 : 0));
+    }
+
+    /// <summary>
+    /// Строка вакансии (персонаж без заявок): ячейка персонажа с иконкой редактирования по флагу
+    /// CanEdit, а ссылки «(заявка)» в строке нет — она бывает только у заявок мастерского скоупа.
+    /// </summary>
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void VacancyRowRendersCharacterCellWithoutClaimLink(bool canEdit)
+    {
+        client.Item = NewVacancy(canEdit);
+
+        var cut = RenderGrid(UgScopeView.Master);
+
+        cut.WaitForAssertion(() =>
+        {
+            cut.FindAll("a[aria-label='Редактировать персонажа']").Count.ShouldBe(canEdit ? 1 : 0);
+            cut.FindAll("a").ShouldAllBe(a => a.TextContent.Trim() != "заявка");
+        });
+    }
+
     /// <summary>
     /// Смена одного фильтра не сбрасывает остальные: каждый запрос несёт полный набор — группа,
     /// ответственный и статус накапливаются, а не затираются «не менявшимися» null-ами.
@@ -285,12 +346,13 @@ public class ClaimsGridTest : BunitContext
         });
     }
 
-    private static UgItemViewModel NewItem(int unreadCommentsCount)
+    private static UgItemViewModel NewItem(int unreadCommentsCount, bool canEdit = false)
         => new(
             new UgCharacterViewModel(
                 new CharacterLinkSlimViewModel(new CharacterIdentification(ProjectId, 1), "Персонаж", true, ViewMode.Show),
                 new CharacterApplyViewModel(new CharacterIdentification(ProjectId, 1), default, null, false, false),
-                []),
+                [],
+                canEdit),
             [
                 new UgClaimViewModel(
                     new UserLinkViewModel(new(1), "Игрок", ViewMode.Show),
@@ -303,6 +365,16 @@ public class ClaimsGridTest : BunitContext
                     null,
                     unreadCommentsCount),
             ]);
+
+    /// <summary>Персонаж без заявок (вакансия): заявок нет, поэтому и ссылок на них нет.</summary>
+    private static UgItemViewModel NewVacancy(bool canEdit = false)
+        => new(
+            new UgCharacterViewModel(
+                new CharacterLinkSlimViewModel(new CharacterIdentification(ProjectId, 1), "Персонаж", true, ViewMode.Show),
+                new CharacterApplyViewModel(new CharacterIdentification(ProjectId, 1), default, null, false, false),
+                [],
+                canEdit),
+            []);
 
     private sealed class FakeGridClient : IUnifiedGridClient
     {
@@ -362,6 +434,20 @@ public class ClaimsGridTest : BunitContext
     private sealed class FakeUserLinkLocator : IUriLocator<UserLinkViewModel>
     {
         public Uri GetUri(UserLinkViewModel target) => new($"https://example.org/user/{target.UserId}");
+    }
+
+    private sealed class FakeClaimUriLocator : IUriLocator<ClaimIdentification>
+    {
+        public Uri GetUri(ClaimIdentification target) => new($"https://example.org/claim/{target.ClaimId}");
+    }
+
+    private sealed class FakeCharacterUriLocator : ICharacterUriLocator
+    {
+        public Uri GetDetailsUri(CharacterIdentification characterId) => new($"https://example.org/character/{characterId.CharacterId}");
+
+        public Uri GetAddClaimUri(CharacterIdentification characterId) => new($"https://example.org/character/{characterId.CharacterId}/apply");
+
+        public Uri GetEditUri(CharacterIdentification characterId) => new($"https://example.org/character/{characterId.CharacterId}/edit");
     }
 
     private sealed class FakeGroupUriLocator : ICharacterGroupUriLocator

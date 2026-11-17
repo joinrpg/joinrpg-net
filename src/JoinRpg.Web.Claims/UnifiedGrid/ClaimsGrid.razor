@@ -6,6 +6,7 @@
 @using Microsoft.JSInterop
 @inject NavigationManager NavigationManager
 @inject IJSRuntime js
+@inject IUriLocator<ClaimIdentification> claimUriLocator
 
 <div style="margin:0.5em">
   <GridHeader Title="@(Scope == UgScopeView.Master ? "Персонажи и заявки" : "Моя команда")"
@@ -61,7 +62,7 @@
         {
             <tr>
                 <td>
-                  <CharacterLink Model="item.Character.Name" />
+                  <CharacterLinkWithEdit Model="new CharacterLinkWithEditViewModel(item.Character.Name, item.Character.CanEdit, ClaimId: null)" />
                   @if (item.Character.Groups.Count > 0)
                   {
                       <div class="small"><CharacterGroupsLine Groups="item.Character.Groups" /></div>
@@ -98,7 +99,7 @@
                         first = false;
                             var rowspan = item.Claims.Length + (item.Character.ApplyStatus.IsSlot ? 1 : 0);
                             <td rowspan="@rowspan">
-                                <CharacterLink Model="item.Character.Name" />
+                                <CharacterLinkWithEdit Model="new CharacterLinkWithEditViewModel(item.Character.Name, item.Character.CanEdit, ClaimId: null)" />
                                 @if (item.Character.Groups.Count > 0)
                                 {
                                     <div class="small"><CharacterGroupsLine Groups="item.Character.Groups" /></div>
@@ -109,7 +110,10 @@
 
 
                     <td>
-                        <UserLink Model="claim.Player" />
+                        <UserLink Model="claim.Player" />@if (IsMaster && claim.ClaimId is { } claimId)
+                        {
+                            <text> (<a href="@claimUriLocator.GetUri(claimId).ToString()">заявка</a>)</text>
+                        }
                         @if (!string.IsNullOrWhiteSpace(claim.PlayerFullName))
                         {
                             <text><br /> @claim.PlayerFullName </text>

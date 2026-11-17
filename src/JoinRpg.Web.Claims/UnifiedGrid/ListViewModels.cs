@@ -44,7 +44,10 @@ public record class UgItemViewModel(
 public record class UgCharacterViewModel(
     [property: Display(Name = "Персонаж")] CharacterLinkSlimViewModel Name,
     CharacterApplyViewModel ApplyStatus,
-    IReadOnlyList<CharacterGroupLinkSlimViewModel> Groups);
+    IReadOnlyList<CharacterGroupLinkSlimViewModel> Groups,
+    // Иконка редактирования персонажа — как в сетке ролей (право CanEditRoles, мастерский скоуп);
+    // в капитанском скоупе всегда false.
+    bool CanEdit);
 
 public record class UgClaimViewModel(
      [property: Display(Name = "Игрок")] UserLinkViewModel? Player,
