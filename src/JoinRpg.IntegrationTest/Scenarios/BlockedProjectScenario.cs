@@ -1,7 +1,9 @@
+using System.Data.Entity;
 using JoinRpg.Common.PrimitiveTypes;
 using JoinRpg.Dal.Impl;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Data.Interfaces.ProjectMetadata;
+using JoinRpg.DataModel.Projects;
 using JoinRpg.DomainTypes;
 using JoinRpg.DomainTypes.Characters;
 using JoinRpg.DomainTypes.ProjectMetadata.Payments;
@@ -65,6 +67,25 @@ public class BlockedProjectScenario(JoinApplicationFactory factory) : IClassFixt
 
         // Свежий проект не заброшен, но в списке заблокированных он должен быть.
         (await GetBlockedProjectIds()).ShouldContain(projectId.Value);
+    }
+
+    [Fact]
+    public async Task GetBlockedProjects_ReturnsKogdaIgraGameDate()
+    {
+        var (_, projectId) = await CreateMasterAndProject();
+        await BlockProject(projectId);
+
+        // Без привязки к КогдаИгре даты игры нет.
+        (await GetBlockedProjectGameDate(projectId)).ShouldBeNull();
+
+        // Привязаны две карточки: берётся дата наиболее поздней из активных.
+        await AddKogdaIgraCard(projectId, new DateTime(2025, 5, 10), active: true);
+        await AddKogdaIgraCard(projectId, new DateTime(2026, 7, 20), active: true);
+        (await GetBlockedProjectGameDate(projectId)).ShouldBe(new DateTime(2026, 7, 20));
+
+        // Неактивная (снесённая на КогдаИгре) карточка дату не определяет.
+        await AddKogdaIgraCard(projectId, new DateTime(2027, 1, 1), active: false);
+        (await GetBlockedProjectGameDate(projectId)).ShouldBe(new DateTime(2026, 7, 20));
     }
 
     [Fact]
@@ -296,6 +317,36 @@ public class BlockedProjectScenario(JoinApplicationFactory factory) : IClassFixt
         var blocked = await scope.ServiceProvider.GetRequiredService<IProjectRepository>()
             .GetBlockedProjects();
         return [.. blocked.Select(p => p.ProjectId)];
+    }
+
+    private async Task<DateTime?> GetBlockedProjectGameDate(ProjectIdentification projectId)
+    {
+        using var scope = factory.Services.CreateScope();
+        var blocked = await scope.ServiceProvider.GetRequiredService<IProjectRepository>()
+            .GetBlockedProjects();
+        return blocked.Single(p => p.ProjectId == projectId.Value).KogdaIgraGameDate;
+    }
+
+    /// <summary>Заводит карточку КогдаИгры, привязанную к проекту, как пришла бы после синка с КогдаИгры.</summary>
+    private async Task AddKogdaIgraCard(ProjectIdentification projectId, DateTime begin, bool active)
+    {
+        using var scope = factory.Services.CreateScope();
+        var myDb = scope.ServiceProvider.GetRequiredService<MyDbContext>();
+        var maxId = await myDb.Set<KogdaIgraGame>().MaxAsync(ki => (int?)ki.KogdaIgraGameId);
+        var project = await myDb.ProjectsSet.SingleAsync(p => p.ProjectId == projectId.Value);
+        var card = new KogdaIgraGame
+        {
+            KogdaIgraGameId = (maxId + 1) ?? 1,
+            UpdateRequestedAt = DateTimeOffset.UtcNow,
+            JsonGameData = "{}",
+            Name = "Игра с КогдаИгры",
+            MasterGroupName = "",
+            Begin = begin,
+            Active = active,
+        };
+        _ = card.Projects.Add(project);
+        _ = myDb.Set<KogdaIgraGame>().Add(card);
+        _ = await myDb.SaveChangesAsync();
     }
 
     /// <summary>

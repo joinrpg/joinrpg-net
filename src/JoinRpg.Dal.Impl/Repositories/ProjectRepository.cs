@@ -128,6 +128,10 @@ internal class ProjectRepository(MyDbContext ctx) : GameRepositoryImplBase(ctx),
                 ProjectName = project.ProjectName,
                 LastUpdated = update.LastUpdated,
                 ProjectId = project.ProjectId,
+                // Берём дату наиболее поздней активной карточки КогдаИгры; null = не привязана.
+                KogdaIgraGameDate = Ctx.Set<KogdaIgraGame>()
+                    .Where(ki => ki.Active && ki.Projects.Any(p => p.ProjectId == project.ProjectId))
+                    .Max(ki => (DateTime?)ki.Begin),
             };
 
         return await allQuery.ToListAsync();
