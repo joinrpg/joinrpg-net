@@ -12,6 +12,7 @@
 
 ### Изменено
 - Метрики rate limiting middleware (`Microsoft.AspNetCore.RateLimiting`: `active_leases`, `queued_requests`, `rejected`-запросы и др.) экспортируются в Prometheus вместе с прочими метриками `AddJoinOpenTelemetry`. ([#6232](https://github.com/joinrpg/joinrpg-net/issues/6232))
+- `AddJoinOpenTelemetry`: экспортирует meter'ы `System.Net.Http` (исходящие HTTP-соединения: `open_connections`, `request.time_in_queue` — диагностика залипших соединений через прокси) и `System.Net.NameResolution` (длительность DNS-резолва).
 - `MapJoinHealthChecks()`: health-endpoint'ы (`/health`, `/health/ready`, `/health/live`) несут метаданные `DisableRateLimiting` — зарегистрированный глобальный rate limiter (например, лимитер анонимных запросов в Portal) не отсекает k8s-пробы; без лимитера метаданные ни на что не влияют. ([#6232](https://github.com/joinrpg/joinrpg-net/issues/6232))
 - `/robots.txt`: для `Baiduspider-render` (рендерящий бот Baidu, отдельный user-agent) добавлена своя группа с `Crawl-delay: 10` — замедление самого тяжёлого краулера; запреты из общей группы дублируются, поведение остальных ботов не меняется. ([#6231](https://github.com/joinrpg/joinrpg-net/pull/6231))
 - `AddJoinDataProtection()` — health check БД ключей Data Protection (регистрируется через `AddJoinEfCoreDbContext`) по умолчанию помечается тегом `ready` и включается в readiness-пробу `/health/ready`. ([#6173](https://github.com/joinrpg/joinrpg-net/pull/6173))
