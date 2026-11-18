@@ -20,12 +20,12 @@ internal partial class CreateProjectService
         _ = await CreateField(projectId, "Время проведения мероприятия", ProjectFieldType.ScheduleTimeSlotField, fieldHint: "Здесь вы можете указать, когда проводится мероприятие. Настройте в свойствах поля возможное время проведения");
         _ = await CreateField(projectId, "Место проведения мероприятия", ProjectFieldType.ScheduleRoomField, fieldHint: "Здесь вы можете указать, где проводится мероприятие. Настройте в свойствах поля конкретные помещения");
         // Публичное, но игрок его не меняет: если поле пустое, ведущим считается сам игрок (#4512)
-        _ = await CreateField(projectId, "Ведущий", ProjectFieldType.ScheduleAuthorField, fieldHint: "Кто ведёт мероприятие. Если поле не заполнено, ведущим считается игрок, подавший заявку");
+        var speaker = await CreateField(projectId, "Ведущий", ProjectFieldType.ScheduleAuthorField, fieldHint: "Кто ведёт мероприятие. Если поле не заполнено, ведущим считается игрок, подавший заявку");
 
         await projectService.SetContactSettings(projectId, ProjectProfileRequirementSettings.AllNotRequired with { RequireTelegram = MandatoryStatus.Recommended });
 
         // Первая созданная сетка ролей будет дефолтной
-        await projectRolesListService.CreateAsync(new ProjectRolesList(projectId, "Мероприятия", [description], RolesGridGroupsViewMode.Sections, ShowRolesFilter.All));
+        await projectRolesListService.CreateAsync(new ProjectRolesList(projectId, "Мероприятия", [description, speaker], RolesGridGroupsViewMode.Sections, ShowRolesFilter.TakenOnly));
 
         await AddRoleTimeRobot(projectId);
     }
