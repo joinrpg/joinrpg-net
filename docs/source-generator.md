@@ -1,7 +1,7 @@
 # Правка генератора типизированных Id
 
 Что генератор делает для потребителя — в
-[его README](../src/Common/JoinRpg.Common.PrimitiveTypes.SourceGenerator/README.md), замысел
+[его README](../src/Common/PrimitiveTypes/JoinRpg.Common.PrimitiveTypes.SourceGenerator/README.md), замысел
 `[TypedStringValue]` — в [ADR007](adr007-string-value.md) (проверку в конструкторе так и не
 сделали). Здесь — как генератор менять.
 

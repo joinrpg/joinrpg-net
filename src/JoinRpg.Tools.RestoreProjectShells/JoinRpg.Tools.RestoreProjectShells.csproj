@@ -14,7 +14,7 @@
     <PackageReference Include="System.Security.Cryptography.Pkcs" TreatAsUsed="true" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\JoinRpg.Portal\JoinRpg.Portal.csproj" />
+    <ProjectReference Include="..\Web\JoinRpg.Portal\JoinRpg.Portal.csproj" />
     <ProjectReference Include="..\JoinRpg.Tools.Drp.Common\JoinRpg.Tools.Drp.Common.csproj" />
   </ItemGroup>
 </Project>

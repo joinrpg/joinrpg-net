@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <ProjectReference Include="..\..\JoinRpg.DomainTypes\JoinRpg.DomainTypes.csproj" />
+    <ProjectReference Include="..\JoinRpg.Web.ProjectCommon\JoinRpg.Web.ProjectCommon.csproj" />
+    <ProjectReference Include="..\..\JoinRpg.CommonUI.Models\JoinRpg.CommonUI.Models.csproj" />
+    <ProjectReference Include="..\..\JoinRpg.Data.Interfaces\JoinRpg.Data.Interfaces.csproj" />
+    <ProjectReference Include="..\..\JoinRpg.DataModel\JoinRpg.DataModel.csproj" />
+    <ProjectReference Include="..\..\JoinRpg.Domain\JoinRpg.Domain.csproj" />
+    <ProjectReference Include="..\..\JoinRpg.Markdown\JoinRpg.Markdown.csproj" />
+    <ProjectReference Include="..\..\JoinRpg.Services.Interfaces\JoinRpg.Services.Interfaces.csproj" />
+    <ProjectReference Include="..\JoinRpg.Web.Accommodation\JoinRpg.Web.Accommodation.csproj" />
+    <ProjectReference Include="..\JoinRpg.Web.Claims\JoinRpg.Web.Claims.csproj" />
+    <ProjectReference Include="..\JoinRpg.Web.Games\JoinRpg.Web.Games.csproj" />
+    <ProjectReference Include="..\JoinRpg.Web.Plots\JoinRpg.Web.Plots.csproj" />
+    <ProjectReference Include="..\JoinRpg.Web.ProjectMasterTools\JoinRpg.Web.ProjectMasterTools.csproj" />
+    <ProjectReference Include="..\JoinRpg.Web.UserProfile\JoinRpg.Web.UserProfile.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+</Project>

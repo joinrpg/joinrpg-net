@@ -27,7 +27,7 @@ description: "Провести большую задачу от плана до 
 Если миграция меняет то, что компонент **отдаёт** наружу — значение в форме, формат id, имя поля, —
 перечислять потребителей по `.cshtml` и вью недостаточно: параметр часто задаётся в родительском
 Blazor-компоненте, и грепом по представлениям такое место не видно. Так `Name="TargetGroups"` живёт
-в `src/JoinRpg.Web.Plots/Elements/PlotElementEditPanel.razor`, а принимают это значение экшены
+в `src/Web/JoinRpg.Web.Plots/Elements/PlotElementEditPanel.razor`, а принимают это значение экшены
 `PlotController`; место нашлось последним, и без него привязка вводных к группам сломалась бы тихо.
 
 Разведку с обходом многих файлов стоит делегировать (`explore`/`coder` в kimi-code,
@@ -64,14 +64,14 @@ expand/contract (parallel change), и он превращает цепочку �
 Так прошла миграция селекторов (#4119). `<select>` стал постить в MVC-форму полный типизированный
 идентификатор вместо числа, и выглядело это как «компонент и семь форм одним PR». Но
 `ProjectEntityIdModelBinder`
-(`src/JoinRpg.Portal/Infrastructure/ModelBinding/ProjectEntityIdModelBinder.cs`) принимает и голое
+(`src/Web/JoinRpg.Portal/Infrastructure/ModelBinding/ProjectEntityIdModelBinder.cs`) принимает и голое
 число — склеивая его с текущим проектом, — и полную строку. Поэтому вью-модели типизировали четырьмя
 независимыми PR, пока компонент ещё постил числа, а компонент переключили последним.
 
 **PR, который фиксирует тестами инвариант шва, делать первым.** Он ничего не меняет в поведении,
 поэтому дешёвый и мерджится сразу, а «я проверил руками» превращается в «это не сломается молча».
 В той миграции первым (#5154) стал
-`src/JoinRpg.Portal.Test/Infrastructure/ModelBinding/ProjectEntityIdModelBinderTest.cs`: коллекция
+`src/Web/JoinRpg.Portal.Test/Infrastructure/ModelBinding/ProjectEntityIdModelBinderTest.cs`: коллекция
 типизированных id биндится и из полных идентификаторов, и из голых чисел, и для массива
 (`ArrayModelBinderProvider`), и для `IReadOnlyCollection<>` (`CollectionModelBinderProvider`) — это
 разные провайдеры, и покрывать надо оба.

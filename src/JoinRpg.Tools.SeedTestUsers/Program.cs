@@ -83,7 +83,7 @@ internal static class Program
         // WebApplicationFactory не умеет находить content root Portal при UseArtifactsOutput —
         // берём его напрямую из расположения этого файла в дереве исходников.
         var srcDir = Path.GetDirectoryName(Path.GetDirectoryName(sourceFilePath))!;
-        return Path.Combine(srcDir, "JoinRpg.Portal");
+        return Path.Combine(srcDir, "Web", "JoinRpg.Portal");
     }
 
     private static bool LooksLikeLocalDatabase(IServiceProvider sp, out string connectionString)

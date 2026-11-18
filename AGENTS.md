@@ -35,7 +35,7 @@ worktree, в котором они работают (текущего или в�
 dotnet tool restore                              # Локальные инструменты из .config/dotnet-tools.json (первый запуск)
 docker compose up -d                             # PostgreSQL (5432) и SQL Server (1433)
 dotnet run --project src/Joinrpg.Dal.Migrate     # Применить миграции БД (первый запуск)
-dotnet run --project src/JoinRpg.Portal          # Основной сайт на https://localhost:5001
+dotnet run --project src/Web/JoinRpg.Portal     # Основной сайт на https://localhost:5001
 dotnet run --project src/JoinRpg.IdPortal/JoinRpg.IdPortal  # Портал аккаунтов
 ```
 

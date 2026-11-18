@@ -24,10 +24,16 @@
 
 ## Полный список проектов
 
+Физически проекты лежат в папках по семействам: `src/Common/` (в том числе подпапки
+`PrimitiveTypes/`, `WebInfrastructure/`, `WebComponents/`), `src/Web/` (все `JoinRpg.Web.*`,
+`JoinRpg.WebPortal.*`, `JoinRpg.Portal.*`, `JoinRpg.Blazor.Client`, `JoinRpg.Mcp`,
+`JoinRpg.XGameApi.Contract` — включая их тестовые проекты), `src/JoinRpg.IdPortal/`. Тестовые
+проекты лежат на диске рядом со своими проектами. Ниже — логическое описание по слоям.
+
 ### Common
 - `JoinRpg.Helpers` — утилиты без зависимостей от проекта
 - `JoinRpg.Markdown` — обработка Markdown (Markdig)
-- `JoinRpg.PrimitiveTypes` — доменные типы-значения: идентификаторы и Value Objects
+- `JoinRpg.PrimitiveTypes` — доменные типы-значения: идентификаторы и Value Objects (в подпапке `src/Common/PrimitiveTypes/` вместе с тестами и source generator)
 - `JoinRpg.Common.EntityFrameworkCore` — generic EF Core ValueConverter для `[TypedEntityId]`-типов, реализующих `IEntityId<TSelf,TValue>` (не составные id), и регистрация DbContext `AddJoinEfCoreDbContext<T>()` (PostgreSQL, EntityFramework.Exceptions, health check) — лёгкая зависимость для проектов, которым нужен EF Core-контекст без тяжёлого WebInfrastructure
 - `JoinRpg.Common.WebInfrastructure` — веб-инфраструктура: логирование (Serilog), кеш, DataProtection, планировщик ежедневных джоб (`AddMidnightJobs`, контракты — в `JoinRpg.Common.WebInfrastructure.Interfaces`), общий OIDC-логин через id.joinrpg.ru для сателлитных сайтов (`AddJoinRpgAuthentication`, приложение-специфичная часть — через `IJoinUserLoginHandler`), HTML-санитайзеры (`AddJoinHtmlSanitizers`, пул через ObjectPool)
 - `JoinRpg.Common.WebInfrastructure.Interfaces` — контракты фоновых джоб (`IJob`, `IJobRepository`, `IJobRunner`, `JobsOptions`, `AddJob<T>()`) и HTML-санитайзеров (`IJoinSimpleHtmlSanitizer`, `IJoinRemoveAllHtmlSanitizer`, `IJoinTelegramHtmlSanitizer`): лёгкая зависимость для проектов, объявляющих джобы или рендерящих markdown, без тяжёлого WebInfrastructure
@@ -63,7 +69,7 @@
 - `JoinRpg.Integrations.KogdaIgra` — бизнес-логика синхронизации с KogdaIgra
 - `PscbApi` — HTTP-клиент к платёжной системе ПСКБ
 
-### Portal (основной сайт)
+### Portal (основной сайт; физически — `src/Web/JoinRpg.Portal`)
 - `JoinRpg.Portal` — основное ASP.NET Core приложение. Только UI, хранить тут как можно меньше кода. В идеале метод контроллера просто вызывает соот. ViewService внутри JoinRpg.WebPortal.Managers и отдает результат в View или редиректит в случае успеха.
 - `JoinRpg.CommonUI.Models` — общие перечисления для UI и email
 - `JoinRpg.WebPortal.Models` — legacy MVC ViewModels. Ссылаться отсюда на `JoinRpg.Web.*` можно (legacy-модель
@@ -75,7 +81,7 @@
   `CheckInClaimPageModel`; обсуждение заявки (ADR026): `ClaimViewModel.Discussion`.
 - `JoinRpg.WebPortal.Managers` — подготовка ViewModels для веб-портала
 
-### WebPortalShared (разделяемые UI-компоненты)
+### Web (разделяемые UI-компоненты; физически — вся веб-группа в `src/Web/`)
 - `JoinRpg.Web.ProjectCommon` — общий UI для всех страниц, относящимся к проектам; здесь же живут общие селекторы (персонажи, группы, мастера, сетки ролей) с минимальными клиентскими интерфейсами (`ICharactersClient`, `IRolesListSelectorClient` и т.п.) — потребителю достаточно ссылаться на ProjectCommon, не тянут полные клиенты слоя мастерских инструментов
 - `JoinRpg.Web.Games` — UI страниц описания проекта, настроек проекта, etc
 - `JoinRpg.Web.Claims` — UI для заявок игроков
@@ -89,6 +95,7 @@
 - `JoinRpg.Web.AdminTools` — инструменты администратора платформы
 - `JoinRpg.XGameApi.Contract` — DTO-контракты API для интеграции с внешними игровыми системами
 - `JoinRpg.Blazor.Client` — Blazor WebAssembly клиент (в процессе миграции страниц)
+- `JoinRpg.Mcp` — MCP-сервер joinrpg.ru для интеграции с ИИ-инструментами
 
 ### IdPortal (портал аккаунтов)
 - `JoinRpg.IdPortal` — отдельное ASP.NET Core приложение для управления аккаунтами
@@ -103,5 +110,6 @@
 - `JoinRpg.TestHelpers.SqlServer` — SQL Server для тестов на Testcontainers: образ и база с параметрами прода. Отдельно, чтобы Testcontainers не тянулся во все тестовые проекты
 - `JoinRpg.DataModel.Mocks` — моки DataModel
 - Тестовые проекты для каждого слоя: Domain, Services.Impl, Portal, IdPortal, Managers, Models, PrimitiveTypes, PrimitiveTypes.SourceGenerator, Markdown, Helpers, Notifications, KogdaIgra, CommonUI.Models, EntityFrameworkCore
+- Тесты лежат на диске рядом со своими проектами; в solution тесты веб-группы (`Web.*`, `WebPortal.*`, `Portal.Test`) показаны рядом с кодом в папке `/Web/`, остальные — в папке `/Tests/`
 
 Не используем Moq/NSubstitute. Предпочитаем классические юнит-тесты мокистким.

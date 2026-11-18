@@ -119,7 +119,7 @@ PR открывается встроенным токеном GitHub Actions, п
 
 ```powershell
 pwsh scripts/Update-PublicApi.ps1                       # все пакеты
-pwsh scripts/Update-PublicApi.ps1 -Project src/Common/JoinRpg.Common.PrimitiveTypes/JoinRpg.Common.PrimitiveTypes.csproj
+pwsh scripts/Update-PublicApi.ps1 -Project src/Common/PrimitiveTypes/JoinRpg.Common.PrimitiveTypes/JoinRpg.Common.PrimitiveTypes.csproj
 ```
 
 Новое попадает в `Unshipped`, удалённое из `Shipped` — строкой `*REMOVED*...` в `Unshipped`.
