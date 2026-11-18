@@ -38,7 +38,7 @@ public sealed class FakeNotificationRepository(IReadOnlyDictionary<NotificationC
     private readonly ConcurrentQueue<NotificationMessageCreateDto> insertedNotifications = new();
 
     private readonly ConcurrentQueue<NotificationLogItemDto> logItems = new();
-    private readonly ConcurrentQueue<(UserIdentification? Recipient, NotificationChannel? Channel, int Limit)> getNotificationLogCalls = new();
+    private readonly ConcurrentQueue<(UserIdentification? Recipient, NotificationChannel? Channel, int? Before, int Limit)> getNotificationLogCalls = new();
 
     private bool isNullObject;
 
@@ -116,15 +116,17 @@ public sealed class FakeNotificationRepository(IReadOnlyDictionary<NotificationC
     /// <summary>Добавляет запись — её отдаст <see cref="GetNotificationLog"/>, если подходит под фильтры.</summary>
     public void AddLogItem(NotificationLogItemDto item) => logItems.Enqueue(item);
 
-    public IReadOnlyCollection<(UserIdentification? Recipient, NotificationChannel? Channel, int Limit)> GetNotificationLogCalls => getNotificationLogCalls;
+    public IReadOnlyCollection<(UserIdentification? Recipient, NotificationChannel? Channel, int? Before, int Limit)> GetNotificationLogCalls => getNotificationLogCalls;
 
-    public Task<IReadOnlyCollection<NotificationLogItemDto>> GetNotificationLog(UserIdentification? recipient, NotificationChannel? channel, int limit)
+    public Task<IReadOnlyCollection<NotificationLogItemDto>> GetNotificationLog(UserIdentification? recipient, NotificationChannel? channel, int limit, int? before = null)
     {
-        getNotificationLogCalls.Enqueue((recipient, channel, limit));
+        getNotificationLogCalls.Enqueue((recipient, channel, before, limit));
         return Task.FromResult<IReadOnlyCollection<NotificationLogItemDto>>(
             [.. logItems
                 .Where(i => recipient is null || i.Message.Recipient == recipient)
                 .Where(i => channel is null || i.Channels.Any(c => c.Channel == channel))
+                .Where(i => before is null || i.Id.Value < before.Value)
+                .OrderByDescending(i => i.Id.Value)
                 .Take(limit)
                 // Как настоящий репозиторий: при фильтре по каналу в ответе только он.
                 .Select(i => i with { Channels = [.. i.Channels.Where(c => channel is null || c.Channel == channel)] })]);

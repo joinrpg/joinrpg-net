@@ -240,7 +240,7 @@ internal class NotificationsRepository(
         return counts.ToDictionary(x => x.Channel, x => x.Count);
     }
 
-    public async Task<IReadOnlyCollection<NotificationLogItemDto>> GetNotificationLog(UserIdentification? recipient, NotificationChannel? channel, int limit)
+    public async Task<IReadOnlyCollection<NotificationLogItemDto>> GetNotificationLog(UserIdentification? recipient, NotificationChannel? channel, int limit, int? before = null)
     {
         IQueryable<NotificationMessage> query;
         if (channel is not null)
@@ -252,6 +252,10 @@ internal class NotificationsRepository(
             if (recipient is not null)
             {
                 channelRows = channelRows.Where(c => c.NotificationMessage.RecipientUserId == recipient.Value);
+            }
+            if (before is not null)
+            {
+                channelRows = channelRows.Where(c => c.NotificationMessageId < before.Value);
             }
             var ids = channelRows
                 .OrderByDescending(c => c.NotificationMessageChannelId)
@@ -265,6 +269,10 @@ internal class NotificationsRepository(
             if (recipient is not null)
             {
                 query = query.Where(m => m.RecipientUserId == recipient.Value);
+            }
+            if (before is not null)
+            {
+                query = query.Where(m => m.NotificationMessageId < before.Value);
             }
         }
 
