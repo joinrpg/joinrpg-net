@@ -37,6 +37,10 @@ public static class OpenTelemetryRegistration
                     .AddMeter("Microsoft.AspNetCore.RateLimiting")
                     // Metrics provides by ASP.NET Core in .NET 8
                     .AddMeter("Microsoft.AspNetCore.Hosting")
+                    // Метрики исходящих HTTP-соединений (open_connections, request.time_in_queue) — диагностика залипших соединений/прокси
+                    .AddMeter("System.Net.Http")
+                    // Длительность DNS-резолва
+                    .AddMeter("System.Net.NameResolution")
                     .AddPrometheusExporter();
             });
     }
