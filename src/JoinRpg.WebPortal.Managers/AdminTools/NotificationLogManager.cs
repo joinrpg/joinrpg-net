@@ -11,9 +11,15 @@ internal class NotificationLogManager(INotificationRepository notificationReposi
 {
     private const int Limit = 100;
 
-    public async Task<NotificationLogViewModel> GetLog(UserIdentification? recipient, NotificationChannel? channel)
+    public async Task<NotificationLogViewModel> GetLog(UserIdentification? recipient, NotificationChannel? channel, int? before = null)
     {
-        var items = await notificationRepository.GetNotificationLog(recipient, channel, Limit);
+        // На одно больше лимита, чтобы понять, есть ли что показать по ссылке «Ранее».
+        var items = (await notificationRepository.GetNotificationLog(recipient, channel, Limit + 1, before)).ToList();
+        var hasOlder = items.Count > Limit;
+        if (hasOlder)
+        {
+            items.RemoveAt(Limit);
+        }
 
         UserIdentification[] userIds = [
             .. items.SelectMany(i => new[] { i.Message.Recipient, i.Message.Initiator }),
@@ -29,6 +35,7 @@ internal class NotificationLogManager(INotificationRepository notificationReposi
             recipient is null ? null : ToUser(recipient),
             channel,
             Limit,
+            hasOlder,
             [.. items.Select(i => new NotificationLogItemViewModel(
                 i.Id,
                 i.Message.CreatedAt,

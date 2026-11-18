@@ -47,7 +47,9 @@ public interface INotificationRepository
     /// <param name="recipient">Только уведомления этому пользователю; null — всем.</param>
     /// <param name="channel">Только уведомления, отправляемые по этому каналу; в <see cref="NotificationLogItemDto.Channels"/>
     /// тогда попадает только он. null — все каналы.</param>
-    Task<IReadOnlyCollection<NotificationLogItemDto>> GetNotificationLog(UserIdentification? recipient, NotificationChannel? channel, int limit);
+    /// <param name="before">Только уведомления с id меньше этого — постранично, следующая страница от последнего id
+    /// предыдущей; null — с самых новых.</param>
+    Task<IReadOnlyCollection<NotificationLogItemDto>> GetNotificationLog(UserIdentification? recipient, NotificationChannel? channel, int limit, int? before = null);
 
     /// <summary>
     /// Все уведомления по заявкам проекта (сама заявка, её комментарии, финансовые операции), созданные до

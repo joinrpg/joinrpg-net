@@ -166,6 +166,66 @@ public class NotificationLogTest : IAsyncLifetime
     }
 
     [Fact]
+    public async Task BeforePagesToOlderNotifications()
+    {
+        await using var context = CreateContext();
+        INotificationRepository repository = CreateRepository(context);
+        await repository.InsertNotifications([
+            Notification("first", Alice, NotificationAddress.Ui()),
+            Notification("second", Alice, NotificationAddress.Ui()),
+            Notification("third", Alice, NotificationAddress.Ui()),
+        ]);
+
+        var page1 = await repository.GetNotificationLog(recipient: null, channel: null, limit: 2);
+        var page2 = await repository.GetNotificationLog(recipient: null, channel: null, before: page1.Last().Id.Value, limit: 2);
+
+        page1.Select(m => m.Message.Header).ShouldBe(["third", "second"]);
+        page2.Select(m => m.Message.Header).ShouldBe(["first"]);
+    }
+
+    [Fact]
+    public async Task BeforePagesWithChannelFilter()
+    {
+        await using var context = CreateContext();
+        INotificationRepository repository = CreateRepository(context);
+        var email = new NotificationAddress(NotificationChannel.Email, "alice@example.com");
+        await repository.InsertNotifications([
+            Notification("oldest email", Alice, email),
+            Notification("middle ui", Alice, NotificationAddress.Ui()),
+            Notification("newest email", Alice, email),
+        ]);
+
+        var page1 = await repository.GetNotificationLog(recipient: null, NotificationChannel.Email, limit: 1);
+        var page2 = await repository.GetNotificationLog(recipient: null, NotificationChannel.Email, before: page1.Last().Id.Value, limit: 1);
+
+        page1.Select(m => m.Message.Header).ShouldBe(["newest email"]);
+        page2.Select(m => m.Message.Header).ShouldBe(["oldest email"]);
+    }
+
+    [Fact]
+    public async Task BeforePagesWithRecipientAndChannelFilters()
+    {
+        await using var context = CreateContext();
+        INotificationRepository repository = CreateRepository(context);
+        var email = new NotificationAddress(NotificationChannel.Email, "alice@example.com");
+        await repository.InsertNotifications([
+            Notification("alice oldest", Alice, email),
+            Notification("alice middle", Alice, email),
+            // Новее всего у Alice, но по другому получателю — при листании Alice не должно проскочить.
+            Notification("bob newest", Bob, email),
+            Notification("alice newest", Alice, email),
+        ]);
+
+        var page1 = await repository.GetNotificationLog(Alice, NotificationChannel.Email, limit: 1);
+        var page2 = await repository.GetNotificationLog(Alice, NotificationChannel.Email, limit: 1, before: page1.Last().Id.Value);
+        var page3 = await repository.GetNotificationLog(Alice, NotificationChannel.Email, limit: 1, before: page2.Last().Id.Value);
+
+        page1.Select(m => m.Message.Header).ShouldBe(["alice newest"]);
+        page2.Select(m => m.Message.Header).ShouldBe(["alice middle"]);
+        page3.Select(m => m.Message.Header).ShouldBe(["alice oldest"]);
+    }
+
+    [Fact]
     public async Task ReadsStatusAndAttemptsAfterSending()
     {
         await using var context = CreateContext();

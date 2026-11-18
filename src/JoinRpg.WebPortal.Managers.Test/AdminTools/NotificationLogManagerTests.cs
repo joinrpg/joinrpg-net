@@ -20,7 +20,40 @@ public class NotificationLogManagerTests
 
         _ = await CreateManager().GetLog(player, NotificationChannel.Telegram);
 
-        notifications.GetNotificationLogCalls.ShouldHaveSingleItem().ShouldBe((player, NotificationChannel.Telegram, 100));
+        // Лимит + 1: чтобы понять, есть ли что показать по ссылке «Ранее».
+        notifications.GetNotificationLogCalls.ShouldHaveSingleItem().ShouldBe((player, NotificationChannel.Telegram, (int?)null, 101));
+    }
+
+    [Fact]
+    public async Task PassesBeforeToRepository()
+    {
+        _ = await CreateManager().GetLog(recipient: null, channel: null, before: 42);
+
+        notifications.GetNotificationLogCalls.ShouldHaveSingleItem().ShouldBe(((UserIdentification?)null, (NotificationChannel?)null, (int?)42, 101));
+    }
+
+    [Fact]
+    public async Task TrimsExtraItemToHasOlderSignal()
+    {
+        for (var i = 1; i <= 101; i++)
+        {
+            notifications.AddLogItem(Item(id: i, recipient: new UserIdentification(mock.Player.UserId), initiator: new UserIdentification(mock.Master.UserId)));
+        }
+
+        var log = await CreateManager().GetLog(recipient: null, channel: null);
+
+        log.Items.Count.ShouldBe(100);
+        log.HasOlder.ShouldBeTrue();
+    }
+
+    [Fact]
+    public async Task NoHasOlderWhenPageIsFullButNothingBehind()
+    {
+        notifications.AddLogItem(Item(id: 1, recipient: new UserIdentification(mock.Player.UserId), initiator: new UserIdentification(mock.Master.UserId)));
+
+        var log = await CreateManager().GetLog(recipient: null, channel: null);
+
+        log.HasOlder.ShouldBeFalse();
     }
 
     [Fact]
@@ -48,7 +81,7 @@ public class NotificationLogManagerTests
     [Fact]
     public async Task UnknownUserShownAsDeleted()
     {
-        notifications.AddLogItem(Item(recipient: new UserIdentification(999), initiator: new UserIdentification(mock.Master.UserId)));
+        notifications.AddLogItem(Item(id: 1, recipient: new UserIdentification(999), initiator: new UserIdentification(mock.Master.UserId)));
 
         var item = (await CreateManager().GetLog(recipient: null, channel: null)).Items.ShouldHaveSingleItem();
 
@@ -59,7 +92,7 @@ public class NotificationLogManagerTests
     [Fact]
     public async Task RendersMarkdownBodyToSanitizedHtml()
     {
-        notifications.AddLogItem(Item(
+        notifications.AddLogItem(Item(id: 1,
             recipient: new UserIdentification(mock.Player.UserId),
             initiator: new UserIdentification(mock.Master.UserId),
             body: "**важно**<script>alert(1)</script>"));
@@ -70,9 +103,9 @@ public class NotificationLogManagerTests
         item.BodyHtml.ShouldNotContain("<script>");
     }
 
-    private static NotificationLogItemDto Item(UserIdentification recipient, UserIdentification initiator, string body = "body")
+    private static NotificationLogItemDto Item(int id, UserIdentification recipient, UserIdentification initiator, string body = "body")
         => new(
-            new NotificationId(1),
+            new NotificationId(id),
             new NotificationMessageForRecipient(new MarkdownString(body), initiator, "header", recipient, EntityReference: null, DateTimeOffset.UnixEpoch),
             [new NotificationDeliveryDto(NotificationChannel.Email, "Email(player@example.com)", NotificationMessageStatus.Sent, 1, DateTimeOffset.UnixEpoch)]);
 }

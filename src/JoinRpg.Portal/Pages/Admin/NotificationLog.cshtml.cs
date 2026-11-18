@@ -14,6 +14,9 @@ public class NotificationLogModel : PageModel
     [BindProperty(SupportsGet = true)]
     public NotificationChannel? Channel { get; set; }
 
+    [BindProperty(SupportsGet = true)]
+    public int? Before { get; set; }
+
     public void OnGet()
     {
     }

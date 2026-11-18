@@ -37,11 +37,17 @@
     <button type="submit" class="btn btn-default">Показать</button>
 </form>
 
-<p class="text-muted">Последние @log.Limit уведомлений, новые сверху. Время — UTC.</p>
+<p class="text-muted">
+    @(Before is null ? $"Последние {log.Limit} уведомлений, новые сверху." : $"Уведомления старше #{Before}, новые сверху.") Время — UTC.
+</p>
 
 @if (log.Items.Count == 0)
 {
-    <p>Уведомлений нет.</p>
+    <p>@(Before is null ? "Уведомлений нет." : "Более старых уведомлений нет.")</p>
+    @if (Before is not null)
+    {
+        <p><a href="@NotificationLogUrl.For(log.RecipientId, log.Channel)">← К последним</a></p>
+    }
     return;
 }
 
@@ -86,12 +92,29 @@
     </JoinCollapsePanel>
 }
 
+@if (log.HasOlder || Before is not null)
+{
+    <nav style="margin: 15px 0">
+        @if (Before is not null)
+        {
+            <a href="@NotificationLogUrl.For(log.RecipientId, log.Channel)">← К последним</a>
+        }
+        @if (log.HasOlder)
+        {
+            <a href="@NotificationLogUrl.For(log.RecipientId, log.Channel, before: log.Items.Last().Id.Value)" style="margin-left: 15px">Ранее →</a>
+        }
+    </nav>
+}
+
 @code {
     [Parameter]
     public UserIdentification? Recipient { get; set; }
 
     [Parameter]
     public NotificationChannel? Channel { get; set; }
+
+    [Parameter]
+    public int? Before { get; set; }
 
     private bool isError;
     private NotificationLogViewModel? log;
@@ -100,7 +123,7 @@
     {
         try
         {
-            log = await Client.GetLog(Recipient, Channel);
+            log = await Client.GetLog(Recipient, Channel, Before);
         }
         catch (Exception ex)
         {

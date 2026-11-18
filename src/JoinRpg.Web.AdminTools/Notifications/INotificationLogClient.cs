@@ -10,17 +10,20 @@ public interface INotificationLogClient
     /// </summary>
     /// <param name="recipient">Только уведомления этому пользователю; null — всем.</param>
     /// <param name="channel">Только уведомления, отправляемые по этому каналу; null — все каналы.</param>
-    Task<NotificationLogViewModel> GetLog(UserIdentification? recipient, NotificationChannel? channel);
+    /// <param name="before">Только уведомления с id меньше этого — постранично; null — с самых новых.</param>
+    Task<NotificationLogViewModel> GetLog(UserIdentification? recipient, NotificationChannel? channel, int? before = null);
 }
 
 /// <param name="RecipientId">Id из фильтра по получателю как его запросили — даже если такого пользователя уже нет
 /// (удалён, слит), уведомления на этот id остались. null — фильтра нет.</param>
 /// <param name="Recipient">Ссылка на пользователя из фильтра.</param>
+/// <param name="HasOlder">Есть ли уведомления старше последнего на этой странице — по ссылке «Ранее».</param>
 public record NotificationLogViewModel(
     UserIdentification? RecipientId,
     UserLinkViewModel? Recipient,
     NotificationChannel? Channel,
     int Limit,
+    bool HasOlder,
     IReadOnlyCollection<NotificationLogItemViewModel> Items);
 
 /// <param name="BodyHtml">Тело, уже переведённое из Markdown в HTML и очищенное санитайзером.</param>
