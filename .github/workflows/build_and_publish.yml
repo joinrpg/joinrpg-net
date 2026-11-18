@@ -13,7 +13,7 @@ on:
   workflow_dispatch:
 
 env:
-  APP_PROJECT: ./src/JoinRpg.Portal/JoinRpg.Portal.csproj
+  APP_PROJECT: ./src/Web/JoinRpg.Portal/JoinRpg.Portal.csproj
   MIGRATOR_PROJECT: ./src/Joinrpg.Dal.Migrate/Joinrpg.Dal.Migrate.csproj
   IDPORTAL_PROJECT: ./src/JoinRpg.IdPortal/JoinRpg.IdPortal/JoinRpg.IdPortal.csproj
   COMPONENTBOOK_PROJECT: ./src/Common/WebComponents/JoinRpg.Common.WebComponentBook.Portal/JoinRpg.Common.WebComponentBook.Portal.csproj
@@ -229,7 +229,7 @@ jobs:
         version: ${{ env.CALCULATED_VERSION }}
         extra-publish-args: --no-restore
         projects: |
-          joinrpg/joinrpg-portal=./src/JoinRpg.Portal/JoinRpg.Portal.csproj
+          joinrpg/joinrpg-portal=./src/Web/JoinRpg.Portal/JoinRpg.Portal.csproj
           joinrpg/joinrpg-dal-migrate=./src/Joinrpg.Dal.Migrate/Joinrpg.Dal.Migrate.csproj
           joinrpg/joinrpg-idportal=./src/JoinRpg.IdPortal/JoinRpg.IdPortal/JoinRpg.IdPortal.csproj
           joinrpg/joinrpg-componentbook=./src/Common/WebComponents/JoinRpg.Common.WebComponentBook.Portal/JoinRpg.Common.WebComponentBook.Portal.csproj

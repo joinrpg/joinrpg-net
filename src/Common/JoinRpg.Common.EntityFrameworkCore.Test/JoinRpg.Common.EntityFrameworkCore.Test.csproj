@@ -13,6 +13,6 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\JoinRpg.Common.EntityFrameworkCore\JoinRpg.Common.EntityFrameworkCore.csproj" />
-    <ProjectReference Include="..\JoinRpg.Common.PrimitiveTypes\JoinRpg.Common.PrimitiveTypes.csproj" />
+    <ProjectReference Include="..\PrimitiveTypes\JoinRpg.Common.PrimitiveTypes\JoinRpg.Common.PrimitiveTypes.csproj" />
   </ItemGroup>
 </Project>

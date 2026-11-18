@@ -8,6 +8,6 @@
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" />
     <PackageReference Include="EntityFrameworkCore.Exceptions.PostgreSQL" />
     <ProjectReference Include="..\Common\JoinRpg.Common.EntityFrameworkCore\JoinRpg.Common.EntityFrameworkCore.csproj" />
-    <ProjectReference Include="..\Common\JoinRpg.Common.WebInfrastructure.Interfaces\JoinRpg.Common.WebInfrastructure.Interfaces.csproj" />
+    <ProjectReference Include="..\Common\WebInfrastructure\JoinRpg.Common.WebInfrastructure.Interfaces\JoinRpg.Common.WebInfrastructure.Interfaces.csproj" />
   </ItemGroup>
 </Project>

@@ -15,7 +15,7 @@
     <PackageReference Include="System.Security.Cryptography.Pkcs" TreatAsUsed="true" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Common\JoinRpg.Common.PrimitiveTypes\JoinRpg.Common.PrimitiveTypes.csproj" />
+    <ProjectReference Include="..\Common\PrimitiveTypes\JoinRpg.Common.PrimitiveTypes\JoinRpg.Common.PrimitiveTypes.csproj" />
     <!-- GravatarHelper: аватарка по умолчанию та же, что при регистрации. -->
     <ProjectReference Include="..\JoinRpg.Domain\JoinRpg.Domain.csproj" />
     <ProjectReference Include="..\JoinRpg.Tools.Drp.Common\JoinRpg.Tools.Drp.Common.csproj" />

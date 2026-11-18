@@ -41,7 +41,7 @@ done
 curl -s https://joinrpg.ru/health | python -m json.tool
 ```
 
-У Portal есть health check с разбивкой по подсистемам (`main-sqldb`, `DataProtection-db`, `DailyJob-db`, `Notifications-db`, `Project load`, `mcp` — регистрируются в `src/JoinRpg.Portal/Startup.cs`). Это самый дешёвый способ поймать «поднялось, но наполовину».
+У Portal есть health check с разбивкой по подсистемам (`main-sqldb`, `DataProtection-db`, `DailyJob-db`, `Notifications-db`, `Project load`, `mcp` — регистрируются в `src/Web/JoinRpg.Portal/Startup.cs`). Это самый дешёвый способ поймать «поднялось, но наполовину».
 
 **Важно: `curl -o /dev/null -w %{http_code}` тут бесполезен** — статус `Degraded` отдаётся с HTTP **200**, так что по коду ответа деградация не видна вообще. Всегда разбирай JSON-тело и смотри на `status` каждой записи в `entries`, а не только на общий `status`.
 
@@ -159,7 +159,7 @@ aws logs filter-log-events --profile selectel-logs --log-group-name k8s/joinrpg-
 
 Если исключение по своей природе — штатная бизнес-ветка (пользователь пытается сделать недопустимое действие, истекла OAuth-cookie и т.п.), но в логах оно всё равно levels `ERROR`, а не `WARN`/`INFO` — **это не повод молча занести его в "известный шум" и забыть**. Само по себе это подозрительно: значит, где-то в коде такое исключение не отловлено явным `case`/`catch` и падает в generic `default`-ветку с `logger.LogError(...)`. Практический эффект — двойной: шумит в error-мониторинге (маскирует реальные проблемы) и обычно показывает пользователю неинформативную "Неожиданная ошибка, обратитесь в техподдержку" вместо понятного сообщения.
 
-- В `JoinMvcControllerBase.AddModelException` (`src/JoinRpg.Portal/Controllers/Common/JoinMvcControllerBase.cs`) есть `switch` по типам доменных исключений с дружелюбными сообщениями без логирования — это правильный паттерн (пример: `JoinRpgSlotLimitedException`, исправлено в [#4667](https://github.com/joinrpg/joinrpg-net/issues/4667)). Если встретил в логах `JoinRpg.Domain.*`-исключение на уровне Error — сверься с этим `switch`, входит ли оно туда; если нет — предложи завести issue по аналогии (пример: [#4691](https://github.com/joinrpg/joinrpg-net/issues/4691) для `OnlyOneApprovedClaimException`).
+- В `JoinMvcControllerBase.AddModelException` (`src/Web/JoinRpg.Portal/Controllers/Common/JoinMvcControllerBase.cs`) есть `switch` по типам доменных исключений с дружелюбными сообщениями без логирования — это правильный паттерн (пример: `JoinRpgSlotLimitedException`, исправлено в [#4667](https://github.com/joinrpg/joinrpg-net/issues/4667)). Если встретил в логах `JoinRpg.Domain.*`-исключение на уровне Error — сверься с этим `switch`, входит ли оно туда; если нет — предложи завести issue по аналогии (пример: [#4691](https://github.com/joinrpg/joinrpg-net/issues/4691) для `OnlyOneApprovedClaimException`).
 - Для внешних OAuth-провайдеров (VK, Telegram и т.п., регистрируются в `src/Joinrpg.Web.Identity/IdentityConfigurator.cs`) аналогичная защита — `options.Events.OnRemoteFailure`; если не настроена, `AuthenticationFailureException` долетает до Serilog `RequestLoggingMiddleware`, которая логирует любой 5xx как Error по умолчанию (пример: [#4692](https://github.com/joinrpg/joinrpg-net/issues/4692)).
 - Как и с "структурным подпаттерном шума" (см. выше) — **не чини сходу**, предложи issue пользователю с конкретным местом в коде (файл:строка) и прецедентом, если есть.
 

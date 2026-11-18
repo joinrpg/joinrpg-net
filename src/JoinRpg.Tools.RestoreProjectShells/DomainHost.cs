@@ -73,6 +73,6 @@ internal sealed class DomainHost : IAsyncDisposable
         // WebApplicationFactory не умеет находить content root Portal при UseArtifactsOutput —
         // берём его из расположения этого файла в дереве исходников (как в JoinRpg.Tools.SeedTestUsers).
         var srcDir = Path.GetDirectoryName(Path.GetDirectoryName(sourceFilePath))!;
-        return Path.Combine(srcDir, "JoinRpg.Portal");
+        return Path.Combine(srcDir, "Web", "JoinRpg.Portal");
     }
 }

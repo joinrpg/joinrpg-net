@@ -4,17 +4,21 @@
     <Project Path="src/Common/JoinRpg.Common.EntityFrameworkCore.Test/JoinRpg.Common.EntityFrameworkCore.Test.csproj" />
     <Project Path="src/Common/JoinRpg.Common.EntityFrameworkCore/JoinRpg.Common.EntityFrameworkCore.csproj" />
     <Project Path="src/Common/JoinRpg.Common.KogdaIgraClient/JoinRpg.Common.KogdaIgraClient.csproj" Id="881e9784-9199-4f85-b173-9e91a15403e2" />
-    <Project Path="src/Common/JoinRpg.Common.PrimitiveTypes.SourceGenerator/JoinRpg.Common.PrimitiveTypes.SourceGenerator.csproj" />
-    <Project Path="src/Common/JoinRpg.Common.PrimitiveTypes.SourceGenerator.Test/JoinRpg.Common.PrimitiveTypes.SourceGenerator.Test.csproj" />
-    <Project Path="src/Common/JoinRpg.Common.PrimitiveTypes.Test/JoinRpg.Common.PrimitiveTypes.Test.csproj" />
-    <Project Path="src/Common/JoinRpg.Common.PrimitiveTypes/JoinRpg.Common.PrimitiveTypes.csproj" />
     <Project Path="src/Common/JoinRpg.Common.Telegram/JoinRpg.Common.Telegram.csproj" />
     <Project Path="src/Common/JoinRpg.Common.Telegram.Test/JoinRpg.Common.Telegram.Test.csproj" />
-    <Project Path="src/Common/JoinRpg.Common.WebInfrastructure/JoinRpg.Common.WebInfrastructure.csproj" />
-    <Project Path="src/Common/JoinRpg.Common.WebInfrastructure.Interfaces/JoinRpg.Common.WebInfrastructure.Interfaces.csproj" />
-    <Project Path="src/Common/JoinRpg.Common.WebInfrastructure.Test/JoinRpg.Common.WebInfrastructure.Test.csproj" />
     <Project Path="src/JoinRpg.Helpers/JoinRpg.Helpers.csproj" />
     <Project Path="src/JoinRpg.Markdown/JoinRpg.Markdown.csproj" />
+  </Folder>
+  <Folder Name="/Common/PrimitiveTypes/">
+    <Project Path="src/Common/PrimitiveTypes/JoinRpg.Common.PrimitiveTypes/JoinRpg.Common.PrimitiveTypes.csproj" />
+    <Project Path="src/Common/PrimitiveTypes/JoinRpg.Common.PrimitiveTypes.Test/JoinRpg.Common.PrimitiveTypes.Test.csproj" />
+    <Project Path="src/Common/PrimitiveTypes/JoinRpg.Common.PrimitiveTypes.SourceGenerator/JoinRpg.Common.PrimitiveTypes.SourceGenerator.csproj" />
+    <Project Path="src/Common/PrimitiveTypes/JoinRpg.Common.PrimitiveTypes.SourceGenerator.Test/JoinRpg.Common.PrimitiveTypes.SourceGenerator.Test.csproj" />
+  </Folder>
+  <Folder Name="/Common/WebInfrastructure/">
+    <Project Path="src/Common/WebInfrastructure/JoinRpg.Common.WebInfrastructure/JoinRpg.Common.WebInfrastructure.csproj" />
+    <Project Path="src/Common/WebInfrastructure/JoinRpg.Common.WebInfrastructure.Interfaces/JoinRpg.Common.WebInfrastructure.Interfaces.csproj" />
+    <Project Path="src/Common/WebInfrastructure/JoinRpg.Common.WebInfrastructure.Test/JoinRpg.Common.WebInfrastructure.Test.csproj" />
   </Folder>
   <Folder Name="/Common/WebComponents/">
     <Project Path="src/Common/WebComponents/JoinRpg.Common.WebComponentBook.Client/JoinRpg.Common.WebComponentBook.Client.csproj" />
@@ -76,7 +80,6 @@
     <Project Path="src/JoinRpg.Tools.RestoreProjectShells/JoinRpg.Tools.RestoreProjectShells.csproj" />
   </Folder>
   <Folder Name="/Tests/">
-    <Project Path="src/JoinRpg.Blazor.Client.Test/JoinRpg.Blazor.Client.Test.csproj" />
     <Project Path="src/JoinRpg.BlobStorage.Test/JoinRpg.BlobStorage.Test.csproj" />
     <Project Path="src/JoinRpg.CommonUI.Models.Test/JoinRpg.CommonUI.Models.Test.csproj" />
     <Project Path="src/JoinRpg.Dal.Impl.Test/JoinRpg.Dal.Impl.Test.csproj" />
@@ -88,8 +91,6 @@
     <Project Path="src/JoinRpg.Integrations.KogdaIgra.Test/JoinRpg.Common.KogdaIgraClient.Test.csproj" />
     <Project Path="src/JoinRpg.IntegrationTest/JoinRpg.IntegrationTest.csproj" />
     <Project Path="src/JoinRpg.Markdown.Test/JoinRpg.Markdown.Test.csproj" />
-    <Project Path="src/JoinRpg.Mcp.Test/JoinRpg.Mcp.Test.csproj" />
-    <Project Path="src/JoinRpg.Portal.Test/JoinRpg.Portal.Test.csproj" />
     <Project Path="src/JoinRpg.Services.Advertisement.Test/JoinRpg.Services.Advertisement.Test.csproj" />
     <Project Path="src/JoinRpg.Services.Drp.Test/JoinRpg.Services.Drp.Test.csproj" />
     <Project Path="src/JoinRpg.Services.Export.Test/JoinRpg.Services.Export.Test.csproj" />
@@ -98,42 +99,47 @@
     <Project Path="src/JoinRpg.TestHelpers/JoinRpg.TestHelpers.csproj" />
     <Project Path="src/JoinRpg.TestHelpers.SqlServer/JoinRpg.TestHelpers.SqlServer.csproj" />
     <Project Path="src/JoinRpg.Tools.Drp.Common.Test/JoinRpg.Tools.Drp.Common.Test.csproj" />
-    <Project Path="src/JoinRpg.Tools.RestoreLostProjects.Test/JoinRpg.Tools.RestoreLostProjects.Test.csproj" />
     <Project Path="src/JoinRpg.Tools.RestoreLostUsers.Test/JoinRpg.Tools.RestoreLostUsers.Test.csproj" />
     <Project Path="src/JoinRpg.Tools.RestoreManualFinance.Test/JoinRpg.Tools.RestoreManualFinance.Test.csproj" />
-    <Project Path="src/JoinRpg.Web.AdminTools.Test/JoinRpg.Web.AdminTools.Test.csproj" />
-    <Project Path="src/JoinRpg.Web.CharacterGroups.Test/JoinRpg.Web.CharacterGroups.Test.csproj" Id="b5cb2aae-df4c-4a0c-9a0c-30be2c4840f6" />
-    <Project Path="src/JoinRpg.Web.Accommodation.Test/JoinRpg.Web.Accommodation.Test.csproj" />
-    <Project Path="src/JoinRpg.Web.Claims.Test/JoinRpg.Web.Claims.Test.csproj" />
-    <Project Path="src/JoinRpg.Web.Finances.Test/JoinRpg.Web.Finances.Test.csproj" />
-    <Project Path="src/JoinRpg.Web.Comments.Test/JoinRpg.Web.Comments.Test.csproj" />
-    <Project Path="src/JoinRpg.Web.Plots.Test/JoinRpg.Web.Plots.Test.csproj" />
-    <Project Path="src/JoinRpg.Web.ProjectCommon.Test/JoinRpg.Web.ProjectCommon.Test.csproj" />
-    <Project Path="src/JoinRpg.Web.ProjectMasterTools.Test/JoinRpg.Web.ProjectMasterTools.Test.csproj" />
-    <Project Path="src/JoinRpg.Web.Schedule.Test/JoinRpg.Web.Schedule.Test.csproj" />
-    <Project Path="src/JoinRpg.Web.UserProfile.Test/JoinRpg.Web.UserProfile.Test.csproj" />
-    <Project Path="src/JoinRpg.WebPortal.Managers.Test/JoinRpg.WebPortal.Managers.Test.csproj" />
-    <Project Path="src/JoinRpg.WebPortal.Models.Test/JoinRpg.WebPortal.Models.Test.csproj" />
+    <Project Path="src/JoinRpg.Tools.RestoreLostProjects.Test/JoinRpg.Tools.RestoreLostProjects.Test.csproj" />
     <Project Path="src/PscbApi.Test/PscbApi.Test.csproj" />
   </Folder>
-  <Folder Name="/WebPortalShared/">
-    <Project Path="src/JoinRpg.Blazor.Client/JoinRpg.Blazor.Client.csproj" />
-    <Project Path="src/JoinRpg.Web.AdminTools/JoinRpg.Web.AdminTools.csproj" />
-    <Project Path="src/JoinRpg.Web.CharacterGroups/JoinRpg.Web.CharacterGroups.csproj" />
-    <Project Path="src/JoinRpg.Web.CheckIn/JoinRpg.Web.CheckIn.csproj" />
-    <Project Path="src/JoinRpg.Web.Accommodation/JoinRpg.Web.Accommodation.csproj" />
-    <Project Path="src/JoinRpg.Web.Claims/JoinRpg.Web.Claims.csproj" />
-    <Project Path="src/JoinRpg.Web.Finances/JoinRpg.Web.Finances.csproj" />
-    <Project Path="src/JoinRpg.Web.Comments/JoinRpg.Web.Comments.csproj" />
-    <Project Path="src/JoinRpg.Web.Games/JoinRpg.Web.Games.csproj" />
-    <Project Path="src/JoinRpg.Mcp/JoinRpg.Mcp.csproj" />
-    <Project Path="src/JoinRpg.Web.Plots/JoinRpg.Web.Plots.csproj" />
-    <Project Path="src/JoinRpg.Web.ProjectCommon/JoinRpg.Web.ProjectCommon.csproj" />
-    <Project Path="src/JoinRpg.Web.ProjectMasterTools/JoinRpg.Web.ProjectMasterTools.csproj" />
-    <Project Path="src/JoinRpg.Web.Schedule/JoinRpg.Web.Schedule.csproj" />
-    <Project Path="src/JoinRpg.WebPortal.Managers/JoinRpg.WebPortal.Managers.csproj" />
-    <Project Path="src/JoinRpg.WebPortal.Models/JoinRpg.WebPortal.Models.csproj" />
-    <Project Path="src/JoinRpg.XGameApi.Contract/JoinRpg.XGameApi.Contract.csproj" />
+  <Folder Name="/Web/">
+    <Project Path="src/Web/JoinRpg.Blazor.Client/JoinRpg.Blazor.Client.csproj" />
+    <Project Path="src/Web/JoinRpg.Blazor.Client.Test/JoinRpg.Blazor.Client.Test.csproj" />
+    <Project Path="src/Web/JoinRpg.Mcp/JoinRpg.Mcp.csproj" />
+    <Project Path="src/Web/JoinRpg.Mcp.Test/JoinRpg.Mcp.Test.csproj" />
+    <Project Path="src/Web/JoinRpg.Portal/JoinRpg.Portal.csproj" DefaultStartup="true" />
+    <Project Path="src/Web/JoinRpg.Portal.Test/JoinRpg.Portal.Test.csproj" />
+    <Project Path="src/Web/JoinRpg.Web.Accommodation/JoinRpg.Web.Accommodation.csproj" />
+    <Project Path="src/Web/JoinRpg.Web.Accommodation.Test/JoinRpg.Web.Accommodation.Test.csproj" />
+    <Project Path="src/Web/JoinRpg.Web.AdminTools/JoinRpg.Web.AdminTools.csproj" />
+    <Project Path="src/Web/JoinRpg.Web.AdminTools.Test/JoinRpg.Web.AdminTools.Test.csproj" />
+    <Project Path="src/Web/JoinRpg.Web.CharacterGroups/JoinRpg.Web.CharacterGroups.csproj" />
+    <Project Path="src/Web/JoinRpg.Web.CharacterGroups.Test/JoinRpg.Web.CharacterGroups.Test.csproj" Id="b5cb2aae-df4c-4a0c-9a0c-30be2c4840f6" />
+    <Project Path="src/Web/JoinRpg.Web.CheckIn/JoinRpg.Web.CheckIn.csproj" />
+    <Project Path="src/Web/JoinRpg.Web.Claims/JoinRpg.Web.Claims.csproj" />
+    <Project Path="src/Web/JoinRpg.Web.Claims.Test/JoinRpg.Web.Claims.Test.csproj" />
+    <Project Path="src/Web/JoinRpg.Web.Comments/JoinRpg.Web.Comments.csproj" />
+    <Project Path="src/Web/JoinRpg.Web.Comments.Test/JoinRpg.Web.Comments.Test.csproj" />
+    <Project Path="src/Web/JoinRpg.Web.Finances/JoinRpg.Web.Finances.csproj" />
+    <Project Path="src/Web/JoinRpg.Web.Finances.Test/JoinRpg.Web.Finances.Test.csproj" />
+    <Project Path="src/Web/JoinRpg.Web.Games/JoinRpg.Web.Games.csproj" />
+    <Project Path="src/Web/JoinRpg.Web.Plots/JoinRpg.Web.Plots.csproj" />
+    <Project Path="src/Web/JoinRpg.Web.Plots.Test/JoinRpg.Web.Plots.Test.csproj" />
+    <Project Path="src/Web/JoinRpg.Web.ProjectCommon/JoinRpg.Web.ProjectCommon.csproj" />
+    <Project Path="src/Web/JoinRpg.Web.ProjectCommon.Test/JoinRpg.Web.ProjectCommon.Test.csproj" />
+    <Project Path="src/Web/JoinRpg.Web.ProjectMasterTools/JoinRpg.Web.ProjectMasterTools.csproj" />
+    <Project Path="src/Web/JoinRpg.Web.ProjectMasterTools.Test/JoinRpg.Web.ProjectMasterTools.Test.csproj" />
+    <Project Path="src/Web/JoinRpg.Web.Schedule/JoinRpg.Web.Schedule.csproj" />
+    <Project Path="src/Web/JoinRpg.Web.Schedule.Test/JoinRpg.Web.Schedule.Test.csproj" />
+    <Project Path="src/Web/JoinRpg.Web.UserProfile/JoinRpg.Web.UserProfile.csproj" />
+    <Project Path="src/Web/JoinRpg.Web.UserProfile.Test/JoinRpg.Web.UserProfile.Test.csproj" />
+    <Project Path="src/Web/JoinRpg.WebPortal.Managers/JoinRpg.WebPortal.Managers.csproj" />
+    <Project Path="src/Web/JoinRpg.WebPortal.Managers.Test/JoinRpg.WebPortal.Managers.Test.csproj" />
+    <Project Path="src/Web/JoinRpg.WebPortal.Models/JoinRpg.WebPortal.Models.csproj" />
+    <Project Path="src/Web/JoinRpg.WebPortal.Models.Test/JoinRpg.WebPortal.Models.Test.csproj" />
+    <Project Path="src/Web/JoinRpg.XGameApi.Contract/JoinRpg.XGameApi.Contract.csproj" />
   </Folder>
   <Project Path="docs/Docs.csproj" />
   <Project Path="src/JoinRpg.BlobStorage/JoinRpg.BlobStorage.csproj" />
@@ -141,8 +147,6 @@
   <Project Path="src/JoinRpg.DataModel/JoinRpg.DataModel.csproj" />
   <Project Path="src/JoinRpg.Domain/JoinRpg.Domain.csproj" />
   <Project Path="src/JoinRpg.Interfaces/JoinRpg.Interfaces.csproj" />
-  <Project Path="src/JoinRpg.Portal/JoinRpg.Portal.csproj" DefaultStartup="true" />
   <Project Path="src/Joinrpg.Web.Identity/Joinrpg.Web.Identity.csproj" />
-  <Project Path="src/JoinRpg.Web.UserProfile/JoinRpg.Web.UserProfile.csproj" />
 </Solution>
 
