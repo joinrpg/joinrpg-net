@@ -66,13 +66,12 @@ public class BudgetExpensesAlertJobTest
     public async Task RunOnce_Tuesday_NoExpenses_SendsAlert()
     {
         var mock = new MockedProject();
-        var job = CreateJob(
-            new StubExpenseRepository(_ => Task.FromResult(false)),
-            mock,
-            Tuesday);
+        var stub = new StubExpenseRepository(_ => Task.FromResult(false));
+        var job = CreateJob(stub, mock, Tuesday);
 
         await job.RunOnce(CancellationToken.None);
 
+        stub.LastCutoffUtc.ShouldBe(Tuesday.AddDays(-35).UtcDateTime);
         var letter = notificationService.Queued.ShouldHaveSingleItem();
         letter.EntityReference.ShouldBe(new ProjectIdentification(mock.Project.ProjectId));
         letter.NotificationClass.ShouldBe(NotificationClass.MasterProject);
@@ -96,6 +95,8 @@ public class BudgetExpensesAlertJobTest
 
     private sealed class StubExpenseRepository(Func<ProjectIdentification, Task<bool>> hasActualExpensesSince) : IExpenseRepository
     {
+        public DateTime? LastCutoffUtc { get; private set; }
+
         public Task<IReadOnlyCollection<DomainTypes.Finances.ExpenseInfo>> GetExpenses(ProjectIdentification projectId)
             => throw new NotSupportedException();
 
@@ -105,7 +106,11 @@ public class BudgetExpensesAlertJobTest
         public Task<IReadOnlyCollection<DomainTypes.Finances.ExpenseCategoryInfo>> GetCategories(ProjectIdentification projectId)
             => throw new NotSupportedException();
 
-        public Task<bool> HasActualExpensesSince(ProjectIdentification projectId, DateTime cutoffUtc) => hasActualExpensesSince(projectId);
+        public Task<bool> HasActualExpensesSince(ProjectIdentification projectId, DateTime cutoffUtc)
+        {
+            LastCutoffUtc = cutoffUtc;
+            return hasActualExpensesSince(projectId);
+        }
     }
 
     private sealed class FixedTimeProvider(DateTimeOffset now) : TimeProvider
