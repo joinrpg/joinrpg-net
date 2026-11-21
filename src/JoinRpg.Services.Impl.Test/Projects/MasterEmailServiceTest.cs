@@ -54,4 +54,40 @@ public class MasterEmailServiceTest
             Text = letter.TemplateText.TemplateContents,
         });
     }
+
+    [Fact]
+    public async Task EmailBudgetExpensesAlert_SendsOnlyToFinanceAdmins()
+    {
+        var masterWithoutMoney = mock.CreateMaster();
+        mock.Project.ProjectAcls.Single(a => a.UserId == masterWithoutMoney.UserId).CanManageMoney = false;
+        mock.ReInitProjectInfo();
+
+        await CreateService().EmailBudgetExpensesAlert(new() { ProjectId = new(mock.Project.ProjectId) });
+
+        var letter = notificationService.Queued.ShouldHaveSingleItem();
+        letter.NotificationClass.ShouldBe(NotificationClass.MasterProject);
+        letter.Initiator.ShouldBe(new UserIdentification(int.MaxValue)); // робот
+        letter.Header.ShouldBe("Mocked project: в бюджете не зафиксированы расходы за прошлый месяц");
+        letter.EntityReference.ShouldBe(new ProjectIdentification(mock.Project.ProjectId));
+        letter.Recepients.Select(r => r.UserId).ShouldBe(
+            [new UserIdentification(mock.Master.UserId)]);
+
+        var text = letter.TemplateText.TemplateContents;
+        text.ShouldContain("Mocked project");
+        text.ShouldContain("https://joinrpg.ru/" + mock.Project.ProjectId + "/money/expenses");
+    }
+
+    /// <summary>Снапшот итогового текста (ADR003): ловит баги интерполяции, которые ShouldContain не видит.</summary>
+    [Fact]
+    public async Task EmailBudgetExpensesAlert_TextSnapshot()
+    {
+        await CreateService().EmailBudgetExpensesAlert(new() { ProjectId = new(mock.Project.ProjectId) });
+
+        var letter = notificationService.Queued.ShouldHaveSingleItem();
+        await Verify(new
+        {
+            letter.Header,
+            Text = letter.TemplateText.TemplateContents,
+        });
+    }
 }

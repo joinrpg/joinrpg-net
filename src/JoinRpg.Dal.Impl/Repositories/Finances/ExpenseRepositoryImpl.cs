@@ -1,7 +1,14 @@
 namespace JoinRpg.Dal.Impl.Repositories;
 
+using LinqKit;
+
 internal class ExpenseRepositoryImpl(MyDbContext ctx) : GameRepositoryImplBase(ctx), IExpenseRepository
 {
+    public Task<bool> HasActualExpensesInPeriod(ProjectIdentification projectId, DateTime fromUtc, DateTime toUtc)
+        => Ctx.Set<Expense>().AsExpandable().AnyAsync(e =>
+            e.ProjectId == projectId.Value
+            && ExpensePredicates.ActualSpendingInPeriod(fromUtc, toUtc).Invoke(e));
+
     public async Task<IReadOnlyCollection<ExpenseInfo>> GetExpenses(ProjectIdentification projectId)
         => await MapExpenses(await Ctx.Set<Expense>()
             .Where(e => e.ProjectId == projectId.Value)
