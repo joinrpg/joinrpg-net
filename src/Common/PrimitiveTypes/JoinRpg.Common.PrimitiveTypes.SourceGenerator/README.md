@@ -12,7 +12,7 @@ dotnet add package JoinRpg.Common.PrimitiveTypes.SourceGenerator
 
 У генератора в `.csproj` допишите `PrivateAssets="all"`. Версии обоих пакетов держите
 одинаковыми: они выходят вместе, и сгенерированный код зовёт хелперы из PrimitiveTypes той же
-версии. Нужен net10.0.
+версии. Нужен net11.0.
 
 ## `[TypedEntityId]`
 

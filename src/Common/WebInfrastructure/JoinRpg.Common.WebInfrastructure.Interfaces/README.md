@@ -7,7 +7,7 @@
 dotnet add package JoinRpg.Common.WebInfrastructure.Interfaces
 ```
 
-Нужен net10.0, всё лежит в `JoinRpg.Common.WebInfrastructure.Job`.
+Нужен net11.0, всё лежит в `JoinRpg.Common.WebInfrastructure.Job`.
 
 ## Джоба и регистрация
 

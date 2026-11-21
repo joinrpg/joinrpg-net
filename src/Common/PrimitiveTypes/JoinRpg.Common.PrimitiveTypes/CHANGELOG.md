@@ -5,6 +5,7 @@
 ## Не выпущено
 
 ### Ломающие изменения
+- Пакет собирается под `net11.0` (был `net10.0`). Переход: поднять `TargetFramework` потребляющего проекта до `net11.0`. ([#6213](https://github.com/joinrpg/joinrpg-net/issues/6213))
 - `TelegramSocialLink`: конструктор и `FromOptional` по умолчанию считают ссылку верифицированной (`isVerified = true`) — chat id получают только из привязанного ExternalLogin. Переход: для неверифицированных данных (чужой ввод, legacy-поля) передавайте `isVerified: false`. `TryParse` по-прежнему возвращает неверифицированную ссылку. ([#6228](https://github.com/joinrpg/joinrpg-net/pull/6228))
 
 ## 2026.9.668 — 2026-11-08

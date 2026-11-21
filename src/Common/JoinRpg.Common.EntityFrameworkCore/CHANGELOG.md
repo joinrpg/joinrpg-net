@@ -4,6 +4,9 @@
 
 ## Не выпущено
 
+### Ломающие изменения
+- Пакет собирается под `net11.0` (был `net10.0`). Переход: поднять `TargetFramework` потребляющего проекта до `net11.0`. ([#6213](https://github.com/joinrpg/joinrpg-net/issues/6213))
+
 ### Изменено
 - `AddJoinEfCoreDbContext<TContext>()` — health check теперь по умолчанию помечается тегом `ready`
   (включается в readiness-пробу `/health/ready`). Перегрузка с `includeInReadyHealthCheck: false`

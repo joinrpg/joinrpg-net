@@ -7,7 +7,6 @@
   <ItemGroup>
     <PackageReference Include="Autofac" />
     <PackageReference Include="Microsoft.AspNetCore.Components" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
     <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks" />
     <PackageReference Include="Telegram.Bot" />
   </ItemGroup>

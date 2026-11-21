@@ -260,6 +260,11 @@ public class Startup(WebApplicationBuilder builder)
             // в AuthorizationMiddleware, до него такие запросы лимитировались бы как анонимные (#6232).
             .UseJoinAnonymousRateLimiter()
             .UseMiddleware<CsrfTokenCookieMiddleware>();
+        // .NET 11: Blazor static SSR (<AntiforgeryToken /> в компонентах) рендерит токен,
+        // только если в пайплайне есть antiforgery-middleware — иначе POST-формы
+        // (комментарии, чек-ин в обход и т.п.) уходят без токена и отбиваются в проде.
+        // Эндпоинты с [IgnoreAntiforgeryToken] middleware пропускает.
+        _ = app.UseAntiforgery();
 
         // Хостовая страница — дело серверного проекта: ImportMap и Assets живут в
         // Microsoft.AspNetCore.Components.Endpoints, которой в WASM-клиенте нет. Копия в

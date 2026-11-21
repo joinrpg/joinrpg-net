@@ -8,7 +8,7 @@ Blazor-компоненты joinrpg.ru: кнопки, поля ввода, ди�
 dotnet add package JoinRpg.Common.WebComponents
 ```
 
-Нужен net10.0, `JoinRpg.Common.PrimitiveTypes` придёт зависимостью. Сайт — только в корне
+Нужен net11.0, `JoinRpg.Common.PrimitiveTypes` придёт зависимостью. Сайт — только в корне
 домена: иконки и скрипты диалогов грузятся по `/_content/...`.
 
 ## Подключение

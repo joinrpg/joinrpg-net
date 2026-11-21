@@ -8,7 +8,7 @@
 dotnet add package JoinRpg.Common.EntityFrameworkCore
 ```
 
-Нужен net10.0 и EF Core 10.
+Нужен net11.0 и EF Core 11.
 
 ```csharp
 using JoinRpg.Common.EntityFrameworkCore;

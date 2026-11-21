@@ -6,7 +6,7 @@ HTTP-клиент к API [kogda-igra.ru](https://kogda-igra.ru) — календ
 dotnet add package JoinRpg.Common.KogdaIgraClient
 ```
 
-Нужен net10.0, всё лежит в `JoinRpg.Common.KogdaIgraClient`.
+Нужен net11.0, всё лежит в `JoinRpg.Common.KogdaIgraClient`.
 
 ```csharp
 services.AddKogdaIgraClient();
