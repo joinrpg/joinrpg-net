@@ -18,16 +18,25 @@ public class CsrfTokenProvider
         => await GetCsrfTokenAsyncFromJs() ?? throw new Exception("Can't get CSRF token");
     private async ValueTask<string?> GetCsrfTokenAsyncFromJs()
     {
-        await using var module = await jsRuntime.InvokeAsync<IJSObjectReference>("import", "/Scripts/blazor-interop.js");
+        try
+        {
+            await using var module = await jsRuntime.InvokeAsync<IJSObjectReference>("import", "/Scripts/blazor-interop.js");
 
-        var cookies = await module.InvokeAsync<StringHolder>("getDocumentCookie");
-        return cookies
-            .Content
-            .Split(';')
-            .Select(v => v.TrimStart().Split('='))
-            .Where(s => s[0] == "CSRF-TOKEN")
-            .Select(s => s[1])
-            .FirstOrDefault();
+            var cookies = await module.InvokeAsync<StringHolder>("getDocumentCookie");
+            return cookies
+                .Content
+                .Split(';')
+                .Select(v => v.TrimStart().Split('='))
+                .Where(s => s[0] == "CSRF-TOKEN")
+                .Select(s => s[1])
+                .FirstOrDefault();
+        }
+        catch (JSDisconnectedException ex)
+        {
+            // Раньше JSDisconnectedException вылетала наружу как есть; теперь приводим к тому же
+            // Exception("Can't get CSRF token"), что и любой другой сбой токена.
+            throw new Exception("Can't get CSRF token", ex);
+        }
     }
 
     /// <summary>

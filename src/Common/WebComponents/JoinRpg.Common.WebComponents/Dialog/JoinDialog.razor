@@ -217,15 +217,29 @@
     /// диалога, и открыть диалог из <c>OnAfterRenderAsync</c> родителя было нельзя: родитель
     /// получает его раньше дочернего компонента, модуля ещё нет.
     /// </summary>
-    private Task<IJSObjectReference> GetModuleAsync()
-        => _moduleTask ??= Js.InvokeAsync<IJSObjectReference>("import", "/_content/JoinRpg.Common.WebComponents/component-interop.js").AsTask();
+    private async Task<IJSObjectReference?> GetModuleAsync()
+    {
+        try
+        {
+            _moduleTask ??= Js.InvokeAsync<IJSObjectReference>("import", "/_content/JoinRpg.Common.WebComponents/component-interop.js").AsTask();
+            return await _moduleTask;
+        }
+        catch (JSDisconnectedException)
+        {
+            // Circuit уже закрыт — модуль не нужен.
+            return null;
+        }
+    }
 
     private async Task InvokeModuleAsync(string identifier)
     {
         try
         {
             var module = await GetModuleAsync();
-            await module.InvokeVoidAsync(identifier, _dialogRef);
+            if (module is not null)
+            {
+                await module.InvokeVoidAsync(identifier, _dialogRef);
+            }
         }
         catch (Exception ex)
         {

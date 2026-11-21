@@ -105,6 +105,13 @@
 
     private async Task CopyToClipboardAsync()
     {
-        await JSRuntime.InvokeVoidAsync("navigator.clipboard.writeText", internalValue);
+        try
+        {
+            await JSRuntime.InvokeVoidAsync("navigator.clipboard.writeText", internalValue);
+        }
+        catch (JSDisconnectedException)
+        {
+            // Circuit уже закрыт — копировать некуда.
+        }
     }
 }
