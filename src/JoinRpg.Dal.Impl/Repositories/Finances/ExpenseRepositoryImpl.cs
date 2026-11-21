@@ -5,11 +5,15 @@ internal class ExpenseRepositoryImpl(MyDbContext ctx) : GameRepositoryImplBase(c
     public async Task<IReadOnlyCollection<ExpenseInfo>> GetExpenses(ProjectIdentification projectId)
         => await MapExpenses(await Ctx.Set<Expense>()
             .Where(e => e.ProjectId == projectId.Value)
+            .OrderByDescending(e => e.UpdatedAt)
+            .ThenByDescending(e => e.ExpenseId)
             .ToListAsync(), projectId);
 
     public async Task<IReadOnlyCollection<ExpenseInfo>> GetExpensesByMaster(ProjectIdentification projectId, UserIdentification masterId)
         => await MapExpenses(await Ctx.Set<Expense>()
             .Where(e => e.ProjectId == projectId.Value && e.MasterId == masterId.Value)
+            .OrderByDescending(e => e.UpdatedAt)
+            .ThenByDescending(e => e.ExpenseId)
             .ToListAsync(), projectId);
 
     public async Task<IReadOnlyCollection<ExpenseCategoryInfo>> GetCategories(ProjectIdentification projectId)

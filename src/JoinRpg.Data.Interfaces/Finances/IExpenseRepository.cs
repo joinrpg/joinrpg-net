@@ -6,8 +6,10 @@ namespace JoinRpg.Data.Interfaces;
 /// </summary>
 public interface IExpenseRepository
 {
+    /// <summary>Расходы проекта, отсортированные по UpdatedAt desc (последние обновлённые — вверху), tie-breaker — ExpenseId desc.</summary>
     Task<IReadOnlyCollection<ExpenseInfo>> GetExpenses(ProjectIdentification projectId);
 
+    /// <inheritdoc cref="GetExpenses(ProjectIdentification)"/>
     Task<IReadOnlyCollection<ExpenseInfo>> GetExpensesByMaster(ProjectIdentification projectId, UserIdentification masterId);
 
     Task<IReadOnlyCollection<ExpenseCategoryInfo>> GetCategories(ProjectIdentification projectId);
