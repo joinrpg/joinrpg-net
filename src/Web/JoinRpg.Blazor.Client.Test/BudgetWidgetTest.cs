@@ -1,4 +1,3 @@
-using System.Globalization;
 using Bunit;
 using JoinRpg.Blazor.Client.CommonPages;
 using Shouldly;
@@ -8,8 +7,6 @@ namespace JoinRpg.Blazor.Client.Test;
 
 public class BudgetWidgetTest : BunitContext
 {
-    private static readonly CultureInfo Ru = CultureInfo.GetCultureInfo("ru-RU");
-
     private static readonly BudgetWidgetModel Model = new(
         Months:
         [
@@ -36,17 +33,13 @@ public class BudgetWidgetTest : BunitContext
         cut.Markup.ShouldContain("Расход");
         cut.Markup.ShouldContain("Итог");
 
-        var october = Model.Months[0];
-        october.Total.ShouldBeLessThan(0); // итог отрицательный
-        cut.Markup.ShouldContain($"{october.Income.ToString("#,0.##", Ru)} ₽");
-        cut.Markup.ShouldContain($"{october.Expense.ToString("#,0.##", Ru)} ₽");
-        // отрицательный итог помечен минусом
-        cut.Markup.ShouldContain($"{october.Total.ToString("#,0.##", Ru)} ₽");
-        cut.Markup.ShouldContain("-" + october.Total.ToString("#,0.##", Ru).TrimStart('-') + " ₽");
-
-        var year2025 = Model.Years[1];
-        year2025.Total.ShouldBeGreaterThan(0); // положительный итог без минуса
-        cut.Markup.ShouldContain($"{year2025.Total.ToString("#,0.##", Ru)} ₽");
+        // суммы захардкожены (неразрывный пробел U+00A0 — разделитель тысяч ru-RU):
+        // дублирование формата компонента в тесте не ловит баги форматирования
+        cut.Markup.ShouldContain("18\u00A0400 ₽");  // доход «Октябрь 2026»
+        cut.Markup.ShouldContain("31\u00A0250 ₽");  // расход «Октябрь 2026»
+        cut.Markup.ShouldContain("-12\u00A0850 ₽"); // итог «Октябрь 2026» — отрицательный, ASCII-минус
+        cut.Markup.ShouldContain("25\u00A0600 ₽");  // итог «2025» — положительный
+        cut.Markup.ShouldNotContain("-25\u00A0600 ₽");
     }
 
     [Fact]

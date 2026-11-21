@@ -110,7 +110,8 @@ Joinrpg — открытый проект, который живёт на дон
   («Октябрь 2026», «С начала 2026», «2025»).
 - **Blazor.Client** — статический компонент `BudgetWidget.razor` + record'ы
   `BudgetWidgetModel`/`BudgetPeriodCard` в `CommonPages/`; параметр `BudgetWidget`
-  у `AboutPanel`; суммы форматируются `"0.##"` + `₽` (ru-RU).
+  у `AboutPanel`; суммы форматируются `"#,0.##"` + `₽` (ru-RU) — с разделителем
+  тысяч, как в мокапе: «18 400 ₽».
 - **Portal** — `Pages/About/Index.cshtml.cs` инъектит `BudgetWidgetManager` и
   `IOptions<BudgetOptions>`, в `OnGet` собирает модель, передаёт в компонент
   через `param-BudgetWidget`, `render-mode="Static"`.

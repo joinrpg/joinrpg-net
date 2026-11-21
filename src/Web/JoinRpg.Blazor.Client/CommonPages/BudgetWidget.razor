@@ -24,7 +24,8 @@
 
     private static readonly CultureInfo RuCulture = CultureInfo.GetCultureInfo("ru-RU");
 
-    private static string FormatMoney(decimal value) => value.ToString("#,0.##", RuCulture);
+    // ICU на Linux (CI) даёт типографский минус U+2212 — фиксируем ASCII, чтобы вывод был стабилен
+    private static string FormatMoney(decimal value) => value.ToString("#,0.##", RuCulture).Replace('−', '-');
 
     private static RenderFragment Card(BudgetPeriodCard card, string background, string flexBasis) => __builder =>
     {
