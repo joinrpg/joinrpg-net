@@ -170,7 +170,6 @@
         {
             // Новый экземпляр модели — новый EditContext у формы: сообщения прошлого показа не остаются.
             newPaymentType = new AddPaymentTypeViewModel();
-            StateHasChanged();
             if (await addDialog.ShowModalAsync() is { } result)
             {
                 await Mutate(

@@ -145,7 +145,6 @@
         {
             // Новый экземпляр модели — новый EditContext у формы: сообщения прошлого показа не остаются.
             newFee = new CreateFeeSettingViewModel { StartDate = Today };
-            StateHasChanged();
             if (await addDialog.ShowModalAsync() is { } result)
             {
                 await Mutate(() => settingsClient.CreateFeeSetting(ProjectId, result), "Не удалось добавить взнос");

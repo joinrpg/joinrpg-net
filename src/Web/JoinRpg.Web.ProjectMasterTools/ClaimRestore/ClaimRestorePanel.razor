@@ -337,7 +337,6 @@
         uploadErrors.Clear();
         errorMessage = null;
         successMessage = null;
-        StateHasChanged();
 
         IReadOnlyList<IBrowserFile> files;
         try
@@ -830,7 +829,6 @@
             row.Succeeded = null;
             row.Error = null;
         }
-        StateHasChanged();
 
         var dependencies = new RestoreDependencies(model);
 
@@ -897,7 +895,6 @@
 
         newCharacterVisibility = null;
         applying = false;
-        StateHasChanged();
     }
 
     private RenderFragment NewCharacterVisibilitySection() => __builder =>
