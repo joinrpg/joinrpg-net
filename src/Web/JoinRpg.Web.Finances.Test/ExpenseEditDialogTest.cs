@@ -181,6 +181,39 @@ public class ExpenseEditDialogTest : BunitContext
         FooterButtons(cut)[0].HasAttribute("disabled").ShouldBeTrue();
     }
 
+    [Fact]
+    public void CreateModeRendersAddAnotherCheckbox()
+    {
+        var cut = RenderDialog();
+        _ = cut.InvokeAsync(() => cut.Instance.ShowAsync(new ExpenseEditViewModel(), state: null));
+
+        cut.FindAll("dialog input[type=checkbox]").Count.ShouldBe(1);
+    }
+
+    [Fact]
+    public void EditModeHidesAddAnotherCheckbox()
+    {
+        var cut = RenderDialog();
+        var model = new ExpenseEditViewModel { ExpenseId = new ExpenseIdentification(ProjectId, 42) };
+        _ = cut.InvokeAsync(() => cut.Instance.ShowAsync(model, ExpenseStateView.Proposed));
+
+        cut.FindAll("dialog input[type=checkbox]").ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void TogglingCheckboxInvokesAddAnotherChanged()
+    {
+        bool? captured = null;
+        var cut = Render<ExpenseEditDialog>(p => p
+            .Add(x => x.ProjectId, ProjectId)
+            .Add(x => x.AddAnotherChanged, EventCallback.Factory.Create<bool>(this, v => captured = v)));
+        _ = cut.InvokeAsync(() => cut.Instance.ShowAsync(new ExpenseEditViewModel(), state: null));
+
+        cut.Find("dialog input[type=checkbox]").Change(true);
+
+        captured.ShouldBe(true);
+    }
+
     private static IReadOnlyList<AngleSharp.Dom.IElement> FooterButtons(IRenderedComponent<ExpenseEditDialog> cut)
         => cut.FindAll(".join-dialog-footer button");
 
