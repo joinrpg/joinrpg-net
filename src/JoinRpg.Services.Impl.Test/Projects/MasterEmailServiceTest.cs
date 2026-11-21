@@ -67,7 +67,7 @@ public class MasterEmailServiceTest
         var letter = notificationService.Queued.ShouldHaveSingleItem();
         letter.NotificationClass.ShouldBe(NotificationClass.MasterProject);
         letter.Initiator.ShouldBe(new UserIdentification(int.MaxValue)); // робот
-        letter.Header.ShouldBe("Mocked project: в бюджете не зафиксированы расходы более 5 недель");
+        letter.Header.ShouldBe("Mocked project: в бюджете не зафиксированы расходы за прошлый месяц");
         letter.EntityReference.ShouldBe(new ProjectIdentification(mock.Project.ProjectId));
         letter.Recepients.Select(r => r.UserId).ShouldBe(
             [new UserIdentification(mock.Master.UserId)]);

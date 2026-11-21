@@ -38,6 +38,6 @@ internal sealed class FakeExpenseRepository(
     public Task<IReadOnlyCollection<ExpenseInfo>> GetExpensesByMaster(ProjectIdentification projectId, UserIdentification masterId)
         => throw new NotSupportedException();
 
-    public Task<bool> HasActualExpensesSince(ProjectIdentification projectId, DateTime cutoffUtc)
+    public Task<bool> HasActualExpensesInPeriod(ProjectIdentification projectId, DateTime fromUtc, DateTime toUtc)
         => throw new NotSupportedException();
 }
