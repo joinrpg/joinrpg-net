@@ -107,6 +107,7 @@ public static class Registration
         .AddScoped<IProjectApiViewService, ProjectApiViewService>()
         .AddScoped<ISearchApiViewService, SearchApiViewService>()
         .AddScoped<Finances.FinanceReportViewService>()
+        .AddScoped<Budget.BudgetWidgetManager>()
 
         ;
     }
