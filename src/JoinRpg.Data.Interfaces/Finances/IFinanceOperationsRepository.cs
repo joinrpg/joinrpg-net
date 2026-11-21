@@ -23,6 +23,12 @@ public interface IFinanceOperationsRepository
     /// </remarks>
     /// <param name="commentIds">Идентификаторы операций (<c>FinanceOperation.CommentId</c>).</param>
     Task<IReadOnlyCollection<MatchedOperation>> GetOperationsByCommentIds(IReadOnlyCollection<int> commentIds);
+
+    /// <summary>
+    /// Все одобренные денежные операции проекта с ненулевой суммой начиная с даты —
+    /// одним запросом. Взносы приходят с положительной суммой, возвраты — с отрицательной.
+    /// </summary>
+    Task<IReadOnlyCollection<ApprovedMoneyOperation>> GetApprovedMoneyOperations(ProjectIdentification projectId, DateOnly from);
 }
 
 /// <summary>
@@ -32,6 +38,14 @@ public interface IFinanceOperationsRepository
 /// <param name="RefundId">Идентификатор самой операции возврата.</param>
 /// <param name="OperationDate">Дата операции возврата (<c>FinanceOperation.OperationDate</c>).</param>
 public record ApprovedRefund(int RefundedOperationId, FinanceOperationIdentification RefundId, DateTime OperationDate);
+
+/// <summary>
+/// Одобренная денежная операция проекта с ненулевой суммой.
+/// </summary>
+/// <param name="Date">Дата операции (<c>FinanceOperation.OperationDate</c>).</param>
+/// <param name="AmountRubles">Сумма в рублях: взносы положительные, возвраты отрицательные
+/// (<c>FinanceOperation.MoneyAmount</c>).</param>
+public record ApprovedMoneyOperation(DateOnly Date, int AmountRubles);
 
 /// <summary>
 /// Финансовая операция, найденная по её идентификатору.
