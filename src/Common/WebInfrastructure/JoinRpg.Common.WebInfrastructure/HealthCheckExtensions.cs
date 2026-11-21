@@ -75,6 +75,8 @@ public static class HealthCheckExtensions
     /// Если клиент (или kubernetes-проба) закрыл соединение, движок health-чеков пробрасывает
     /// OperationCanceledException наружу, и запрос попадает в логи как 500 — хотя писать ответ
     /// всё равно уже некому. Гасим такую отмену, чтобы 500 не путал разбор инцидентов.
+    /// Пишем Warning с путём: прерывание пробы по клиентскому таймауту — начало инцидента,
+    /// о нём должно быть видно в логе (фреймворковые логи чеков в этот момент ещё не пишутся).
     /// </summary>
     private static void IgnoreAbortedRequest(EndpointBuilder builder)
     {
@@ -95,7 +97,10 @@ public static class HealthCheckExtensions
                 context.RequestServices
                     .GetRequiredService<ILoggerFactory>()
                     .CreateLogger(typeof(HealthCheckExtensions))
-                    .LogDebug("Запрос health-чека отменён клиентом, ответ не отправлен");
+                    .LogWarning(
+                        "Health-запрос {Path} отменён клиентом до завершения проверок " +
+                        "(пробы таймаутятся на стороне клиента), ответ не отправлен",
+                        context.Request.Path.Value);
             }
         };
     }
