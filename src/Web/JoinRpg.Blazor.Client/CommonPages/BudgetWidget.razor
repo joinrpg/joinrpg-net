@@ -1,0 +1,47 @@
+@using System.Globalization
+@if (Model is { } model && (model.Months.Length > 0 || model.Years.Length > 0))
+{
+    <div style="background:#fff;border:1px solid #ddd;border-radius:6px;padding:14px 18px;margin-top:12px">
+        <h5 style="margin:0 0 12px;font-size:15px">Бюджет Joinrpg</h5>
+        <div style="display:flex;gap:12px;flex-wrap:wrap">
+            @foreach (var card in model.Months)
+            {
+                @Card(card, background: "#f8f9fa", flexBasis: "150px")
+            }
+        </div>
+        <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:12px">
+            @foreach (var card in model.Years)
+            {
+                @Card(card, background: "#eef3f8", flexBasis: "220px")
+            }
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter]
+    public BudgetWidgetModel? Model { get; set; }
+
+    private static readonly CultureInfo RuCulture = CultureInfo.GetCultureInfo("ru-RU");
+
+    private static string FormatMoney(decimal value) => value.ToString("#,0.##", RuCulture);
+
+    private static RenderFragment Card(BudgetPeriodCard card, string background, string flexBasis) => __builder =>
+    {
+        <div style="flex:1 1 @flexBasis;border:1px solid #ddd;border-radius:6px;padding:10px 14px;background:@background">
+            <div style="font-weight:600;font-size:14px;margin-bottom:6px">@card.Title</div>
+            <div style="display:flex;justify-content:space-between;font-size:13px;padding:2px 0">
+                <span style="color:#2e7d32">Доход</span>
+                <span style="color:#2e7d32;font-variant-numeric:tabular-nums;white-space:nowrap">@FormatMoney(card.Income) ₽</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;font-size:13px;padding:2px 0">
+                <span style="color:#c62828">Расход</span>
+                <span style="color:#c62828;font-variant-numeric:tabular-nums;white-space:nowrap">@FormatMoney(card.Expense) ₽</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;font-size:13px;padding:6px 0 2px;border-top:1px solid #ddd;margin-top:5px;font-weight:700">
+                <span>Итог</span>
+                <span style="color:@(card.Total < 0 ? "#c62828" : "#2e7d32");font-variant-numeric:tabular-nums;white-space:nowrap">@FormatMoney(card.Total) ₽</span>
+            </div>
+        </div>
+    };
+}
