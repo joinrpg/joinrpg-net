@@ -12,6 +12,6 @@ public interface IExpenseRepository
 
     Task<IReadOnlyCollection<ExpenseCategoryInfo>> GetCategories(ProjectIdentification projectId);
 
-    /// <summary>Была ли фактическая трата (одобренный расход с заполненным фактом) не раньше <paramref name="cutoffUtc"/>.</summary>
-    Task<bool> HasActualExpensesSince(ProjectIdentification projectId, DateTime cutoffUtc);
+    /// <summary>Была ли фактическая трата (одобренный расход с заполненным фактом) с датой в полуинтервале [<paramref name="fromUtc"/>, <paramref name="toUtc"/>).</summary>
+    Task<bool> HasActualExpensesInPeriod(ProjectIdentification projectId, DateTime fromUtc, DateTime toUtc);
 }

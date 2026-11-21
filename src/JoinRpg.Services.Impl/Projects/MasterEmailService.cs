@@ -65,15 +65,15 @@ internal class MasterEmailService(
     }
 
     /// <summary>
-    /// Алерт мастерам, ответственным за финансы проекта: в бюджете не зафиксированы расходы более 5 недель.
+    /// Алерт мастерам, ответственным за финансы проекта: в предыдущем месяце не зафиксированы расходы.
     /// </summary>
     // TODO[Localize]
     public async Task EmailBudgetExpensesAlert(BudgetExpensesAlertMail email)
     {
         var metadata = await projectMetadataRepository.GetProjectMetadata(email.ProjectId);
 
-        var body = $@"В проекте {metadata.ProjectName.Value} не зафиксированы расходы уже более 5 недель. Если расходы были — проверьте, что они внесены в бюджет проекта: https://joinrpg.ru/{email.ProjectId.Value}/money/expenses";
-        var subject = $"{metadata.ProjectName.Value}: в бюджете не зафиксированы расходы более 5 недель";
+        var body = $@"В проекте {metadata.ProjectName.Value} не зафиксированы расходы за прошлый месяц. Если расходы были — проверьте, что они внесены в бюджет проекта: https://joinrpg.ru/{email.ProjectId.Value}/money/expenses";
+        var subject = $"{metadata.ProjectName.Value}: в бюджете не зафиксированы расходы за прошлый месяц";
 
         await mastersNotificationService.NotifyMastersWithPermission(metadata, Permission.CanManageMoney, subject, body, virtualUsersService.RobotUserId);
     }

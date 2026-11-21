@@ -39,6 +39,6 @@ public class ProjectStaleMail : ProjectEmailModelBase
 public class ProjectBlockedMail : ProjectEmailModelBase;
 
 /// <summary>
-/// Письмо-алерт мастерам с правом на финансы: в бюджете проекта не зафиксированы расходы более 5 недель.
+/// Письмо-алерт мастерам с правом на финансы: в предыдущем календарном месяце не зафиксированы расходы.
 /// </summary>
 public class BudgetExpensesAlertMail : ProjectEmailModelBase;

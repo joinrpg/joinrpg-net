@@ -9,13 +9,20 @@ using Microsoft.Extensions.Options;
 namespace JoinRpg.Services.Impl.Test.Finances;
 
 /// <summary>
-/// Юнит-тесты еженедельной джобы-алерта об отсутствии фактических расходов
-/// в проекте бюджета. По образцу BlockedProjectsReminderJobTest.
+/// Юнит-тесты ежедневной джобы-алерта об отсутствии фактических расходов
+/// в проекте бюджета за предыдущий календарный месяц. По образцу BlockedProjectsReminderJobTest.
 /// </summary>
 public class BudgetExpensesAlertJobTest
 {
-    private static readonly DateTimeOffset Tuesday = new(2026, 11, 10, 9, 0, 0, TimeSpan.Zero);
-    private static readonly DateTimeOffset Wednesday = new(2026, 11, 11, 9, 0, 0, TimeSpan.Zero);
+    // Ноябрь 2026: конец прошлого месяца — 2026-11-01, полная неделя с него — 2026-11-08,
+    // окно алерта — первый прогон после 2026-11-08 00:00 (у джобы он в 09:00)
+    private static readonly DateTimeOffset WednesdayInFirstWeek = new(2026, 11, 5, 9, 0, 0, TimeSpan.Zero);
+    private static readonly DateTimeOffset ExactlyFullWeekAfterMonthEnd = new(2026, 11, 8, 0, 0, 0, TimeSpan.Zero);
+    private static readonly DateTimeOffset FirstRunAfterFullWeek = new(2026, 11, 8, 9, 0, 0, TimeSpan.Zero);
+    private static readonly DateTimeOffset WednesdayInSecondWeek = new(2026, 11, 11, 9, 0, 0, TimeSpan.Zero);
+
+    private static readonly DateTime PreviousMonthStart = new DateTime(2026, 10, 1, 0, 0, 0, DateTimeKind.Utc);
+    private static readonly DateTime CurrentMonthStart = new DateTime(2026, 11, 1, 0, 0, 0, DateTimeKind.Utc);
 
     private readonly FakeNotificationService notificationService = new();
 
@@ -37,12 +44,12 @@ public class BudgetExpensesAlertJobTest
     }
 
     [Fact]
-    public async Task RunOnce_NotTuesday_SendsNothing()
+    public async Task RunOnce_LessThanFullWeekSinceMonthEnd_SendsNothing()
     {
         var job = CreateJob(
-            new StubExpenseRepository(_ => throw new NotSupportedException("Вне вторника расходы не читаются")),
+            new StubExpenseRepository(_ => throw new NotSupportedException("В первую неделю месяца расходы не читаются")),
             new MockedProject(),
-            Wednesday);
+            WednesdayInFirstWeek);
 
         await job.RunOnce(CancellationToken.None);
 
@@ -50,12 +57,38 @@ public class BudgetExpensesAlertJobTest
     }
 
     [Fact]
-    public async Task RunOnce_Tuesday_HasRecentExpenses_SendsNothing()
+    public async Task RunOnce_ExactlyFullWeekSinceMonthEnd_SendsNothing()
+    {
+        var job = CreateJob(
+            new StubExpenseRepository(_ => throw new NotSupportedException("Ровно полная неделя — не больше, алерт рано")),
+            new MockedProject(),
+            ExactlyFullWeekAfterMonthEnd);
+
+        await job.RunOnce(CancellationToken.None);
+
+        notificationService.Queued.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task RunOnce_AlertWindowAlreadyPassed_SendsNothing()
+    {
+        var job = CreateJob(
+            new StubExpenseRepository(_ => throw new NotSupportedException("Окно алерта однодневное — после него расходы не читаются")),
+            new MockedProject(),
+            WednesdayInSecondWeek);
+
+        await job.RunOnce(CancellationToken.None);
+
+        notificationService.Queued.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task RunOnce_AfterFullWeek_HasExpensesInPreviousMonth_SendsNothing()
     {
         var job = CreateJob(
             new StubExpenseRepository(_ => Task.FromResult(true)),
             new MockedProject(),
-            Tuesday);
+            FirstRunAfterFullWeek);
 
         await job.RunOnce(CancellationToken.None);
 
@@ -63,22 +96,23 @@ public class BudgetExpensesAlertJobTest
     }
 
     [Fact]
-    public async Task RunOnce_Tuesday_NoExpenses_SendsAlert()
+    public async Task RunOnce_AfterFullWeek_NoExpensesInPreviousMonth_SendsAlert()
     {
         var mock = new MockedProject();
         var stub = new StubExpenseRepository(_ => Task.FromResult(false));
-        var job = CreateJob(stub, mock, Tuesday);
+        var job = CreateJob(stub, mock, FirstRunAfterFullWeek);
 
         await job.RunOnce(CancellationToken.None);
 
-        stub.LastCutoffUtc.ShouldBe(Tuesday.AddDays(-35).UtcDateTime);
+        stub.LastFromUtc.ShouldBe(PreviousMonthStart);
+        stub.LastToUtc.ShouldBe(CurrentMonthStart);
         var letter = notificationService.Queued.ShouldHaveSingleItem();
         letter.EntityReference.ShouldBe(new ProjectIdentification(mock.Project.ProjectId));
         letter.NotificationClass.ShouldBe(NotificationClass.MasterProject);
     }
 
     [Fact]
-    public async Task RunOnce_Tuesday_ProjectBlocked_SendsNothing()
+    public async Task RunOnce_ProjectBlocked_SendsNothing()
     {
         var mock = new MockedProject();
         mock.Project.IsBlocked = true;
@@ -86,16 +120,18 @@ public class BudgetExpensesAlertJobTest
         var job = CreateJob(
             new StubExpenseRepository(_ => Task.FromResult(false)),
             mock,
-            Tuesday);
+            FirstRunAfterFullWeek);
 
         await job.RunOnce(CancellationToken.None);
 
         notificationService.Queued.ShouldBeEmpty();
     }
 
-    private sealed class StubExpenseRepository(Func<ProjectIdentification, Task<bool>> hasActualExpensesSince) : IExpenseRepository
+    private sealed class StubExpenseRepository(Func<ProjectIdentification, Task<bool>> hasActualExpensesInPeriod) : IExpenseRepository
     {
-        public DateTime? LastCutoffUtc { get; private set; }
+        public DateTime? LastFromUtc { get; private set; }
+
+        public DateTime? LastToUtc { get; private set; }
 
         public Task<IReadOnlyCollection<DomainTypes.Finances.ExpenseInfo>> GetExpenses(ProjectIdentification projectId)
             => throw new NotSupportedException();
@@ -106,10 +142,11 @@ public class BudgetExpensesAlertJobTest
         public Task<IReadOnlyCollection<DomainTypes.Finances.ExpenseCategoryInfo>> GetCategories(ProjectIdentification projectId)
             => throw new NotSupportedException();
 
-        public Task<bool> HasActualExpensesSince(ProjectIdentification projectId, DateTime cutoffUtc)
+        public Task<bool> HasActualExpensesInPeriod(ProjectIdentification projectId, DateTime fromUtc, DateTime toUtc)
         {
-            LastCutoffUtc = cutoffUtc;
-            return hasActualExpensesSince(projectId);
+            LastFromUtc = fromUtc;
+            LastToUtc = toUtc;
+            return hasActualExpensesInPeriod(projectId);
         }
     }
 
