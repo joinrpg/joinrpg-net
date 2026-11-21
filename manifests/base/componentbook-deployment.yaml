@@ -43,6 +43,7 @@ spec:
             port: 8080
             scheme: HTTP
           initialDelaySeconds: 30
+          timeoutSeconds: 5
         readinessProbe:
           failureThreshold: 5
           httpGet:
@@ -50,6 +51,7 @@ spec:
             port: 8080
             scheme: HTTP
           initialDelaySeconds: 30
+          timeoutSeconds: 5
         ports:
         - containerPort: 8080
           name: http
