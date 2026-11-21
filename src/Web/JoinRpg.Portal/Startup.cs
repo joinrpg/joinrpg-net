@@ -23,7 +23,6 @@ using JoinRpg.Portal.Infrastructure.Logging;
 using JoinRpg.Portal.Infrastructure.Logging.Filters;
 using JoinRpg.Portal.Infrastructure.ModelBinding;
 using JoinRpg.Portal.Infrastructure.XApi;
-using JoinRpg.Portal.Menu;
 using JoinRpg.Services.Advertisement;
 using JoinRpg.Services.Export;
 using JoinRpg.Services.Impl;
@@ -60,7 +59,7 @@ public class Startup(WebApplicationBuilder builder)
             .Configure<NotificationsOptions>(Configuration.GetSection("Notifications"))
             .Configure<JoinRpgHostNamesOptions>(Configuration.GetSection("JoinRpgHostNames"))
             .Configure<TelegramLoginOptions>(Configuration.GetSection("Telegram"))
-            .Configure<DonateOptions>(Configuration.GetSection("Donate"))
+            .Configure<BudgetOptions>(Configuration.GetSection("Budget"))
             .Configure<DrpOptions>(Configuration.GetSection("Drp"))
             .Configure<RoleTimeOptions>(Configuration.GetSection("RoleTime"))
             .Configure<KogdaIgraOptions>(Configuration.GetSection("KogdaIgra"));
@@ -174,8 +173,6 @@ public class Startup(WebApplicationBuilder builder)
             .AddJoinBlobStorage();
 
         services.AddJoinAdvertisement();
-
-        services.AddOptions<DonateOptions>();
 
         services.AddRazorComponents().AddInteractiveWebAssemblyComponents();
         _ = services.AddJoinRpgWebComponents();
