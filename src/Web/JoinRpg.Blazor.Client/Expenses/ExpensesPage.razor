@@ -4,10 +4,14 @@
 @using JoinRpg.Web.Finances.Expenses
 @inject IExpensesClient Client
 @inject ILogger<ExpensesPage> Logger
+@inject NavigationManager NavigationManager
+@inject IJSRuntime Js
 
 @* Страница «Расходы»: грид всех расходов проекта с действиями в строках и диалог
    создания/правки. Править можно свои расходы (или любые, с правом на деньги),
-   одобрять/отклонять — только с правом на деньги. *@
+   одобрять/отклонять — только с правом на деньги.
+   Параметр ?create=1 (кнопка «Новый расход» на сводке по деньгам) — диалог создания
+   открывается сразу после загрузки страницы. *@
 @if (loadError is not null)
 {
     <JoinAlert Variation="VariationStyleEnum.Danger">@loadError</JoinAlert>
@@ -78,6 +82,12 @@ else
     private string? loadError;
     private string? actionError;
     private bool addAnother;
+    private bool createRequested;
+
+    protected override void OnInitialized()
+    {
+        createRequested = HasCreateFlag(NavigationManager.Uri);
+    }
 
     protected override async Task OnInitializedAsync()
     {
@@ -90,6 +100,37 @@ else
             Logger.LogError(exception, "Ошибка загрузки расходов проекта {ProjectId}", ProjectId);
             loadError = "Не удалось загрузить расходы. Обновите страницу и попробуйте ещё раз.";
         }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        // Диалог открываем не раньше, чем он появится в разметке: при живой загрузке
+        // первые рендеры — JoinLoadingMessage, и @ref на диалог ещё null.
+        // OnAfterRenderAsync вызывается после каждого рендера, так что условие
+        // сработает на первом же рендере, где диалог реально отрисован.
+        if (createRequested && editDialog is not null)
+        {
+            createRequested = false;
+            await StartCreate();
+            await CleanCreateParamFromAddress();
+        }
+    }
+
+    // Параметр выполнил свою задачу: убираем его из адреса, чтобы F5 не открывал
+    // диалог заново. Остров отрисован без Blazor Router, и NavigationManager тут
+    // не годится: NavigateTo перезагрузил бы страницу целиком (замерено, ADR027 §5).
+    // Пишем адрес напрямую через history.replaceState: ни событий навигации, ни перезагрузки.
+    private Task CleanCreateParamFromAddress()
+    {
+        var cleanPath = new Uri(NavigationManager.Uri).AbsolutePath;
+        return Js.InvokeVoidAsync("history.replaceState", null, "", cleanPath).AsTask();
+    }
+
+    private static bool HasCreateFlag(string absoluteUri)
+    {
+        var query = new Uri(absoluteUri).Query.TrimStart('?');
+        return query.Split('&', StringSplitOptions.RemoveEmptyEntries)
+            .Any(parameter => parameter.Split('=', 2)[0] == "create");
     }
 
     private async Task LoadAll()

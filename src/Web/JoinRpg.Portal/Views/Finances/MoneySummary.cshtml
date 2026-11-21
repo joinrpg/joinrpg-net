@@ -1,5 +1,8 @@
 @model JoinRpg.Web.Models.MoneyInfoTotalViewModel
 @using JoinRpg.Common.WebComponents
+@using JoinRpg.Common.PrimitiveTypes
+@using JoinRpg.Web.Finances.Expenses
+@inject IExpensesUriLocator ExpensesUriLocator
 
 @{
     ViewBag.Title = "Сводка по деньгам";
@@ -23,6 +26,16 @@
     ShowTotal = true,
 }))
 
+<h3>
+    Расходы (<a href="@ExpensesUriLocator.GetExpensesUri(new ProjectIdentification(Model.ProjectId))">подробнее</a>)
+    <component type="typeof(JoinButton)"
+               render-mode="Static"
+               param-Link="@(ExpensesUriLocator.GetExpensesUri(new ProjectIdentification(Model.ProjectId)).ToString() + "?create=1")"
+               param-Preset="ButtonPreset.Add"
+               param-Style="VariationStyleEnum.Success"
+               param-Label="@("Новый расход")" />
+</h3>
+
 @if (Model.ExpenseSummary is { } expenseSummary)
 {
     @(await Html.RenderComponentAsync<ExpenseSummaryTable>(RenderMode.Static, new
@@ -30,7 +43,6 @@
         Rows = expenseSummary.Rows
             .Select(row => new ExpenseSummaryRowViewModel(row.CategoryPath, row.ApprovedPlannedCost, row.ApprovedActualCost, row.ProposedCost, row.IsTotal))
             .ToArray(),
-        ProjectId = Model.ProjectId,
     }))
 }
 
