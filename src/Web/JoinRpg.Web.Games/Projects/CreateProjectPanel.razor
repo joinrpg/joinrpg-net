@@ -120,11 +120,11 @@
         isProduction = await Services.GetRequiredService<IProjectCreateClient>().IsProductionEnvironment();
     }
 
-    private void HandleFieldChanged(object? sender, FieldChangedEventArgs e)
+    private async void HandleFieldChanged(object? sender, FieldChangedEventArgs e)
     {
         if (editContext is not null)
         {
-            formInvalid = !editContext.Validate();
+            formInvalid = !await editContext.ValidateAsync();
             StateHasChanged();
         }
     }

@@ -31,17 +31,17 @@ public abstract class SettingsPanelBase<TModel> : ComponentBase, IDisposable
         editContext = new(Model);
         editContext.OnFieldChanged += HandleFieldChanged;
         messageStore = new(editContext);
-        formInvalid = !editContext.Validate();
+        formInvalid = !await editContext.ValidateAsync();
     }
 
-    private void HandleFieldChanged(object? sender, FieldChangedEventArgs e)
+    private async void HandleFieldChanged(object? sender, FieldChangedEventArgs e)
     {
         if (editContext is not null)
         {
             success = false;
             // Серверная ошибка относится к прошлой попытке сохранения, иначе она навсегда блокирует кнопку
             messageStore?.Clear();
-            formInvalid = !editContext.Validate();
+            formInvalid = !await editContext.ValidateAsync();
             StateHasChanged();
         }
     }
@@ -57,7 +57,7 @@ public abstract class SettingsPanelBase<TModel> : ComponentBase, IDisposable
             return;
         }
         messageStore?.Clear();
-        formInvalid = !editContext.Validate();
+        formInvalid = !await editContext.ValidateAsync();
         if (formInvalid)
         {
             return;
