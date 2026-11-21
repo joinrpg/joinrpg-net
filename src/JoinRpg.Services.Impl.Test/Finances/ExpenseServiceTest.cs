@@ -125,6 +125,49 @@ public class ExpenseServiceTest
     }
 
     [Fact]
+    public async Task CreateExpense_PersistsCategoryPathSnapshotsFromResolverContext()
+    {
+        // Репродюсер бага «подсказки предлагают "Селектел" вместо "Хостинг\Селектел"»: IUnitOfWork —
+        // транзиент, поэтому резолвер и сервис получают РАЗНЫЕ DbContext. Резолвер вставляет категории
+        // и выставляет снапшоты путей на своём контексте; расход сохраняется на контексте сервиса,
+        // который эти категории не трекает. Не сохрани резолвер снапшоты сам — мутации пропадают:
+        // в БД FK родителя корректен (задан до вставки), а ParentCategoriesImpl_ListIds пуст.
+        var resolverCategories = new List<ExpenseCategory>();
+        var serviceExpenses = new List<Expense>();
+        var resolverUoW = new FakeUnitOfWork(mock);
+        resolverUoW.UseDbSet<ExpenseCategory>(resolverCategories);
+        var serviceUoW = new FakeUnitOfWork(mock);
+        serviceUoW.UseDbSet<Expense>(serviceExpenses);
+
+        // «База данных» резолвера — состояние его контекста, зафиксированное при каждом SaveChanges.
+        var persistedSnapshots = new Dictionary<int, string>();
+        resolverUoW.OnSaveChanges = _ =>
+        {
+            foreach (var category in resolverCategories)
+            {
+                persistedSnapshots[category.ExpenseCategoryId] = category.ParentCategoriesImpl.ListIds;
+            }
+        };
+
+        var repository = new FakeExpenseRepository(resolverCategories, serviceExpenses);
+        var service = new ExpenseService(
+            serviceUoW,
+            metadataRepository,
+            new FakeCurrentUserAccessor(mock.Master.UserId),
+            repository,
+            new ExpenseCategoryResolver(resolverUoW, repository, NullLogger<ExpenseCategoryResolver>.Instance),
+            NullLogger<ExpenseService>.Instance);
+
+        await service.CreateExpense(ProjectId, CreateRequest(new UserIdentification(mock.Master.UserId)));
+
+        var root = resolverCategories.Single(c => c.Name == "Аренда базы");
+        var leaf = resolverCategories.Single(c => c.Name == "Жилые корпуса");
+        // Снапшот пути листа обязан доехать до «БД», а не остаться только в памяти контекста резолвера.
+        persistedSnapshots[leaf.ExpenseCategoryId].ShouldBe(root.ExpenseCategoryId.ToString());
+        persistedSnapshots[root.ExpenseCategoryId].ShouldBe("");
+    }
+
+    [Fact]
     public async Task LoadCategoryPathSuggestions_ReturnsFullPathsForEveryExpenseNodeSorted()
     {
         var service = CreateService(mock.Master.UserId);

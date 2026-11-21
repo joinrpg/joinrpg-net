@@ -94,6 +94,11 @@ internal class ExpenseCategoryResolver(
                 ancestorId = entity.ExpenseCategoryId;
                 ancestorPath.Add(entity.ExpenseCategoryId);
             }
+            // Снапшоты выставлены после вставки, поэтому требуют своего сохранения — на нашем контексте:
+            // IUnitOfWork транзиентен, и контекст сервиса (он сохраняет расход) эти категории не трекает.
+            // Без этого SaveChanges снапшоты путей терялись: FK родителя в БД был корректен, а
+            // ParentCategoriesImpl_ListIds — пустой, и подсказки отдавали "Селектел" вместо "Хостинг\Селектел".
+            await unitOfWork.SaveChangesAsync();
             pathIds.AddRange(created.Select(c => c.ExpenseCategoryId));
             logger.LogInformation(
                 "Создано {createdCount} категорий расходов по пути «{categoryPath}» в проекте {projectId}",
