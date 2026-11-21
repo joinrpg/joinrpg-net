@@ -5,7 +5,7 @@ using LinqKit;
 internal class ExpenseRepositoryImpl(MyDbContext ctx) : GameRepositoryImplBase(ctx), IExpenseRepository
 {
     public Task<bool> HasActualExpensesSince(ProjectIdentification projectId, DateTime cutoffUtc)
-        => Ctx.Set<Expense>().AnyAsync(e =>
+        => Ctx.Set<Expense>().AsExpandable().AnyAsync(e =>
             e.ProjectId == projectId.Value
             && ExpensePredicates.ActualSpendingSince(cutoffUtc).Invoke(e));
 
