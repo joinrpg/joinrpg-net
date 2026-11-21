@@ -82,7 +82,6 @@
         <PackageVersion Include="Microsoft.OpenApi" Version="3.11.0" />
         <PackageVersion Include="Swashbuckle.AspNetCore.SwaggerUI" Version="11.0.1" />
         <PackageVersion Include="System.Net.Http.Json" Version="11.0.0" />
-        <PackageVersion Include="System.Security.Cryptography.Pkcs" Version="11.0.0" />
         <PackageVersion Include="Testcontainers.MsSql" Version="4.17.0" />
         <PackageVersion Include="Testcontainers.PostgreSql" Version="4.17.0" />
         <PackageVersion Include="System.Private.Uri" Version="4.3.2" />
