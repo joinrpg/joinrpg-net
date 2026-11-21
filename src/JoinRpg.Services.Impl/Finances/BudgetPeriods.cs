@@ -1,5 +1,3 @@
-using JoinRpg.Services.Interfaces;
-
 namespace JoinRpg.Services.Impl.Finances;
 
 internal readonly record struct BudgetPeriod(BudgetPeriodKind Kind, DateOnly Start, DateOnly? ExclusiveEnd);

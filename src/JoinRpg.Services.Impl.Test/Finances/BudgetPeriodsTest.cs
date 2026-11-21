@@ -1,6 +1,5 @@
 using JoinRpg.Services.Impl.Finances;
 using JoinRpg.Services.Interfaces;
-using Shouldly;
 
 namespace JoinRpg.Services.Impl.Test.Finances;
 
