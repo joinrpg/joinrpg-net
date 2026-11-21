@@ -1,14 +1,11 @@
-using JoinRpg.DomainTypes.Notifications;
-using JoinRpg.Interfaces.Notifications;
 using JoinRpg.Services.Interfaces.Notification;
 
 namespace JoinRpg.Services.Impl.Projects;
 
 internal class MasterEmailService(
-    INotificationService notificationService,
+    MastersNotificationService mastersNotificationService,
     IProjectMetadataRepository projectMetadataRepository,
-    IVirtualUsersService virtualUsersService,
-    IUserRepository userRepository
+    IVirtualUsersService virtualUsersService
     )
 {
 
@@ -24,7 +21,7 @@ internal class MasterEmailService(
 Подробности в справке https://docs.joinrpg.ru/project/after.html#auto-close
 
 Не переживайте, закрытый проект всегда можно будет посмотреть, он не пропадет. Если проект завершен или больше не нужен, вы можете закрыть его сами.";
-        await SendToAllMasters(metadata, body, subject, virtualUsersService.RobotUserId);
+        await mastersNotificationService.NotifyAllMasters(metadata, subject, body, virtualUsersService.RobotUserId);
     }
 
     public async Task EmailProjectClosed(ProjectClosedMail email)
@@ -33,7 +30,7 @@ internal class MasterEmailService(
 
         var body = $@"Проект {metadata.ProjectName.Value} был закрыт.";
         var subject = $"{metadata.ProjectName.Value}: проект закрыт";
-        await SendToAllMasters(metadata, body, subject, email.Initiator);
+        await mastersNotificationService.NotifyAllMasters(metadata, subject, body, email.Initiator);
     }
 
     /// <summary>
@@ -44,19 +41,13 @@ internal class MasterEmailService(
     public async Task EmailProjectUnblocked(ProjectUnblockedMail email)
     {
         var metadata = await projectMetadataRepository.GetProjectMetadata(email.ProjectId);
-        var admins = await userRepository.GetAdminUserInfoHeaders();
 
         var body = $@"{email.Initiator.DisplayName.DisplayName} снял(а) блокировку с проекта {metadata.ProjectName.Value}.
 
 Восстановление данных в проекте больше недоступно, заблокировать проект снова нельзя.";
         var subject = $"{metadata.ProjectName.Value}: блокировка снята";
 
-        var masters = metadata.Masters.Select(master => new NotificationRecepient(master)).ToArray();
-        // Админ, который сам мастер проекта, получает одно уведомление — как мастер.
-        var masterIds = masters.Select(m => m.UserId).ToHashSet();
-        var otherAdmins = admins.Where(a => !masterIds.Contains(a.UserId)).Select(a => NotificationRecepient.Admin(a));
-
-        await Send(metadata, body, subject, email.Initiator.UserId, [.. masters, .. otherAdmins]);
+        await mastersNotificationService.NotifyMastersAndAdmins(metadata, subject, body, email.Initiator.UserId);
     }
 
     /// <summary>
@@ -70,17 +61,21 @@ internal class MasterEmailService(
         var body = $@"Ваш проект {metadata.ProjectName.Value} все еще заблокирован после утери данных в октябре. Вам нужно определиться, что делать с вашим проектом. Если он вам больше не нужен, закройте его. Если нужен — воспользуйтесь инструкцией по восстановлению: https://docs.joinrpg.ru/recovery-2026.html. По любым вопросам пишите в https://joinrpg.ru/support";
         var subject = $"{metadata.ProjectName.Value}: проект заблокирован на время восстановления данных";
 
-        await SendToAllMasters(metadata, body, subject, virtualUsersService.RobotUserId);
+        await mastersNotificationService.NotifyAllMasters(metadata, subject, body, virtualUsersService.RobotUserId);
     }
 
-    private Task SendToAllMasters(ProjectInfo metadata, string body, string subject, UserIdentification initiator)
-        => Send(metadata, body, subject, initiator, [.. metadata.Masters.Select(master => new NotificationRecepient(master))]);
-
-    private async Task Send(ProjectInfo metadata, string body, string subject, UserIdentification initiator, NotificationRecepient[] recipients)
+    /// <summary>
+    /// Алерт мастерам, ответственным за финансы проекта: в бюджете не зафиксированы расходы более 5 недель.
+    /// </summary>
+    // TODO[Localize]
+    public async Task EmailBudgetExpensesAlert(BudgetExpensesAlertMail email)
     {
-        var notification = new NotificationEvent(NotificationClass.MasterProject, metadata.ProjectId, subject,
-            new NotificationEventTemplate("Добрый день, %recepient.name%!\n\n" + body), recipients, initiator);
-        await notificationService.QueueNotification(notification);
+        var metadata = await projectMetadataRepository.GetProjectMetadata(email.ProjectId);
+
+        var body = $@"В проекте {metadata.ProjectName.Value} не зафиксированы расходы уже более 5 недель. Если расходы были — проверьте, что они внесены в бюджет проекта: https://joinrpg.ru/{email.ProjectId.Value}/money/expenses";
+        var subject = $"{metadata.ProjectName.Value}: в бюджете не зафиксированы расходы более 5 недель";
+
+        await mastersNotificationService.NotifyMastersWithPermission(metadata, Permission.CanManageMoney, subject, body, virtualUsersService.RobotUserId);
     }
 
     public async Task EmailProjectClosedStale(ProjectClosedStaleMail email)
@@ -89,6 +84,6 @@ internal class MasterEmailService(
 
         var body = $@"Проект {metadata.ProjectName.Value} был закрыт, т.к. он не был активен с {email.LastActiveDate:yyyy-MM-dd}.";
         var subject = $"{metadata.ProjectName.Value}: проект закрыт";
-        await SendToAllMasters(metadata, body, subject, virtualUsersService.RobotUserId);
+        await mastersNotificationService.NotifyAllMasters(metadata, subject, body, virtualUsersService.RobotUserId);
     }
 }

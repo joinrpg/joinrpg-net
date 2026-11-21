@@ -20,7 +20,9 @@ public class BlockedProjectsReminderJobTest
         => new(
             projectRepository,
             metadataRepository,
-            new MasterEmailService(notificationService, metadataRepository, new FakeVirtualUsersService(), new FakeUserRepository()),
+            new MasterEmailService(
+                new MastersNotificationService(notificationService, new FakeUserRepository()),
+                metadataRepository, new FakeVirtualUsersService()),
             new FixedTimeProvider(now),
             Microsoft.Extensions.Logging.Abstractions.NullLogger<BlockedProjectsReminderJob>.Instance);
 

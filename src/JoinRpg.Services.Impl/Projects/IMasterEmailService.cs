@@ -37,3 +37,8 @@ public class ProjectStaleMail : ProjectEmailModelBase
 /// закрыть проект или восстановить данные по инструкции.
 /// </summary>
 public class ProjectBlockedMail : ProjectEmailModelBase;
+
+/// <summary>
+/// Письмо-алерт мастерам с правом на финансы: в бюджете проекта не зафиксированы расходы более 5 недель.
+/// </summary>
+public class BudgetExpensesAlertMail : ProjectEmailModelBase;
