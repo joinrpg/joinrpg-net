@@ -36,7 +36,7 @@ public class ProjectCreateViewModel
     [Display(Name = "Игра на КогдаИгре")]
     public KogdaIgraIdentification? KogdaIgraGameId { get; set; }
 
-    [Display(Name = "Сообщение для редакторов КогдаИгры")]
+    [Display(Name = "Сообщение для редакторов КогдаИгры", Description = "Укажите дату/регион/группу в соцсетях")]
     [StringLength(1000)]
     public string MessageForKogdaIgraEditors { get; set; } = "";
 }
