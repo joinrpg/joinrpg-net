@@ -314,6 +314,81 @@ public class ExpensesPageTest : BunitContext
         expensesClient.Created.PlannedPrice.ShouldBe(1400); // план подставился из факта
     }
 
+    [Fact]
+    public async Task AddAnotherCheckedReopensDialogWithPrefilledFields()
+    {
+        expensesClient.CurrentUser = new UserIdentification(42);
+        var cut = Render<ExpensesPage>(p => p.Add(x => x.ProjectId, ProjectId));
+
+        ClickButton(cut, "Новый расход");
+        var dialog = cut.Find("dialog");
+        dialog.QuerySelectorAll("input[type=text]")[0].Change("Аренда зала");
+        dialog.QuerySelectorAll("input[type=text]")[1].Change("Аренда базы\\Жилые корпуса");
+        SelectMaster(cut, "Иван Мастеров");
+        dialog.QuerySelector("input[type=date]")!.Change("2026-11-01");
+        dialog.QuerySelectorAll("input[type=number]")[2].Change("2"); // факт количество
+        dialog.QuerySelectorAll("input[type=number]")[3].Change("1400"); // факт цена
+        cut.Find("dialog input[type=checkbox]").Change(true); // «Продолжить добавлять расходы»
+
+        await SubmitDialogAsync(cut);
+
+        cut.WaitForAssertion(() => expensesClient.Created.ShouldNotBeNull());
+        // Диалог открылся заново (модель заменена): название и суммы пустые,
+        // мастер/категория/дата скопированы из сохранённого расхода, галочка осталась.
+        cut.WaitForAssertion(() =>
+        {
+            var reopened = cut.Find("dialog");
+            reopened.QuerySelectorAll("input[type=text]")[0].GetAttribute("value").ShouldBeNullOrEmpty(); // название
+            reopened.QuerySelectorAll("input[type=text]")[1].GetAttribute("value").ShouldBe("Аренда базы\\Жилые корпуса"); // категория
+            reopened.QuerySelector("input[type=date]")!.GetAttribute("value").ShouldBe("2026-11-01");
+            foreach (var numberInput in reopened.QuerySelectorAll("input[type=number]"))
+            {
+                numberInput.GetAttribute("value").ShouldBeNullOrEmpty();
+            }
+            reopened.QuerySelector("details.join-select summary .join-select__value")!.TextContent.Trim().ShouldBe("Иван Мастеров");
+            reopened.QuerySelector("input[type=checkbox]")!.HasAttribute("checked").ShouldBeTrue();
+        });
+    }
+
+    [Fact]
+    public async Task AddAnotherUncheckedClosesDialogAfterSave()
+    {
+        var cut = Render<ExpensesPage>(p => p.Add(x => x.ProjectId, ProjectId));
+
+        ClickButton(cut, "Новый расход");
+        var dialog = cut.Find("dialog");
+        dialog.QuerySelectorAll("input[type=text]")[0].Change("Аренда зала");
+        dialog.QuerySelectorAll("input[type=text]")[1].Change("Аренда базы\\Жилые корпуса");
+        SelectMaster(cut, "Иван Мастеров");
+        dialog.QuerySelectorAll("input[type=number]")[2].Change("2");
+        dialog.QuerySelectorAll("input[type=number]")[3].Change("1400");
+
+        await SubmitDialogAsync(cut);
+
+        cut.WaitForAssertion(() => expensesClient.Created.ShouldNotBeNull());
+        // Диалог закрылся: модель не заменялась, введённые данные остались в полях
+        cut.Find("dialog").QuerySelectorAll("input[type=text]")[0].GetAttribute("value").ShouldBe("Аренда зала");
+    }
+
+    [Fact]
+    public async Task EditDoesNotLoopEvenIfAddAnotherLeftChecked()
+    {
+        expensesClient.CurrentUser = new UserIdentification(42);
+        var cut = Render<ExpensesPage>(p => p.Add(x => x.ProjectId, ProjectId));
+
+        ClickButton(cut, "Новый расход");
+        cut.Find("dialog input[type=checkbox]").Change(true);
+        await CancelDialogAsync(cut); // галочка на странице осталась включённой
+
+        ClickEditButton(cut);
+        SelectMaster(cut, "Иван Мастеров"); // в фикстуре MasterId нет — без мастера форма невалидна
+        await SubmitDialogAsync(cut);
+
+        cut.WaitForAssertion(() => expensesClient.Edited.ShouldNotBeNull());
+        // Редактирование не зациклилось: модель не заменялась, название не очищалось
+        cut.Find("dialog").QuerySelectorAll("input[type=text]")[0].GetAttribute("value").ShouldBe("Аренда зала");
+    }
+
     private static string DialogCaption(IRenderedComponent<ExpensesPage> cut)
         => cut.Find(".join-dialog-caption").TextContent.Trim();
 
@@ -397,8 +472,14 @@ public class ExpensesPageTest : BunitContext
             return Task.FromResult(new ExpenseIdentification(projectId, 99));
         }
 
+        /// <summary>Модель последнего вызова <c>EditExpense</c>.</summary>
+        public ExpenseEditViewModel? Edited { get; private set; }
+
         public Task EditExpense(ExpenseIdentification expenseId, ExpenseEditViewModel model)
-            => throw new NotSupportedException();
+        {
+            Edited = model;
+            return Task.CompletedTask;
+        }
 
         public Task SetExpenseActual(ExpenseIdentification expenseId, ExpenseActualDto model)
             => throw new NotSupportedException();

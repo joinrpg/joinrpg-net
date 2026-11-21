@@ -28,7 +28,7 @@ else
             <JoinButton Link="@($"/webapi/{ProjectId.Value}/expenses/export?export=xlsx")" Preset="ButtonPreset.Download" Label="Скачать Excel" />
         </JoinButtonGroup>
     </p>
-    <ExpenseEditDialog @ref="editDialog" ProjectId="ProjectId" CategorySuggestions="categorySuggestions" />
+    <ExpenseEditDialog @ref="editDialog" ProjectId="ProjectId" CategorySuggestions="categorySuggestions" @bind-AddAnother="addAnother" />
 
     <ExpensesGrid Expenses="expenses">
         <RowActions Context="expense">
@@ -77,6 +77,7 @@ else
     private ExpenseEditDialog editDialog = null!;
     private string? loadError;
     private string? actionError;
+    private bool addAnother;
 
     protected override async Task OnInitializedAsync()
     {
@@ -129,7 +130,7 @@ else
             MasterId = currentUser,
             SpentAt = expenses?.MaxBy(expense => expense.SpentAt)?.SpentAt ?? DateOnly.FromDateTime(DateTime.Today),
         };
-        await EditAsync(model, state: null);
+        await EditAsync(model, state: null, isCreate: true);
     }
 
     private async Task StartEdit(ExpenseViewModel expense, bool fillActualFromPlan = false)
@@ -149,10 +150,10 @@ else
             SpentAt = expense.SpentAt,
             Description = expense.Description,
         };
-        await EditAsync(model, expense.State);
+        await EditAsync(model, expense.State, isCreate: false);
     }
 
-    private async Task EditAsync(ExpenseEditViewModel model, ExpenseStateView? state)
+    private async Task EditAsync(ExpenseEditViewModel model, ExpenseStateView? state, bool isCreate)
     {
         while (true)
         {
@@ -168,6 +169,18 @@ else
             StateHasChanged();
             if (saved)
             {
+                if (isCreate && addAnother)
+                {
+                    // Предзаполнение следующего расхода: мастер, категория и дата повторяются,
+                    // название/описание/суммы у каждой покупки свои (спека 2026-11-21)
+                    model = new ExpenseEditViewModel
+                    {
+                        MasterId = result.MasterId,
+                        CategoryPath = result.CategoryPath,
+                        SpentAt = result.SpentAt,
+                    };
+                    continue;
+                }
                 return;
             }
             // Сохранение не удалось — открываем диалог заново с той же моделью:
