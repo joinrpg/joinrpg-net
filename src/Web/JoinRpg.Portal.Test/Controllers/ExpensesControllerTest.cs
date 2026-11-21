@@ -411,6 +411,9 @@ public class ExpensesControllerTest
 
         public Task<IReadOnlyCollection<ExpenseCategoryInfo>> GetCategories(ProjectIdentification projectId)
             => throw new NotSupportedException();
+
+        public Task<bool> HasActualExpensesSince(ProjectIdentification projectId, DateTime cutoffUtc)
+            => throw new NotSupportedException();
     }
 
     private sealed class FakeExpenseService : IExpenseService

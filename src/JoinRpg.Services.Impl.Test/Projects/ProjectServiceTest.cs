@@ -27,8 +27,9 @@ public class ProjectServiceTest : ProjectMetadataServiceTestBase
 #pragma warning restore CA1859
     {
         var currentUser = CreateCurrentUser(currentUserId, isAdmin);
-        var masterEmailService = new MasterEmailService(notifications, metadataRepository, new FakeVirtualUsersService(),
-            FakeUserRepository.WithAdmins([.. admins]));
+        var masterEmailService = new MasterEmailService(
+            new MastersNotificationService(notifications, FakeUserRepository.WithAdmins([.. admins])),
+            metadataRepository, new FakeVirtualUsersService());
 
         return new ProjectService(
             currentUser,
