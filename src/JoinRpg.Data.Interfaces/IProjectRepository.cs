@@ -73,6 +73,13 @@ public interface IProjectRepository : IDisposable
     Task<ProjectShortInfo[]> GetProjectsBySpecification(ProjectListSpecification projectListSpecification);
 
     /// <summary>
+    /// Проверяет, что из БД грузится хотя бы один активный проект. Дешёвая версия
+    /// <see cref="GetProjectsBySpecification(ProjectListSpecification)"/> для health-чеков:
+    /// не строит агрегат дат обновления по всем проектам.
+    /// </summary>
+    Task<bool> HasActiveProjects();
+
+    /// <summary>
     /// Проекты грузятся всегда относительно какого-то пользователя.
     /// Даже в тех местах, где речь не идет про доступ — нужно всегда сортировать «мои» проекты вперед
     /// </summary>

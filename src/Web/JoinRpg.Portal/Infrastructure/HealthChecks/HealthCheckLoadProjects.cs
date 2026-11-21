@@ -13,7 +13,7 @@ public class HealthCheckLoadProjects : IHealthCheck
     {
         try
         {
-            _ = await projectRepository.GetProjectsBySpecification(ProjectListSpecification.Active);
+            _ = await projectRepository.HasActiveProjects();
             return HealthCheckResult.Healthy();
         }
         catch (OperationCanceledException)

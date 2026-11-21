@@ -270,6 +270,8 @@ internal class ProjectRepository(MyDbContext ctx) : GameRepositoryImplBase(ctx),
         return await GetProjectListInternal(filterPredicate);
     }
 
+    Task<bool> IProjectRepository.HasActiveProjects() => AllProjects.AnyAsync(p => p.Active);
+
     private async Task<ProjectShortInfo[]> GetKogdaIgraMissingGames()
     {
         var projection = GetProjectListProjection();

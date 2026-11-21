@@ -176,6 +176,8 @@ public class CharacterControllerCreateTest
 
         public Task<ProjectShortInfo[]> GetProjectsBySpecification(ProjectListSpecification projectListSpecification) => throw new NotSupportedException();
 
+        public Task<bool> HasActiveProjects() => throw new NotSupportedException();
+
         public Task<ProjectPersonalizedInfo[]> GetProjectsByIds(UserIdentification? userId, ProjectIdentification[] ids) => throw new NotSupportedException();
 
         public Task<IReadOnlyCollection<ProjectAdvertisementCandidate>> GetPublicProjectsOpenForHotRoleAdvertisement() => throw new NotSupportedException();
