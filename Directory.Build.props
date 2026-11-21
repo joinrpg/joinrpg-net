@@ -56,13 +56,6 @@
         <TargetFramework>net11.0</TargetFramework>
         <NoWarn>$(NoWarn);NU1507</NoWarn>
 
-        <!--
-        Новые анализаторы .NET 11 (TODO[Net11]): BL0012 (StateHasChanged не нужен), BL0016 (JS interop
-        без try/catch), ASPDEPR011 (UseWebAssemblyDebugging obsolete). Подавлено до разбора правил —
-        разбор и снятие лока: #6264.
-        -->
-        <NoWarn>$(NoWarn);BL0012;BL0016;ASPDEPR011</NoWarn>
-
     </PropertyGroup>
     <!--
     this instruction automatically allows XXX.Test to access internals of XXX.

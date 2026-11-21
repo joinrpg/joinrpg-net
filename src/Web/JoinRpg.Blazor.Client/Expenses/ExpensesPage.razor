@@ -120,10 +120,17 @@ else
     // диалог заново. Остров отрисован без Blazor Router, и NavigationManager тут
     // не годится: NavigateTo перезагрузил бы страницу целиком (замерено, ADR027 §5).
     // Пишем адрес напрямую через history.replaceState: ни событий навигации, ни перезагрузки.
-    private Task CleanCreateParamFromAddress()
+    private async Task CleanCreateParamFromAddress()
     {
         var cleanPath = new Uri(NavigationManager.Uri).AbsolutePath;
-        return Js.InvokeVoidAsync("history.replaceState", null, "", cleanPath).AsTask();
+        try
+        {
+            await Js.InvokeVoidAsync("history.replaceState", null, "", cleanPath).AsTask();
+        }
+        catch (JSDisconnectedException)
+        {
+            // Circuit уже закрыт — чистить адрес некому.
+        }
     }
 
     private static bool HasCreateFlag(string absoluteUri)
