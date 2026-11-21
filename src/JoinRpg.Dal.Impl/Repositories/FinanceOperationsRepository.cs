@@ -96,9 +96,9 @@ internal class FinanceOperationsRepository(MyDbContext ctx) : IFinanceOperations
                 .Where(fo => fo.State == FinanceOperationState.Approved)
                 .Where(fo => fo.MoneyAmount != 0)
                 .Where(fo => fo.OperationDate >= fromDateTime)
-                .Select(fo => new { Date = DateOnly.FromDateTime(fo.OperationDate), fo.MoneyAmount });
+                .Select(fo => new { fo.OperationDate, fo.MoneyAmount });
 
         var result = await query.ToArrayAsync();
-        return [.. result.Select(r => new ApprovedMoneyOperation(r.Date, r.MoneyAmount))];
+        return [.. result.Select(r => new ApprovedMoneyOperation(DateOnly.FromDateTime(r.OperationDate), r.MoneyAmount))];
     }
 }
