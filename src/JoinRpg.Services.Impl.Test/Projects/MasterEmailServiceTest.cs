@@ -10,7 +10,8 @@ public class MasterEmailServiceTest
     private readonly FakeNotificationService notificationService = new();
 
     private MasterEmailService CreateService()
-        => new(notificationService, new FakeProjectMetadataRepository(mock), new FakeVirtualUsersService(), new FakeUserRepository());
+        => new(new MastersNotificationService(notificationService, new FakeUserRepository()),
+            new FakeProjectMetadataRepository(mock), new FakeVirtualUsersService());
 
     [Fact]
     public async Task EmailProjectBlockedReminder_SendsToAllMasters()
