@@ -41,6 +41,12 @@
     <FormRowFor For="@(() => Model.Description)">
         <JoinMarkdownTextArea @bind-Value="Model.Description" />
     </FormRowFor>
+    @if (Model.ExpenseId is null)
+    {
+        <FormRow Label="Продолжить добавлять расходы">
+            <input type="checkbox" checked="@AddAnother" @onchange="OnAddAnotherChanged" />
+        </FormRow>
+    }
 </JoinFormDialog>
 
 @code {
@@ -52,6 +58,13 @@
     /// <summary>Полные пути категорий для подсказок поля «Категория»; <c>null</c> — без подсказок.</summary>
     [Parameter]
     public IReadOnlyCollection<string>? CategorySuggestions { get; set; }
+
+    /// <summary>Состояние галочки «Продолжить добавлять расходы»; хранит страница.</summary>
+    [Parameter]
+    public bool AddAnother { get; set; }
+
+    [Parameter]
+    public EventCallback<bool> AddAnotherChanged { get; set; }
 
     private JoinFormDialog<ExpenseEditViewModel> dialog = null!;
 
@@ -92,4 +105,7 @@
             Model.PlannedPrice = price;
         }
     }
+
+    private async Task OnAddAnotherChanged(ChangeEventArgs eventArgs)
+        => await AddAnotherChanged.InvokeAsync(eventArgs.Value is bool isChecked && isChecked);
 }
