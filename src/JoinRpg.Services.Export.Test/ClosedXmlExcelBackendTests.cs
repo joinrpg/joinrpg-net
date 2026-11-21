@@ -76,7 +76,9 @@ public class ClosedXmlExcelBackendTests
         using var workbook = new XLWorkbook(stream);
         var cell = workbook.Worksheets.First().Cell(2, 1);
         cell.DataType.ShouldBe(XLDataType.Number);
-        cell.GetValue<decimal>().ShouldBe(49.90m);
+        // ClosedXML 0.105 при чтении прогоняет число через double, поэтому точное
+        // decimal-значение с round-trip не восстанавливается (на .NET 11 — в том числе).
+        cell.GetValue<double>().ShouldBe(49.90);
     }
 
     [Fact]

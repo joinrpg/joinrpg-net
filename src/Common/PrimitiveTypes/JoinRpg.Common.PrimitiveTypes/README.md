@@ -8,7 +8,7 @@
 dotnet add package JoinRpg.Common.PrimitiveTypes
 ```
 
-Нужен net10.0. Всё лежит в `JoinRpg.Common.PrimitiveTypes`, кроме `UserInfoHeader` — он в
+Нужен net11.0. Всё лежит в `JoinRpg.Common.PrimitiveTypes`, кроме `UserInfoHeader` — он в
 `JoinRpg.Common.PrimitiveTypes.Users`.
 
 ## Пользователь

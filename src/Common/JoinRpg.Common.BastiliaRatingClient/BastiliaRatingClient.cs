@@ -1,5 +1,3 @@
-using System.Net.Http.Json;
-
 namespace JoinRpg.Common.BastiliaRatingClient;
 
 internal class BastiliaRatingClient(HttpClient httpClient) : IBastiliaRatingClient

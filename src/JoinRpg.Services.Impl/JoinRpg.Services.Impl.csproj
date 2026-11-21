@@ -22,7 +22,6 @@
   <ItemGroup>
     <PackageReference Include="EntityFramework" />
     <PackageReference Include="LinqKit.EntityFramework" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
     <PackageReference Include="Newtonsoft.Json" />
   </ItemGroup>
 </Project>
