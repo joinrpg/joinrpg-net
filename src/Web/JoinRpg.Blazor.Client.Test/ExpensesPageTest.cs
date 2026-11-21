@@ -64,6 +64,43 @@ public class ExpensesPageTest : BunitContext
     }
 
     [Fact]
+    public async Task CreateQueryParamOpensDialogAutomaticallyAndThenCleansAddress()
+    {
+        // Кнопка «Новый расход» на сводке по деньгам ведёт на expenses?create=1
+        var navigationManager = Services.GetRequiredService<NavigationManager>();
+        navigationManager.NavigateTo("http://localhost/1/money/expenses?create=1");
+        var cut = Render<ExpensesPage>(p => p.Add(x => x.ProjectId, ProjectId));
+
+        // Диалог создания открылся без клика: дата предзаполнена, а не пустая
+        var today = DateOnly.FromDateTime(DateTime.Today).ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture);
+        cut.WaitForAssertion(() => cut.Find("dialog input[name=SpentAt]").GetAttribute("value").ShouldBe(today));
+
+        await CancelDialogAsync(cut);
+
+        // Параметр выполнил задачу: адрес очищен через history.replaceState (остров без
+        // Router: NavigationManager.NavigateTo перезагрузил бы страницу)
+        JSInterop.VerifyInvoke("history.replaceState");
+    }
+
+    [Fact]
+    public async Task CreateQueryParamOpensDialogAfterAsyncLoad()
+    {
+        // Регрессия: при живой загрузке первые рендеры — JoinLoadingMessage, диалога в
+        // разметке нет. Автооткрытие не падает с NullReferenceException и дожидается
+        // рендера, где диалог реально есть.
+        expensesClient.AsyncLoad = true;
+        var navigationManager = Services.GetRequiredService<NavigationManager>();
+        navigationManager.NavigateTo("http://localhost/1/money/expenses?create=1");
+        var cut = Render<ExpensesPage>(p => p.Add(x => x.ProjectId, ProjectId));
+
+        var today = DateOnly.FromDateTime(DateTime.Today).ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture);
+        cut.WaitForAssertion(() => cut.Find("dialog input[name=SpentAt]").GetAttribute("value").ShouldBe(today));
+
+        await CancelDialogAsync(cut);
+        JSInterop.VerifyInvoke("history.replaceState");
+    }
+
+    [Fact]
     public async Task EditButtonDoesNotStuckInProgressAfterCancel()
     {
         var cut = Render<ExpensesPage>(p => p.Add(x => x.ProjectId, ProjectId));
@@ -430,6 +467,19 @@ public class ExpensesPageTest : BunitContext
         /// <summary>Все расходы проекта; по умолчанию — из конструктора.</summary>
         public ExpenseViewModel[] Expenses { get; set; } = expenses;
 
+        /// <summary>Имитировать живую сеть: методы загрузки завершаются через yield,
+        /// поэтому OnInitializedAsync страницы не успевает завершиться внутри первого рендера.</summary>
+        public bool AsyncLoad { get; set; }
+
+        private static async Task<T> WithOptionalYield<T>(bool asyncLoad, Func<T> value)
+        {
+            if (asyncLoad)
+            {
+                await Task.Yield();
+            }
+            return value();
+        }
+
         /// <summary>Расходы текущего пользователя; null — совпадают с <c>Expenses</c>.</summary>
         public ExpenseViewModel[]? MyExpenses { get; set; }
 
@@ -440,24 +490,24 @@ public class ExpensesPageTest : BunitContext
         public ExpenseEditViewModel? Created { get; private set; }
 
         public Task<IReadOnlyList<ExpenseViewModel>> GetExpenses(ProjectIdentification projectId)
-            => Task.FromResult<IReadOnlyList<ExpenseViewModel>>(Expenses);
+            => WithOptionalYield(AsyncLoad, () => (IReadOnlyList<ExpenseViewModel>)Expenses);
 
         public Task<IReadOnlyList<ExpenseViewModel>> GetMyExpenses(ProjectIdentification projectId)
-            => Task.FromResult<IReadOnlyList<ExpenseViewModel>>(MyExpenses ?? Expenses);
+            => WithOptionalYield(AsyncLoad, () => (IReadOnlyList<ExpenseViewModel>)(MyExpenses ?? Expenses));
 
         public Task<IReadOnlyCollection<ExpenseCategoryInfo>> GetCategories(ProjectIdentification projectId)
-            => Task.FromResult<IReadOnlyCollection<ExpenseCategoryInfo>>([]);
+            => WithOptionalYield(AsyncLoad, () => (IReadOnlyCollection<ExpenseCategoryInfo>)[]);
 
         /// <summary>Результат <c>CanManageMoney</c>; false — обычный игрок без права на деньги.</summary>
         public bool CanManageMoneyResult { get; set; }
 
-        public Task<bool> CanManageMoney(ProjectIdentification projectId) => Task.FromResult(CanManageMoneyResult);
+        public Task<bool> CanManageMoney(ProjectIdentification projectId) => WithOptionalYield(AsyncLoad, () => CanManageMoneyResult);
 
         public Task<IReadOnlyCollection<string>> GetCategoryPathSuggestions(ProjectIdentification projectId)
-            => Task.FromResult<IReadOnlyCollection<string>>([]);
+            => WithOptionalYield(AsyncLoad, () => (IReadOnlyCollection<string>)[]);
 
         public Task<UserIdentification> GetCurrentUser(ProjectIdentification projectId)
-            => Task.FromResult(CurrentUser);
+            => WithOptionalYield(AsyncLoad, () => CurrentUser);
 
         /// <summary>Исключение, которое бросит <c>CreateExpense</c>; null — сохранение успешно.</summary>
         public ServerProblemException? CreateFailure { get; set; }

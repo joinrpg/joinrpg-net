@@ -1,7 +1,8 @@
 @model JoinRpg.Web.Models.MoneyInfoTotalViewModel
 @using JoinRpg.Common.WebComponents
-@using JoinRpg.Blazor.Client.Expenses
 @using JoinRpg.Common.PrimitiveTypes
+@using JoinRpg.Web.Finances.Expenses
+@inject IExpensesUriLocator ExpensesUriLocator
 
 @{
     ViewBag.Title = "Сводка по деньгам";
@@ -26,8 +27,13 @@
 }))
 
 <h3>
-    Расходы (<a href="@Url.Page("/GamePages/Expenses", new { projectId = Model.ProjectId })">подробнее</a>)
-    @(await Html.RenderComponentAsync<AddExpenseWidget>(RenderMode.WebAssembly, new { ProjectId = new ProjectIdentification(Model.ProjectId) }))
+    Расходы (<a href="@ExpensesUriLocator.GetExpensesUri(new ProjectIdentification(Model.ProjectId))">подробнее</a>)
+    <component type="typeof(JoinButton)"
+               render-mode="Static"
+               param-Link="@(ExpensesUriLocator.GetExpensesUri(new ProjectIdentification(Model.ProjectId)).ToString() + "?create=1")"
+               param-Preset="ButtonPreset.Add"
+               param-Style="VariationStyleEnum.Success"
+               param-Label="@("Новый расход")" />
 </h3>
 
 @if (Model.ExpenseSummary is { } expenseSummary)
