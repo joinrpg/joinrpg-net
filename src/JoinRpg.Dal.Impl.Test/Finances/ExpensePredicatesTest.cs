@@ -28,10 +28,6 @@ public class ExpensePredicatesTest
             data.Add(state, 1, Cutoff.AddDays(1), state == ExpenseState.Approved);
         }
 
-        // Неодобренные состояния с заполненным фактом — всегда false
-        data.Add(ExpenseState.Proposed, 1, Cutoff.AddDays(1), false);
-        data.Add(ExpenseState.Rejected, 1, Cutoff.AddDays(1), false);
-
         // Одобрен, но факт не заполнен
         data.Add(ExpenseState.Approved, null, Cutoff.AddDays(1), false);
 
