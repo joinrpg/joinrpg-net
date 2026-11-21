@@ -1,5 +1,7 @@
 @model JoinRpg.Web.Models.MoneyInfoTotalViewModel
 @using JoinRpg.Common.WebComponents
+@using JoinRpg.Blazor.Client.Expenses
+@using JoinRpg.Common.PrimitiveTypes
 
 @{
     ViewBag.Title = "Сводка по деньгам";
@@ -23,6 +25,11 @@
     ShowTotal = true,
 }))
 
+<h3>
+    Расходы (<a href="@Url.Page("/GamePages/Expenses", new { projectId = Model.ProjectId })">подробнее</a>)
+    @(await Html.RenderComponentAsync<AddExpenseWidget>(RenderMode.WebAssembly, new { ProjectId = new ProjectIdentification(Model.ProjectId) }))
+</h3>
+
 @if (Model.ExpenseSummary is { } expenseSummary)
 {
     @(await Html.RenderComponentAsync<ExpenseSummaryTable>(RenderMode.Static, new
@@ -30,7 +37,6 @@
         Rows = expenseSummary.Rows
             .Select(row => new ExpenseSummaryRowViewModel(row.CategoryPath, row.ApprovedPlannedCost, row.ApprovedActualCost, row.ProposedCost, row.IsTotal))
             .ToArray(),
-        ProjectId = Model.ProjectId,
     }))
 }
 
