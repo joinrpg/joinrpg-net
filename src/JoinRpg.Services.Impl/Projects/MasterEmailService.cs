@@ -59,6 +59,10 @@ internal class MasterEmailService(
         var metadata = await projectMetadataRepository.GetProjectMetadata(email.ProjectId);
 
         var body = $@"Ваш проект {metadata.ProjectName.Value} все еще заблокирован после утери данных в октябре. Вам нужно определиться, что делать с вашим проектом. Если он вам больше не нужен, закройте его. Если нужен — воспользуйтесь инструкцией по восстановлению: https://docs.joinrpg.ru/recovery-2026.html. По любым вопросам пишите в https://joinrpg.ru/support";
+        if (email.GameDatePassed)
+        {
+            body += "\n\nВаш проект автоматически уйдет в архив без возможности восстановления 15 декабря. Если он вам все еще нужен, разблокируйте его до этой даты.";
+        }
         var subject = $"{metadata.ProjectName.Value}: проект заблокирован на время восстановления данных";
 
         await mastersNotificationService.NotifyAllMasters(metadata, subject, body, virtualUsersService.RobotUserId);
