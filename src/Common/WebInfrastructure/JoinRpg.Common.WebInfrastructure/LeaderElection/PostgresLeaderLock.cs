@@ -14,13 +14,10 @@ internal sealed class PostgresLeaderLock : ILeaderLock
 
     public PostgresLeaderLock(string connectionString)
     {
-        // Мы не используем Kerberos-аутентификацию к Postgres, а krb5-библиотек в контейнере нет
-        // (см. https://github.com/npgsql/npgsql/issues/6360) — то же отключение, что в DbContextRegisterHelper.
         // Pooling=false: лок обязан умереть вместе с соединением, а не возвращаться в пул.
         this.connectionString = new NpgsqlConnectionStringBuilder(connectionString)
         {
             Pooling = false,
-            GssEncryptionMode = GssEncryptionMode.Disable,
         }.ConnectionString;
     }
 
