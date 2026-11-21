@@ -139,7 +139,6 @@
     {
         _sortDialogOpen = true;
         _sortDialogRendered = new TaskCompletionSource();
-        StateHasChanged();
         try
         {
             await _sortDialogRendered.Task;

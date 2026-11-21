@@ -32,7 +32,6 @@ public abstract class SettingsPanelBase<TModel> : ComponentBase, IDisposable
         editContext.OnFieldChanged += HandleFieldChanged;
         messageStore = new(editContext);
         formInvalid = !editContext.Validate();
-        StateHasChanged();
     }
 
     private void HandleFieldChanged(object? sender, FieldChangedEventArgs e)
