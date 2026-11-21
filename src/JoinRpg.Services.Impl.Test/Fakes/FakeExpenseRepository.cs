@@ -5,10 +5,11 @@ using JoinRpg.DomainTypes.Finances;
 namespace JoinRpg.Services.Impl.Test.Fakes;
 
 /// <summary>
-/// Чтение категорий расходов поверх коллекции мока (ADR030). Сервис использует
+/// Чтение категорий и расходов поверх коллекции мока (ADR030). Сервис использует
 /// <see cref="GetCategories"/> — для find-or-create пути категории и подсказок путей
-/// (флаг HasActiveDirectExpenses считается по привязанным расходам); методы расходов
-/// сознательно не поддержаны.
+/// (флаг HasActiveDirectExpenses считается по привязанным расходам); <see cref="GetExpenses"/>
+/// маппит расходы в доменные типы по образцу Dal-маппера (ExpenseMapper); методы расходов
+/// по мастеру сознательно не поддержаны.
 /// </summary>
 internal sealed class FakeExpenseRepository(
     IReadOnlyCollection<ExpenseCategory> categories,
@@ -33,7 +34,26 @@ internal sealed class FakeExpenseRepository(
     }
 
     public Task<IReadOnlyCollection<ExpenseInfo>> GetExpenses(ProjectIdentification projectId)
-        => throw new NotSupportedException();
+    {
+        var categoryNames = categories.ToDictionary(c => c.ExpenseCategoryId, c => c.Name);
+        return Task.FromResult<IReadOnlyCollection<ExpenseInfo>>([.. (expenses ?? [])
+            .Where(e => e.ProjectId == projectId.Value)
+            .Select(e => new ExpenseInfo(
+                e.GetId(),
+                e.Name,
+                e.Description,
+                [.. e.CategoryPathIds.Select(id => new ExpenseCategoryBriefInfo(
+                    new ExpenseCategoryIdentification(projectId, id),
+                    categoryNames[id]))],
+                e.PlannedQuantity,
+                e.PlannedPrice,
+                e.ActualQuantity,
+                e.ActualPrice,
+                e.SpentAt is { } spentAt ? DateOnly.FromDateTime(spentAt) : null,
+                e.State,
+                new UserIdentification(e.MasterId),
+                new UserIdentification(e.CreatedById)))]);
+    }
 
     public Task<IReadOnlyCollection<ExpenseInfo>> GetExpensesByMaster(ProjectIdentification projectId, UserIdentification masterId)
         => throw new NotSupportedException();

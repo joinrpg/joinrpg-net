@@ -79,4 +79,26 @@ internal class FinanceOperationsRepository(MyDbContext ctx) : IFinanceOperations
             r.PaymentTypeId is { } paymentTypeId ? new PaymentTypeIdentification(r.ProjectId, paymentTypeId) : null,
             r.OperationDate))];
     }
+
+    /// <summary>
+    /// Все одобренные денежные операции проекта с ненулевой суммой начиная с даты
+    /// </summary>
+    /// <remarks>
+    /// Без фильтра по виду операции: взносы дают положительную сумму, возвраты — отрицательную,
+    /// поэтому суммирование по набору даёт чистый приток денег за период.
+    /// </remarks>
+    public async Task<IReadOnlyCollection<ApprovedMoneyOperation>> GetApprovedMoneyOperations(ProjectIdentification projectId, DateOnly from)
+    {
+        var fromDateTime = from.ToDateTime(TimeOnly.MinValue);
+
+        var query = ctx.Set<FinanceOperation>()
+                .Where(fo => fo.ProjectId == projectId.Value)
+                .Where(fo => fo.State == FinanceOperationState.Approved)
+                .Where(fo => fo.MoneyAmount != 0)
+                .Where(fo => fo.OperationDate >= fromDateTime)
+                .Select(fo => new { fo.OperationDate, fo.MoneyAmount });
+
+        var result = await query.ToArrayAsync();
+        return [.. result.Select(r => new ApprovedMoneyOperation(DateOnly.FromDateTime(r.OperationDate), r.MoneyAmount))];
+    }
 }

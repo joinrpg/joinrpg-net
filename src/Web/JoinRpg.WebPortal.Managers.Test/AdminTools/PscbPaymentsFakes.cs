@@ -272,6 +272,9 @@ internal sealed class FakeFinanceOperationsRepository : IFinanceOperationsReposi
 
     public Task<IReadOnlyCollection<FinanceOperationIdentification>> GetUnfinishedOperations(KeySetPagination? pagination = null)
         => throw new NotImplementedException();
+
+    public Task<IReadOnlyCollection<ApprovedMoneyOperation>> GetApprovedMoneyOperations(ProjectIdentification projectId, DateOnly from)
+        => throw new NotImplementedException();
 }
 
 /// <summary>

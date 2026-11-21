@@ -75,6 +75,7 @@ public static class Services
             .AddTransient<IRespMasterRuleService, RespMasterRuleService>()
             .AddTransient<ExpenseCategoryResolver>()
             .AddTransient<IExpenseService, ExpenseService>()
+            .AddTransient<IBudgetWidgetService, BudgetWidgetService>()
             .AddTransient<IProjectFinanceSettingsService, ProjectFinanceSettingsService>()
             .AddTransient<IAccommodationTypeService, AccommodationTypeService>()
             .AddTransient<IPaymentsService, PaymentsService>()

@@ -8,6 +8,7 @@
     <ProjectReference Include="..\..\JoinRpg.Services.Notifications\JoinRpg.Services.Notifications.csproj" />
     <ProjectReference Include="..\JoinRpg.Web.Accommodation\JoinRpg.Web.Accommodation.csproj" />
     <ProjectReference Include="..\JoinRpg.Web.AdminTools\JoinRpg.Web.AdminTools.csproj" />
+    <ProjectReference Include="..\JoinRpg.Blazor.Client\JoinRpg.Blazor.Client.csproj" />
     <ProjectReference Include="..\JoinRpg.Web.CharacterGroups\JoinRpg.Web.CharacterGroups.csproj" />
     <ProjectReference Include="..\JoinRpg.Web.CheckIn\JoinRpg.Web.CheckIn.csproj" />
     <ProjectReference Include="..\JoinRpg.Web.Comments\JoinRpg.Web.Comments.csproj" />

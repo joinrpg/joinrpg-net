@@ -38,10 +38,14 @@
             </ul>
             Обо всем этом можно поговорить <TelegramLink Link="+QGY9nm81elDmiBX3">в чате</TelegramLink>, а еще там можно обсудить JoinRpg с другими мастерами.
         </p>
+        <BudgetWidget Model="BudgetWidget" />
     </Body>
 </JoinPanel>
 
 @code {
+    [Parameter]
+    public BudgetWidgetModel? BudgetWidget { get; set; }
+
     private static readonly (UserLinkViewModel User, string Role)[] team =
     [
         (Member(1, "#ЛеоЦарев"), "создатель сайта, программист"),
