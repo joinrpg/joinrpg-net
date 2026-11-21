@@ -297,8 +297,17 @@
     /// смена фильтра перезагружала её целиком вместе с фильтрами). Поэтому пишем адрес напрямую
     /// через <c>history.replaceState</c>: ни событий навигации, ни перезагрузки.
     /// </remarks>
-    private Task RewriteUrl()
-        => js.InvokeVoidAsync("history.replaceState", null, "", BuildUrl(export: false)).AsTask();
+    private async Task RewriteUrl()
+    {
+        try
+        {
+            await js.InvokeVoidAsync("history.replaceState", null, "", BuildUrl(export: false));
+        }
+        catch (JSDisconnectedException)
+        {
+            // Circuit уже закрыт — переписывать адрес некому.
+        }
+    }
 
     /// <summary>Ссылка выгрузки: тот же фильтр, что на экране, плюс <c>export=xlsx</c> (ADR027 §5).</summary>
     private string ExportUri => BuildUrl(export: true);

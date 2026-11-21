@@ -51,9 +51,16 @@
             return;
         }
 
-        moduleTask ??= JS.InvokeAsync<IJSObjectReference>("import", "/_content/JoinRpg.Common.WebComponents/printable-badge.js").AsTask();
-        var module = await moduleTask;
-        await module.InvokeVoidAsync("fitBadges", badge);
+        try
+        {
+            moduleTask ??= JS.InvokeAsync<IJSObjectReference>("import", "/_content/JoinRpg.Common.WebComponents/printable-badge.js").AsTask();
+            var module = await moduleTask;
+            await module.InvokeVoidAsync("fitBadges", badge);
+        }
+        catch (JSDisconnectedException)
+        {
+            // Circuit уже закрыт — подгонять шрифт нечего.
+        }
     }
 
     public async ValueTask DisposeAsync()
