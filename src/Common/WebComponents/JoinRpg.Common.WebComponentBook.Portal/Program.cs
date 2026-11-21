@@ -19,11 +19,6 @@ app.UseRouting();
 
 app.UseJoinRequestLogging();
 
-if (app.Environment.IsDevelopment())
-{
-    app.UseWebAssemblyDebugging();
-}
-
 app.UseBlazorFrameworkFiles();
 app.UseStaticFiles();
 

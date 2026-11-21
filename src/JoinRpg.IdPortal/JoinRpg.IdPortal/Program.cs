@@ -7,11 +7,7 @@ using Microsoft.Extensions.Options;
 var app = WebApplication.CreateBuilder(args).ConfigureServices().Build();
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.UseWebAssemblyDebugging();
-}
-else
+if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Error", createScopeForErrors: true);
 }
