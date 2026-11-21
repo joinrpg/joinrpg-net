@@ -89,6 +89,7 @@ public static class Services
             .AddTransient<IAccommodationNotificationService, AccommodationNotificationService>()
             .AddTransient<AccommodationNotificationTextBuilder>()
             .AddTransient<ForumNotificationService>()
+            .AddTransient<MastersNotificationService>()
             .AddTransient<MasterEmailService>()
             .AddTransient<ClaimNotificationTextBuilder>()
             .AddTransient<SubscribeCalculator>()
