@@ -24,13 +24,13 @@ public class BudgetWidgetTest : BunitContext
     {
         var cut = Render<BudgetWidget>(p => p.Add(x => x.Model, Model));
 
-        cut.Markup.ShouldContain("Бюджет Joinrpg");
+        cut.Markup.ShouldContain("Бюджет JoinRpg");
         cut.Markup.ShouldContain("Октябрь 2026");
         cut.Markup.ShouldContain("Сентябрь 2026");
         cut.Markup.ShouldContain("С начала 2026");
         cut.Markup.ShouldContain("2025");
-        cut.Markup.ShouldContain("Доход");
-        cut.Markup.ShouldContain("Расход");
+        cut.Markup.ShouldContain("Донаты и другие доходы");
+        cut.Markup.ShouldContain("Хостинг и другие расходы");
         cut.Markup.ShouldContain("Итог");
 
         // суммы захардкожены (неразрывный пробел U+00A0 — разделитель тысяч ru-RU):
