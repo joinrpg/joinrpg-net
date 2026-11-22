@@ -4,6 +4,8 @@
 
 ## Не выпущено
 
+## 2026.9.760 — 2026-11-22
+
 ### Изменено
 - Сгенерированный код рассчитан на `JoinRpg.Common.PrimitiveTypes` с TFM `net11.0`: потребляющий проект должен таргетить `net11.0`. Сам генератор по-прежнему собирается под `netstandard2.0` и требует `PrivateAssets="all"`; версию пакета по-прежнему держите равной версии `JoinRpg.Common.PrimitiveTypes`. ([#6213](https://github.com/joinrpg/joinrpg-net/issues/6213))
 

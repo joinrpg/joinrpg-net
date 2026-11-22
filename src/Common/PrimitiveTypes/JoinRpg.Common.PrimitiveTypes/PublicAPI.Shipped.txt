@@ -144,7 +144,7 @@ JoinRpg.Common.PrimitiveTypes.TelegramHtmlString.TelegramHtmlString(string! Cont
 JoinRpg.Common.PrimitiveTypes.TelegramSocialLink
 JoinRpg.Common.PrimitiveTypes.TelegramSocialLink.ChatId.get -> JoinRpg.Common.PrimitiveTypes.TelegramChatId?
 JoinRpg.Common.PrimitiveTypes.TelegramSocialLink.Equals(JoinRpg.Common.PrimitiveTypes.TelegramSocialLink? other) -> bool
-JoinRpg.Common.PrimitiveTypes.TelegramSocialLink.TelegramSocialLink(JoinRpg.Common.PrimitiveTypes.TelegramChatId? chatId, JoinRpg.Common.PrimitiveTypes.PrefferedName? prettyName = null, bool isVerified = false) -> void
+JoinRpg.Common.PrimitiveTypes.TelegramSocialLink.TelegramSocialLink(JoinRpg.Common.PrimitiveTypes.TelegramChatId? chatId, JoinRpg.Common.PrimitiveTypes.PrefferedName? prettyName = null, bool isVerified = true) -> void
 JoinRpg.Common.PrimitiveTypes.TypedEntityIdAttribute
 JoinRpg.Common.PrimitiveTypes.TypedEntityIdAttribute.AdditionalPrefixes.get -> string![]?
 JoinRpg.Common.PrimitiveTypes.TypedEntityIdAttribute.AdditionalPrefixes.set -> void
@@ -454,8 +454,10 @@ static JoinRpg.Common.PrimitiveTypes.TelegramChatId.operator !=(JoinRpg.Common.P
 static JoinRpg.Common.PrimitiveTypes.TelegramChatId.operator ==(JoinRpg.Common.PrimitiveTypes.TelegramChatId? left, JoinRpg.Common.PrimitiveTypes.TelegramChatId? right) -> bool
 static JoinRpg.Common.PrimitiveTypes.TelegramHtmlString.operator !=(JoinRpg.Common.PrimitiveTypes.TelegramHtmlString? left, JoinRpg.Common.PrimitiveTypes.TelegramHtmlString? right) -> bool
 static JoinRpg.Common.PrimitiveTypes.TelegramHtmlString.operator ==(JoinRpg.Common.PrimitiveTypes.TelegramHtmlString? left, JoinRpg.Common.PrimitiveTypes.TelegramHtmlString? right) -> bool
-static JoinRpg.Common.PrimitiveTypes.TelegramSocialLink.FromOptional(long? id, JoinRpg.Common.PrimitiveTypes.PrefferedName? userName, bool isVerified = false) -> JoinRpg.Common.PrimitiveTypes.TelegramSocialLink?
-static JoinRpg.Common.PrimitiveTypes.TelegramSocialLink.FromOptional(string? key, JoinRpg.Common.PrimitiveTypes.PrefferedName? userName, bool isVerified = false) -> JoinRpg.Common.PrimitiveTypes.TelegramSocialLink?
+static JoinRpg.Common.PrimitiveTypes.TelegramSocialLink.FromOptional(long? id, JoinRpg.Common.PrimitiveTypes.PrefferedName? userName, bool isVerified = true) -> JoinRpg.Common.PrimitiveTypes.TelegramSocialLink?
+static JoinRpg.Common.PrimitiveTypes.TelegramSocialLink.FromOptional(long? id, string? userName, bool isVerified = true) -> JoinRpg.Common.PrimitiveTypes.TelegramSocialLink?
+static JoinRpg.Common.PrimitiveTypes.TelegramSocialLink.FromOptional(string? key, JoinRpg.Common.PrimitiveTypes.PrefferedName? userName, bool isVerified = true) -> JoinRpg.Common.PrimitiveTypes.TelegramSocialLink?
+static JoinRpg.Common.PrimitiveTypes.TelegramSocialLink.FromOptional(string? key, string? userName, bool isVerified = true) -> JoinRpg.Common.PrimitiveTypes.TelegramSocialLink?
 static JoinRpg.Common.PrimitiveTypes.TelegramSocialLink.FromUserData(string? externalLoginKey, JoinRpg.Common.PrimitiveTypes.PrefferedName? prettyName) -> JoinRpg.Common.PrimitiveTypes.TelegramSocialLink?
 static JoinRpg.Common.PrimitiveTypes.TelegramSocialLink.Parse(System.ReadOnlySpan<char> value, System.IFormatProvider? provider) -> JoinRpg.Common.PrimitiveTypes.TelegramSocialLink!
 static JoinRpg.Common.PrimitiveTypes.TelegramSocialLink.Parse(string! value, System.IFormatProvider? provider = null) -> JoinRpg.Common.PrimitiveTypes.TelegramSocialLink!

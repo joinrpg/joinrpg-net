@@ -106,6 +106,17 @@ JoinRpg.Common.WebComponents.DateRangeDisplay.HideCurrentYear.get -> bool
 JoinRpg.Common.WebComponents.DateRangeDisplay.HideCurrentYear.set -> void
 JoinRpg.Common.WebComponents.DateRangeDisplay.Start.get -> System.DateOnly
 JoinRpg.Common.WebComponents.DateRangeDisplay.Start.set -> void
+JoinRpg.Common.WebComponents.Dialog.AutoConfirmDialog
+JoinRpg.Common.WebComponents.Dialog.AutoConfirmDialog.AutoConfirmDialog() -> void
+JoinRpg.Common.WebComponents.Dialog.AutoConfirmDialog.Caption.get -> string?
+JoinRpg.Common.WebComponents.Dialog.AutoConfirmDialog.Caption.set -> void
+JoinRpg.Common.WebComponents.Dialog.AutoConfirmDialog.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment!
+JoinRpg.Common.WebComponents.Dialog.AutoConfirmDialog.ChildContent.set -> void
+JoinRpg.Common.WebComponents.Dialog.AutoConfirmDialog.ConfirmAsync() -> System.Threading.Tasks.Task<bool>!
+JoinRpg.Common.WebComponents.Dialog.AutoConfirmDialog.ConfirmButton.get -> JoinRpg.Common.WebComponents.DialogButton!
+JoinRpg.Common.WebComponents.Dialog.AutoConfirmDialog.ConfirmButton.set -> void
+JoinRpg.Common.WebComponents.Dialog.AutoConfirmDialog.Type.get -> JoinRpg.Common.WebComponents.MessageDialogType
+JoinRpg.Common.WebComponents.Dialog.AutoConfirmDialog.Type.set -> void
 JoinRpg.Common.WebComponents.Dialog.JoinDialog
 JoinRpg.Common.WebComponents.Dialog.JoinDialog.Buttons.get -> System.Collections.Generic.IReadOnlyCollection<JoinRpg.Common.WebComponents.DialogButton!>?
 JoinRpg.Common.WebComponents.Dialog.JoinDialog.Buttons.set -> void
@@ -214,7 +225,7 @@ JoinRpg.Common.WebComponents.EnumRadioButtonGroup<TValue>.SelectedValue.get -> T
 JoinRpg.Common.WebComponents.EnumRadioButtonGroup<TValue>.SelectedValue.set -> void
 JoinRpg.Common.WebComponents.EnumRadioButtonGroup<TValue>.SelectedValueChanged.get -> Microsoft.AspNetCore.Components.EventCallback<TValue>
 JoinRpg.Common.WebComponents.EnumRadioButtonGroup<TValue>.SelectedValueChanged.set -> void
-JoinRpg.Common.WebComponents.EnumRadioButtonGroup<TValue>.SelectedValueExpression.get -> System.Linq.Expressions.Expression<System.Func<TValue>!>!
+JoinRpg.Common.WebComponents.EnumRadioButtonGroup<TValue>.SelectedValueExpression.get -> System.Linq.Expressions.Expression<System.Func<TValue>!>?
 JoinRpg.Common.WebComponents.EnumRadioButtonGroup<TValue>.SelectedValueExpression.set -> void
 JoinRpg.Common.WebComponents.EnumRadioButtonGroup<TValue>.Values.get -> System.Collections.Generic.IReadOnlyCollection<TValue>?
 JoinRpg.Common.WebComponents.EnumRadioButtonGroup<TValue>.Values.set -> void
@@ -441,6 +452,26 @@ JoinRpg.Common.WebComponents.JoinDropdownButton.Style.get -> JoinRpg.Common.WebC
 JoinRpg.Common.WebComponents.JoinDropdownButton.Style.set -> void
 JoinRpg.Common.WebComponents.JoinDropdownButton.ToggleContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
 JoinRpg.Common.WebComponents.JoinDropdownButton.ToggleContent.set -> void
+JoinRpg.Common.WebComponents.JoinEditForm
+JoinRpg.Common.WebComponents.JoinEditForm.AdditionalAttributes.get -> System.Collections.Generic.Dictionary<string!, object!>?
+JoinRpg.Common.WebComponents.JoinEditForm.AdditionalAttributes.set -> void
+JoinRpg.Common.WebComponents.JoinEditForm.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment!
+JoinRpg.Common.WebComponents.JoinEditForm.ChildContent.set -> void
+JoinRpg.Common.WebComponents.JoinEditForm.EditContext.get -> Microsoft.AspNetCore.Components.Forms.EditContext?
+JoinRpg.Common.WebComponents.JoinEditForm.EditContext.set -> void
+JoinRpg.Common.WebComponents.JoinEditForm.FormName.get -> string!
+JoinRpg.Common.WebComponents.JoinEditForm.FormName.set -> void
+JoinRpg.Common.WebComponents.JoinEditForm.GateMessage.get -> string?
+JoinRpg.Common.WebComponents.JoinEditForm.GateMessage.set -> void
+JoinRpg.Common.WebComponents.JoinEditForm.JoinEditForm() -> void
+JoinRpg.Common.WebComponents.JoinEditForm.Model.get -> object?
+JoinRpg.Common.WebComponents.JoinEditForm.Model.set -> void
+JoinRpg.Common.WebComponents.JoinEditForm.OnInvalidSubmit.get -> Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.Forms.EditContext>
+JoinRpg.Common.WebComponents.JoinEditForm.OnInvalidSubmit.set -> void
+JoinRpg.Common.WebComponents.JoinEditForm.OnSubmit.get -> Microsoft.AspNetCore.Components.EventCallback
+JoinRpg.Common.WebComponents.JoinEditForm.OnSubmit.set -> void
+JoinRpg.Common.WebComponents.JoinEditForm.OnValidSubmit.get -> Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.Forms.EditContext>
+JoinRpg.Common.WebComponents.JoinEditForm.OnValidSubmit.set -> void
 JoinRpg.Common.WebComponents.JoinErrorMessage
 JoinRpg.Common.WebComponents.JoinErrorMessage.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
 JoinRpg.Common.WebComponents.JoinErrorMessage.ChildContent.set -> void
@@ -588,6 +619,12 @@ JoinRpg.Common.WebComponents.JoinInputNumber<TValue>.ValueChanged.get -> Microso
 JoinRpg.Common.WebComponents.JoinInputNumber<TValue>.ValueChanged.set -> void
 JoinRpg.Common.WebComponents.JoinInputNumber<TValue>.ValueExpression.get -> System.Linq.Expressions.Expression<System.Func<TValue>!>?
 JoinRpg.Common.WebComponents.JoinInputNumber<TValue>.ValueExpression.set -> void
+JoinRpg.Common.WebComponents.JoinInteractiveGate
+JoinRpg.Common.WebComponents.JoinInteractiveGate.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment!
+JoinRpg.Common.WebComponents.JoinInteractiveGate.ChildContent.set -> void
+JoinRpg.Common.WebComponents.JoinInteractiveGate.JoinInteractiveGate() -> void
+JoinRpg.Common.WebComponents.JoinInteractiveGate.Message.get -> string?
+JoinRpg.Common.WebComponents.JoinInteractiveGate.Message.set -> void
 JoinRpg.Common.WebComponents.JoinLoadingMessage
 JoinRpg.Common.WebComponents.JoinLoadingMessage.JoinLoadingMessage() -> void
 JoinRpg.Common.WebComponents.JoinLoadingMessage.Message.get -> string!
@@ -596,10 +633,14 @@ JoinRpg.Common.WebComponents.JoinMarkdownTextArea
 JoinRpg.Common.WebComponents.JoinMarkdownTextArea.AdditionalAttributes.get -> System.Collections.Generic.Dictionary<string!, object!>?
 JoinRpg.Common.WebComponents.JoinMarkdownTextArea.AdditionalAttributes.set -> void
 JoinRpg.Common.WebComponents.JoinMarkdownTextArea.JoinMarkdownTextArea() -> void
+JoinRpg.Common.WebComponents.JoinMarkdownTextArea.MaxLength.get -> int?
+JoinRpg.Common.WebComponents.JoinMarkdownTextArea.MaxLength.set -> void
 JoinRpg.Common.WebComponents.JoinMarkdownTextArea.Placeholder.get -> string?
 JoinRpg.Common.WebComponents.JoinMarkdownTextArea.Placeholder.set -> void
 JoinRpg.Common.WebComponents.JoinMarkdownTextArea.Rows.get -> int
 JoinRpg.Common.WebComponents.JoinMarkdownTextArea.Rows.set -> void
+JoinRpg.Common.WebComponents.JoinMarkdownTextArea.ShowCounter.get -> bool
+JoinRpg.Common.WebComponents.JoinMarkdownTextArea.ShowCounter.set -> void
 JoinRpg.Common.WebComponents.JoinMarkdownTextArea.Value.get -> string!
 JoinRpg.Common.WebComponents.JoinMarkdownTextArea.Value.set -> void
 JoinRpg.Common.WebComponents.JoinMarkdownTextArea.ValueChanged.get -> Microsoft.AspNetCore.Components.EventCallback<string!>
@@ -667,6 +708,8 @@ JoinRpg.Common.WebComponents.JoinPanelWithList<TItem>.JoinPanelWithList() -> voi
 JoinRpg.Common.WebComponents.JoinPanelWithList<TItem>.Variation.get -> JoinRpg.Common.WebComponents.VariationStyleEnum?
 JoinRpg.Common.WebComponents.JoinPanelWithList<TItem>.Variation.set -> void
 JoinRpg.Common.WebComponents.JoinRpgDatePicker
+JoinRpg.Common.WebComponents.JoinRpgDatePicker.EditContext.get -> Microsoft.AspNetCore.Components.Forms.EditContext?
+JoinRpg.Common.WebComponents.JoinRpgDatePicker.EditContext.set -> void
 JoinRpg.Common.WebComponents.JoinRpgDatePicker.JoinRpgDatePicker() -> void
 JoinRpg.Common.WebComponents.JoinRpgDatePicker.Max.get -> System.DateOnly?
 JoinRpg.Common.WebComponents.JoinRpgDatePicker.Max.set -> void
@@ -678,7 +721,11 @@ JoinRpg.Common.WebComponents.JoinRpgDatePicker.Value.get -> System.DateOnly?
 JoinRpg.Common.WebComponents.JoinRpgDatePicker.Value.set -> void
 JoinRpg.Common.WebComponents.JoinRpgDatePicker.ValueChanged.get -> Microsoft.AspNetCore.Components.EventCallback<System.DateOnly?>
 JoinRpg.Common.WebComponents.JoinRpgDatePicker.ValueChanged.set -> void
+JoinRpg.Common.WebComponents.JoinRpgDatePicker.ValueExpression.get -> System.Linq.Expressions.Expression<System.Func<System.DateOnly?>!>?
+JoinRpg.Common.WebComponents.JoinRpgDatePicker.ValueExpression.set -> void
 JoinRpg.Common.WebComponents.JoinRpgTimePicker
+JoinRpg.Common.WebComponents.JoinRpgTimePicker.EditContext.get -> Microsoft.AspNetCore.Components.Forms.EditContext?
+JoinRpg.Common.WebComponents.JoinRpgTimePicker.EditContext.set -> void
 JoinRpg.Common.WebComponents.JoinRpgTimePicker.JoinRpgTimePicker() -> void
 JoinRpg.Common.WebComponents.JoinRpgTimePicker.Name.get -> string!
 JoinRpg.Common.WebComponents.JoinRpgTimePicker.Name.set -> void
@@ -686,6 +733,8 @@ JoinRpg.Common.WebComponents.JoinRpgTimePicker.Value.get -> System.TimeOnly?
 JoinRpg.Common.WebComponents.JoinRpgTimePicker.Value.set -> void
 JoinRpg.Common.WebComponents.JoinRpgTimePicker.ValueChanged.get -> Microsoft.AspNetCore.Components.EventCallback<System.TimeOnly?>
 JoinRpg.Common.WebComponents.JoinRpgTimePicker.ValueChanged.set -> void
+JoinRpg.Common.WebComponents.JoinRpgTimePicker.ValueExpression.get -> System.Linq.Expressions.Expression<System.Func<System.TimeOnly?>!>?
+JoinRpg.Common.WebComponents.JoinRpgTimePicker.ValueExpression.set -> void
 JoinRpg.Common.WebComponents.JoinTableSimple
 JoinRpg.Common.WebComponents.JoinTableSimple.JoinTableSimple() -> void
 JoinRpg.Common.WebComponents.JoinTableSimple.Responsive.get -> bool
@@ -702,12 +751,16 @@ JoinRpg.Common.WebComponents.JoinTextArea.AdditionalAttributes.set -> void
 JoinRpg.Common.WebComponents.JoinTextArea.HasCopyButton.get -> bool
 JoinRpg.Common.WebComponents.JoinTextArea.HasCopyButton.set -> void
 JoinRpg.Common.WebComponents.JoinTextArea.JoinTextArea() -> void
+JoinRpg.Common.WebComponents.JoinTextArea.MaxLength.get -> int?
+JoinRpg.Common.WebComponents.JoinTextArea.MaxLength.set -> void
 JoinRpg.Common.WebComponents.JoinTextArea.Placeholder.get -> string?
 JoinRpg.Common.WebComponents.JoinTextArea.Placeholder.set -> void
 JoinRpg.Common.WebComponents.JoinTextArea.ReadOnly.get -> bool
 JoinRpg.Common.WebComponents.JoinTextArea.ReadOnly.set -> void
 JoinRpg.Common.WebComponents.JoinTextArea.Rows.get -> int
 JoinRpg.Common.WebComponents.JoinTextArea.Rows.set -> void
+JoinRpg.Common.WebComponents.JoinTextArea.ShowCounter.get -> bool
+JoinRpg.Common.WebComponents.JoinTextArea.ShowCounter.set -> void
 JoinRpg.Common.WebComponents.JoinTextArea.Value.get -> string!
 JoinRpg.Common.WebComponents.JoinTextArea.Value.set -> void
 JoinRpg.Common.WebComponents.JoinTextArea.ValueChanged.get -> Microsoft.AspNetCore.Components.EventCallback<string!>
@@ -993,6 +1046,7 @@ override JoinRpg.Common.WebComponents.FormRow.OnInitialized() -> void
 override JoinRpg.Common.WebComponents.FormRowFor<T>.OnParametersSet() -> void
 override JoinRpg.Common.WebComponents.JoinAdminAuthorizeView.OnParametersSet() -> void
 override JoinRpg.Common.WebComponents.JoinButton.OnParametersSet() -> void
+override JoinRpg.Common.WebComponents.JoinEditForm.OnParametersSet() -> void
 override JoinRpg.Common.WebComponents.JoinFormDialog<TViewModel>.OnParametersSetAsync() -> System.Threading.Tasks.Task!
 override JoinRpg.Common.WebComponents.JoinIconHtml.GetHashCode() -> int
 override JoinRpg.Common.WebComponents.JoinInputNumber<TValue>.OnParametersSet() -> void
@@ -1074,6 +1128,8 @@ virtual JoinRpg.Common.WebComponents.UserLinkViewModel.PrintMembers(System.Text.
 ~override JoinRpg.Common.WebComponents.CheckboxInput.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
 ~override JoinRpg.Common.WebComponents.ContactLink.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
 ~override JoinRpg.Common.WebComponents.DateRangeDisplay.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+~override JoinRpg.Common.WebComponents.Dialog.AutoConfirmDialog.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+~override JoinRpg.Common.WebComponents.Dialog.AutoConfirmDialog.OnParametersSet() -> void
 ~override JoinRpg.Common.WebComponents.Dialog.JoinDialog.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
 ~override JoinRpg.Common.WebComponents.Dialog.JoinMessageDialog.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
 ~override JoinRpg.Common.WebComponents.Dialog.JoinMessageIcon.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
@@ -1097,6 +1153,7 @@ virtual JoinRpg.Common.WebComponents.UserLinkViewModel.PrintMembers(System.Text.
 ~override JoinRpg.Common.WebComponents.JoinCollapsePanelGroup.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
 ~override JoinRpg.Common.WebComponents.JoinDotsMenu.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
 ~override JoinRpg.Common.WebComponents.JoinDropdownButton.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+~override JoinRpg.Common.WebComponents.JoinEditForm.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
 ~override JoinRpg.Common.WebComponents.JoinErrorMessage.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
 ~override JoinRpg.Common.WebComponents.JoinFormDialog<TViewModel>.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
 ~override JoinRpg.Common.WebComponents.JoinIcon.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
@@ -1104,6 +1161,7 @@ virtual JoinRpg.Common.WebComponents.UserLinkViewModel.PrintMembers(System.Text.
 ~override JoinRpg.Common.WebComponents.JoinIconHtml.Equals(object obj) -> bool
 ~override JoinRpg.Common.WebComponents.JoinIconHtml.ToString() -> string
 ~override JoinRpg.Common.WebComponents.JoinInputNumber<TValue>.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+~override JoinRpg.Common.WebComponents.JoinInteractiveGate.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
 ~override JoinRpg.Common.WebComponents.JoinLoadingMessage.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
 ~override JoinRpg.Common.WebComponents.JoinMarkdownTextArea.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
 ~override JoinRpg.Common.WebComponents.JoinMenuHeader.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
@@ -1113,7 +1171,9 @@ virtual JoinRpg.Common.WebComponents.UserLinkViewModel.PrintMembers(System.Text.
 ~override JoinRpg.Common.WebComponents.JoinPanel.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
 ~override JoinRpg.Common.WebComponents.JoinPanelWithList<TItem>.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
 ~override JoinRpg.Common.WebComponents.JoinRpgDatePicker.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+~override JoinRpg.Common.WebComponents.JoinRpgDatePicker.OnParametersSet() -> void
 ~override JoinRpg.Common.WebComponents.JoinRpgTimePicker.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+~override JoinRpg.Common.WebComponents.JoinRpgTimePicker.OnParametersSet() -> void
 ~override JoinRpg.Common.WebComponents.JoinTableSimple.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
 ~override JoinRpg.Common.WebComponents.JoinTestComponent.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
 ~override JoinRpg.Common.WebComponents.JoinTextArea.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void

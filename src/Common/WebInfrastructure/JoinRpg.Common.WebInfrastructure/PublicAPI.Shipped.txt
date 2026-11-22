@@ -1,4 +1,5 @@
 #nullable enable
+JoinRpg.Common.WebInfrastructure.AnonymousRateLimiterExtensions
 JoinRpg.Common.WebInfrastructure.AppVersionInfo
 JoinRpg.Common.WebInfrastructure.AppVersionInfo.AppVersionInfo(JoinRpg.Common.WebInfrastructure.AppVersionInfo! original) -> void
 JoinRpg.Common.WebInfrastructure.AppVersionInfo.AppVersionInfo(string! Version, string? CommitSha, System.Uri? CommitUrl) -> void
@@ -82,6 +83,9 @@ JoinRpg.Common.WebInfrastructure.JoinRpgHostNamesOptions.MainHost.get -> string!
 JoinRpg.Common.WebInfrastructure.JoinRpgHostNamesOptions.MainHost.set -> void
 JoinRpg.Common.WebInfrastructure.JoinRpgHostNamesOptions.RatingHost.get -> string!
 JoinRpg.Common.WebInfrastructure.JoinRpgHostNamesOptions.RatingHost.set -> void
+JoinRpg.Common.WebInfrastructure.LeaderElection.ILeaderElectedService
+JoinRpg.Common.WebInfrastructure.LeaderElection.ILeaderElectedService.ExecuteAsync(System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task!
+JoinRpg.Common.WebInfrastructure.LeaderElection.LeaderElectedRegistration
 JoinRpg.Common.WebInfrastructure.Logging.Filters.SerilogMvcFilter
 JoinRpg.Common.WebInfrastructure.Logging.Filters.SerilogMvcFilter.OnActionExecuted(Microsoft.AspNetCore.Mvc.Filters.ActionExecutedContext! context) -> void
 JoinRpg.Common.WebInfrastructure.Logging.Filters.SerilogMvcFilter.OnActionExecuting(Microsoft.AspNetCore.Mvc.Filters.ActionExecutingContext! context) -> void
@@ -119,6 +123,8 @@ override JoinRpg.Common.WebInfrastructure.AppVersionInfo.ToString() -> string!
 override JoinRpg.Common.WebInfrastructure.ErrorSupportInfo.Equals(object? obj) -> bool
 override JoinRpg.Common.WebInfrastructure.ErrorSupportInfo.GetHashCode() -> int
 override JoinRpg.Common.WebInfrastructure.ErrorSupportInfo.ToString() -> string!
+static JoinRpg.Common.WebInfrastructure.AnonymousRateLimiterExtensions.AddJoinAnonymousRateLimiter(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, Microsoft.Extensions.Configuration.IConfiguration! configuration) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static JoinRpg.Common.WebInfrastructure.AnonymousRateLimiterExtensions.UseJoinAnonymousRateLimiter(this Microsoft.AspNetCore.Builder.IApplicationBuilder! builder) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
 static JoinRpg.Common.WebInfrastructure.AppVersionInfo.Current.get -> JoinRpg.Common.WebInfrastructure.AppVersionInfo!
 static JoinRpg.Common.WebInfrastructure.AppVersionInfo.Parse(string? informationalVersion, string? repositoryUrl) -> JoinRpg.Common.WebInfrastructure.AppVersionInfo!
 static JoinRpg.Common.WebInfrastructure.AppVersionInfo.operator !=(JoinRpg.Common.WebInfrastructure.AppVersionInfo? left, JoinRpg.Common.WebInfrastructure.AppVersionInfo? right) -> bool
@@ -130,6 +136,7 @@ static JoinRpg.Common.WebInfrastructure.Auth.ClaimsPrincipalExtensions.TryGetJoi
 static JoinRpg.Common.WebInfrastructure.DataProtectionRegistration.AddJoinDataProtection(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, Microsoft.Extensions.Configuration.IConfiguration! configuration, Microsoft.AspNetCore.Hosting.IWebHostEnvironment! environment, string! appName, string! connectionStringName) -> void
 static JoinRpg.Common.WebInfrastructure.DataProtectionRegistration.AddJoinDataProtection<TContext>(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, string! appName) -> void
 static JoinRpg.Common.WebInfrastructure.EfCoreMigration.EfCoreMigrationExtensions.AddMigrationsLauncher(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static JoinRpg.Common.WebInfrastructure.EfCoreMigration.EfCoreMigrationExtensions.RegisterMigrator<TContext>(this Microsoft.AspNetCore.Builder.WebApplicationBuilder! builder, string! connectionStringName, System.Action<Microsoft.EntityFrameworkCore.DbContextOptionsBuilder!>? optionsBuilder = null) -> void
 static JoinRpg.Common.WebInfrastructure.EfCoreMigration.EfCoreMigrationExtensions.RegisterMigrator<TContext>(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, Microsoft.Extensions.Configuration.IConfiguration! configuration, Microsoft.Extensions.Hosting.IHostEnvironment! environment, string! connectionStringName, System.Action<Microsoft.EntityFrameworkCore.DbContextOptionsBuilder!>? optionsBuilder = null) -> void
 static JoinRpg.Common.WebInfrastructure.ErrorPageReExecuteExtensions.UseErrorPageReExecuteAsGet(this Microsoft.AspNetCore.Builder.IApplicationBuilder! app) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
 static JoinRpg.Common.WebInfrastructure.ErrorSupportInfo.FromHttpContext(Microsoft.AspNetCore.Http.HttpContext! httpContext) -> JoinRpg.Common.WebInfrastructure.ErrorSupportInfo!
@@ -141,6 +148,8 @@ static JoinRpg.Common.WebInfrastructure.HealthCheckExtensions.MapJoinHealthCheck
 static JoinRpg.Common.WebInfrastructure.HostRuntimeStartWaiter.WaitForAppStartup(this Microsoft.Extensions.Hosting.IHostApplicationLifetime! lifetime, System.Threading.CancellationToken stoppingToken) -> System.Threading.Tasks.Task!
 static JoinRpg.Common.WebInfrastructure.HtmlSanitizersRegistration.AddJoinHtmlSanitizers(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
 static JoinRpg.Common.WebInfrastructure.Job.MidnightJobsRegistration.AddMidnightJobs(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static JoinRpg.Common.WebInfrastructure.LeaderElection.LeaderElectedRegistration.AddLeaderElectedHostedService<TService>(this Microsoft.AspNetCore.Builder.WebApplicationBuilder! builder, string? lockKey = null, string! connectionStringName = "DataProtection", System.TimeSpan? retryDelay = null) -> void
+static JoinRpg.Common.WebInfrastructure.LeaderElection.LeaderElectedRegistration.AddLeaderElectedHostedService<TService>(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, Microsoft.Extensions.Configuration.IConfiguration! configuration, string? lockKey = null, string! connectionStringName = "DataProtection", System.TimeSpan? retryDelay = null) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
 static JoinRpg.Common.WebInfrastructure.LoggingExtensions.UseJoinRequestLogging(this Microsoft.AspNetCore.Builder.IApplicationBuilder! app) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
 static JoinRpg.Common.WebInfrastructure.LoggingExtensions.UseJoinSerilog(this Microsoft.Extensions.Hosting.IHostBuilder! host, string! appname) -> Microsoft.Extensions.Hosting.IHostBuilder!
 static JoinRpg.Common.WebInfrastructure.OpenTelemetryRegistration.AddJoinOpenTelemetry(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, string! serviceName, params System.Collections.Generic.IEnumerable<string!>! sourceNames) -> void
