@@ -151,3 +151,6 @@ UpgradeLog*.htm
 
 *.received.*
 *.received/
+
+# Временные файлы Verify (снапшот-тесты)
+*.verified.txt.swp
