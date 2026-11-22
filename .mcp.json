@@ -4,7 +4,7 @@
       "command": "dotnet",
       "args": ["tool", "run", "cwm-roslyn-navigator"],
       "env": {
-        "DOTNET_ROLL_FORWARD": "Major"
+        "DOTNET_ROLL_FORWARD": "LatestMajor"
       }
     }
   }
