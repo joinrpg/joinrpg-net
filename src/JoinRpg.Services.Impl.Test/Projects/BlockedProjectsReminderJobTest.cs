@@ -86,6 +86,52 @@ public class BlockedProjectsReminderJobTest
     }
 
     [Fact]
+    public async Task RunOnce_Tuesday_AppendsArchiveWarningOnlyForPassedGameDate()
+    {
+        var mocks = new[] { CreateBlockedProject(1), CreateBlockedProject(2), CreateBlockedProject(3) };
+        var job = CreateJob(
+            new FakeProjectRepository
+            {
+                BlockedProjects =
+                [
+                    new() { ProjectId = 1, ProjectName = "Прошедшая", LastUpdated = DateTime.UtcNow, KogdaIgraGameDate = Tuesday.AddDays(-1).DateTime },
+                    new() { ProjectId = 2, ProjectName = "Будущая", LastUpdated = DateTime.UtcNow, KogdaIgraGameDate = Tuesday.AddDays(1).DateTime },
+                    new() { ProjectId = 3, ProjectName = "БезКИ", LastUpdated = DateTime.UtcNow },
+                ],
+            },
+            new StubMetadataRepository(id => Task.FromResult(mocks.Single(m => m.Project.ProjectId == id.Value).ProjectInfo)),
+            Tuesday);
+
+        await job.RunOnce(CancellationToken.None);
+
+        notificationService.Queued.Count.ShouldBe(3);
+        notificationService.Queued.Single(n => n.EntityReference!.Equals(new ProjectIdentification(1)))
+            .TemplateText.TemplateContents.ShouldContain("уйдет в архив без возможности восстановления 15 декабря");
+        notificationService.Queued.Single(n => n.EntityReference!.Equals(new ProjectIdentification(2)))
+            .TemplateText.TemplateContents.ShouldNotContain("уйдет в архив");
+        notificationService.Queued.Single(n => n.EntityReference!.Equals(new ProjectIdentification(3)))
+            .TemplateText.TemplateContents.ShouldNotContain("уйдет в архив");
+    }
+
+    [Fact]
+    public async Task RunOnce_Tuesday_GameDateToday_NoArchiveWarning()
+    {
+        var mock = CreateBlockedProject(1);
+        var job = CreateJob(
+            new FakeProjectRepository
+            {
+                BlockedProjects = [new() { ProjectId = 1, ProjectName = "Сегодня", LastUpdated = DateTime.UtcNow, KogdaIgraGameDate = Tuesday.DateTime }],
+            },
+            new StubMetadataRepository(_ => Task.FromResult(mock.ProjectInfo)),
+            Tuesday);
+
+        await job.RunOnce(CancellationToken.None);
+
+        notificationService.Queued.ShouldHaveSingleItem()
+            .TemplateText.TemplateContents.ShouldNotContain("уйдет в архив");
+    }
+
+    [Fact]
     public async Task RunOnce_Tuesday_FailureOnOneProject_StillSendsForOthers()
     {
         var blocked = CreateBlockedProject(2);

@@ -55,6 +55,25 @@ public class MasterEmailServiceTest
         });
     }
 
+    /// <summary>Снапшот итогового текста (ADR003): ловит баги интерполяции, которые ShouldContain не видит.</summary>
+    [Fact]
+    public async Task EmailProjectBlockedReminder_GameDatePassed_TextSnapshot()
+    {
+        mock.Project.IsBlocked = true;
+        mock.ReInitProjectInfo();
+
+        await CreateService().EmailProjectBlockedReminder(new() { ProjectId = new(mock.Project.ProjectId), GameDatePassed = true });
+
+        var letter = notificationService.Queued.ShouldHaveSingleItem();
+        letter.TemplateText.TemplateContents.ShouldContain(
+            "Ваш проект автоматически уйдет в архив без возможности восстановления 15 декабря. Если он вам все еще нужен, разблокируйте его до этой даты.");
+        await Verify(new
+        {
+            letter.Header,
+            Text = letter.TemplateText.TemplateContents,
+        });
+    }
+
     [Fact]
     public async Task EmailBudgetExpensesAlert_SendsOnlyToFinanceAdmins()
     {

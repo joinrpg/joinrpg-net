@@ -24,6 +24,8 @@ internal class BlockedProjectsReminderJob(
         var blockedProjects = await projectRepository.GetBlockedProjects();
         logger.LogInformation("Найдено {count} заблокированных проектов для еженедельного напоминания", blockedProjects.Count);
 
+        var today = DateOnly.FromDateTime(timeProvider.GetUtcNow().DateTime);
+
         foreach (var project in blockedProjects)
         {
             cancellationToken.ThrowIfCancellationRequested();
@@ -37,7 +39,11 @@ internal class BlockedProjectsReminderJob(
                     logger.LogInformation("Проект {projectId} в статусе {status} вместо Blocked, пропускаем", project.ProjectId, metadata.ProjectStatus);
                     continue;
                 }
-                await masterEmailService.EmailProjectBlockedReminder(new() { ProjectId = metadata.ProjectId });
+                await masterEmailService.EmailProjectBlockedReminder(new()
+                {
+                    ProjectId = metadata.ProjectId,
+                    GameDatePassed = project.KogdaIgraGameDate is { } gameDate && DateOnly.FromDateTime(gameDate) < today,
+                });
             }
             catch (Exception ex) when (ex is not OperationCanceledException)
             {

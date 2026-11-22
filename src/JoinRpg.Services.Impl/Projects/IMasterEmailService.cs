@@ -36,7 +36,14 @@ public class ProjectStaleMail : ProjectEmailModelBase
 /// Еженедельное напоминание мастерам заблокированного проекта (ADR023) определиться с его судьбой:
 /// закрыть проект или восстановить данные по инструкции.
 /// </summary>
-public class ProjectBlockedMail : ProjectEmailModelBase;
+public class ProjectBlockedMail : ProjectEmailModelBase
+{
+    /// <summary>
+    /// Игра по КогдаИгре уже прошла: в письмо добавляется предупреждение,
+    /// что проект автоматически уйдёт в архив без возможности восстановления.
+    /// </summary>
+    public bool GameDatePassed { get; set; }
+}
 
 /// <summary>
 /// Письмо-алерт мастерам с правом на финансы: в предыдущем календарном месяце не зафиксированы расходы.
