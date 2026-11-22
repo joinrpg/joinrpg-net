@@ -130,6 +130,9 @@ internal static class SmokeExpectations
 
             // В сиде расписание не настроено, а подписке на календарь без расписания честнее 404 (#5266).
             ["{projectId}/schedule/ical"] = HttpStatusCode.NotFound,
+
+            // Страница-редирект на якорь виджета бюджета на /about.
+            ["About/Budget"] = HttpStatusCode.Redirect,
         };
 
     public static HttpStatusCode ExpectedStatusFor(SmokeEndpoint endpoint)
