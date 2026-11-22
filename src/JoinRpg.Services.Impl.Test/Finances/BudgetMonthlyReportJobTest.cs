@@ -42,8 +42,8 @@ public class BudgetMonthlyReportJobTest
         widgetService.WasCalled.ShouldBeTrue();
         telegramService.LastChatId.ShouldBe(new TelegramChatId(TestChatId));
         telegramService.LastMessage.ShouldNotBeNull();
-        telegramService.LastMessage!.Contents.ShouldContain("за Октябрь 2026 года.");
-        telegramService.LastMessage.Contents.ShouldContain("За весь 2026 год");
+        telegramService.LastMessage!.Contents.ShouldContain("За октябрь 2026:");
+        telegramService.LastMessage.Contents.ShouldContain("За весь 2026 год:");
     }
 
     [Fact]
@@ -69,8 +69,8 @@ public class BudgetMonthlyReportJobTest
         await job.RunOnce(CancellationToken.None);
 
         telegramService.LastMessage.ShouldNotBeNull();
-        telegramService.LastMessage!.Contents.ShouldContain("за Октябрь 2026 года.");
-        telegramService.LastMessage.Contents.ShouldContain("За весь 2026 год");
+        telegramService.LastMessage!.Contents.ShouldContain("За октябрь 2026:");
+        telegramService.LastMessage.Contents.ShouldContain("За весь 2026 год:");
     }
 
     private static BudgetMonthlyReportJob CreateJob(

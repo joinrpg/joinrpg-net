@@ -60,6 +60,7 @@ public class Startup(WebApplicationBuilder builder)
             .Configure<JoinRpgHostNamesOptions>(Configuration.GetSection("JoinRpgHostNames"))
             .Configure<TelegramLoginOptions>(Configuration.GetSection("Telegram"))
             .Configure<BudgetOptions>(Configuration.GetSection("Budget"))
+            .Configure<BudgetMonthlyReportOptions>(Configuration.GetSection("BudgetMonthlyReport"))
             .Configure<DrpOptions>(Configuration.GetSection("Drp"))
             .Configure<RoleTimeOptions>(Configuration.GetSection("RoleTime"))
             .Configure<KogdaIgraOptions>(Configuration.GetSection("KogdaIgra"));
@@ -76,10 +77,6 @@ public class Startup(WebApplicationBuilder builder)
 
         services.AddOptions<PostboxOptions>().BindConfiguration("Postbox");
         services.AddOptions<BastiliaRatingOptions>().BindConfiguration("BastiliaRating");
-        // TelegramChatId — типизированный идентификатор, конфигурация читает его как long
-        services.AddOptions<BudgetMonthlyReportOptions>().Configure<IConfiguration>(
-            (options, configuration) =>
-                options.TelegramChatId = new TelegramChatId(configuration.GetValue<long>("BudgetMonthlyReport:TelegramChatId")));
 
         services
             .AddKogdaIgra()

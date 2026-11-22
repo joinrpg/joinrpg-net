@@ -1,8 +1,7 @@
 namespace JoinRpg.Interfaces;
 
 /// <summary>Настройки джобы ежемесячного финансового отчёта в Telegram (секция "BudgetMonthlyReport").
-/// Биндинг — вручную в Startup (см. конфигурацию BudgetMonthlyReportOptions): TelegramChatId — типизированный
-/// идентификатор, из конфигурации читается как long.</summary>
+/// TelegramChatId читается биндером конфигурации через TypeConverter (см. TypedEntityId).</summary>
 public record class BudgetMonthlyReportOptions
 {
     /// <summary>Chat id Telegram-канала для отчёта (отрицательный для каналов/супергрупп).</summary>
