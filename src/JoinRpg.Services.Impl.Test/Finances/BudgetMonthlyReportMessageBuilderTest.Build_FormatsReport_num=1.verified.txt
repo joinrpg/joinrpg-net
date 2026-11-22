@@ -1,5 +1,7 @@
-﻿День добрый, с вами ежемесячный отчёт о бюджете JoinRpg.
-За октябрь 2026: донаты и другие доходы 100 000₽, хостинг и другие расходы 60 000₽, итого 40 000₽ профицит.
-За весь 2026 год: донаты и другие доходы 500 000₽, хостинг и другие расходы 300 000₽, итого 200 000₽ профицит.
-Подробности можно узнать на <a href="https://joinrpg.ru/about/budget">joinrpg.ru/about/budget</a>
-<em>Подпись @joinrpg : принимаем донаты (<a href="https://joinrpg.ru/about/donate">https://joinrpg.ru/about/donate</a>) : отвечаем в поддержке (<a href="https://joinrpg.ru/support">https://joinrpg.ru/support</a>)</em>
+День добрый, с вами ежемесячный отчёт <a href="https://joinrpg.ru/about/budget">о бюджете</a> JoinRpg.
+
+За октябрь 2026: донаты и другие доходы 100 000₽, хостинг и другие расходы 60 000₽, <strong>итого 40 000₽ профицит</strong>.
+
+За весь 2026 год: донаты и другие доходы 500 000₽, хостинг и другие расходы 300 000₽, <strong>итого 200 000₽ профицит</strong>.
+
+<em>@joinrpg : <a href="https://joinrpg.ru/about/donate">принимаем донаты</a> : <a href="https://joinrpg.ru/support">отвечаем в поддержке</a></em>
