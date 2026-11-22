@@ -82,7 +82,7 @@ public class BudgetMonthlyReportJobTest
             widgetService,
             telegramService,
             Options.Create(new BudgetOptions { Project = new ProjectIdentification(183) }),
-            Options.Create(new BudgetMonthlyReportOptions { TelegramChatId = TestChatId, Schedule = schedule }),
+            Options.Create(new BudgetMonthlyReportOptions { TelegramChatId = new TelegramChatId(TestChatId), Schedule = schedule }),
             new FixedTimeProvider(now),
             NullLogger<BudgetMonthlyReportJob>.Instance);
 

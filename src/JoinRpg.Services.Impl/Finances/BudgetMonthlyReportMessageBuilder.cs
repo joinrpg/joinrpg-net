@@ -25,11 +25,12 @@ internal static class BudgetMonthlyReportMessageBuilder
         return new TelegramHtmlString(text);
     }
 
-    // ICU на Linux (CI) даёт типографский минус U+2212 и неразрывные пробелы в разделителе
-    // тысяч — нормализуем в ASCII, чтобы вывод был стабилен (по образцу BudgetWidget.razor).
+    // Разделитель тысяч из ICU (на Linux CI это неразрывные пробелы) нормализуем в обычные,
+    // а минус — в типографский U+2212: в сообщении канала он лучше смотрится (по образцу
+    // BudgetWidget.razor, только нормализация минуса в другую сторону).
     private static string FormatMoney(decimal value) => value
         .ToString("#,0.##", RussianCulture)
-        .Replace('−', '-')
+        .Replace('-', '−')
         .Replace('\u00A0', ' ')
         .Replace(' ', ' ');
 

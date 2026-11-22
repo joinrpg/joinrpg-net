@@ -39,7 +39,7 @@ internal class BudgetMonthlyReportJob(
         logger.LogInformation("Отправляем ежемесячный финансовый отчёт ({month:yyyy-MM}) в Telegram-канал {chatId}",
             month.Start, options.TelegramChatId);
         await telegramNotificationService.SendTelegramNotification(
-            new TelegramChatId(options.TelegramChatId),
+            options.TelegramChatId,
             BudgetMonthlyReportMessageBuilder.Build(month, yearToDate));
     }
 }
