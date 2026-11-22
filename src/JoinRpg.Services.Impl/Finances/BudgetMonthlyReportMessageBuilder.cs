@@ -10,17 +10,17 @@ internal static class BudgetMonthlyReportMessageBuilder
 {
     private static readonly CultureInfo RussianCulture = CultureInfo.GetCultureInfo("ru-RU");
 
+    // TODO[Localize]: видимые пользователю строки живут в сервисном слое
     public static TelegramHtmlString Build(BudgetPeriodSums month, BudgetPeriodSums yearToDate)
     {
         var monthTitle = month.Start.ToString("MMMM yyyy", RussianCulture);
         var year = yearToDate.Start.Year;
 
         var text =
-            "День добрый, с вами ежемесячный отчёт о бюджете JoinRpg.\n" +
-            $"За {monthTitle}: донаты и другие доходы {FormatMoney(month.Income)}₽, хостинг и другие расходы {FormatMoney(month.Expense)}₽, итого {FormatMoney(Total(month))}₽ {ProfitWord(Total(month))}.\n" +
-            $"За весь {year} год: донаты и другие доходы {FormatMoney(yearToDate.Income)}₽, хостинг и другие расходы {FormatMoney(yearToDate.Expense)}₽, итого {FormatMoney(Total(yearToDate))}₽ {ProfitWord(Total(yearToDate))}.\n" +
-            "Подробности можно узнать на <a href=\"https://joinrpg.ru/about/budget\">joinrpg.ru/about/budget</a>\n" +
-            "<em>Подпись @joinrpg : принимаем донаты (<a href=\"https://joinrpg.ru/about/donate\">https://joinrpg.ru/about/donate</a>) : отвечаем в поддержке (<a href=\"https://joinrpg.ru/support\">https://joinrpg.ru/support</a>)</em>";
+            "День добрый, с вами ежемесячный отчёт <a href=\"https://joinrpg.ru/about/budget\">о бюджете</a> JoinRpg.\n\n" +
+            $"За {monthTitle}: донаты и другие доходы {FormatMoney(month.Income)}₽, хостинг и другие расходы {FormatMoney(month.Expense)}₽, <strong>итого {FormatMoney(Total(month))}₽ {ProfitWord(Total(month))}</strong>.\n\n" +
+            $"За весь {year} год: донаты и другие доходы {FormatMoney(yearToDate.Income)}₽, хостинг и другие расходы {FormatMoney(yearToDate.Expense)}₽, <strong>итого {FormatMoney(Total(yearToDate))}₽ {ProfitWord(Total(yearToDate))}</strong>.\n\n" +
+            "<em>@joinrpg : <a href=\"https://joinrpg.ru/about/donate\">принимаем донаты</a> : <a href=\"https://joinrpg.ru/support\">отвечаем в поддержке</a></em>";
 
         return new TelegramHtmlString(text);
     }
