@@ -4,6 +4,8 @@
 
 ## Не выпущено
 
+## 2026.9.760 — 2026-11-22
+
 ### Добавлено
 - `AddJoinAnonymousRateLimiter(configuration)` + `UseJoinAnonymousRateLimiter()`: глобальный concurrency-лимитер анонимных запросов — сверх лимита анонимный запрос получает быстрый 429 до обращения к БД, авторизованные (включая аутентификацию через политики, например JWT) не лимитируются; один общий бакет на реплику, лимит — `AnonymousRateLimit:PermitLimit` (по умолчанию 10). Middleware ставить после `UseAuthentication()`/`UseAuthorization()`: principal из политик появляется только в `AuthorizationMiddleware`. ([#6232](https://github.com/joinrpg/joinrpg-net/issues/6232))
 - `AddLeaderElectedHostedService<TService>(configuration, lockKey = null)`: выбор лидера из N реплик через PostgreSQL advisory lock (`pg_try_advisory_lock`) в существующей БД Data Protection (`ConnectionStrings:DataProtection` по умолчанию; отдельная база и миграции не нужны). Перегрузка над `WebApplicationBuilder` конфигурацию берёт из builder'а. Ключ лока — строка (кодируется стабильным SHA-256-хешем в `bigint`), по умолчанию — имя типа `TService`. Лидер держит выделенное непулинговое соединение и крутит `TService : ILeaderElectedService`; при смерти/потере лидера другая реплика подхватывает без ручного вмешательства. Снимает блокер `replicas: 1` для фоновых задач (например, Telegram long polling). ([#6220](https://github.com/joinrpg/joinrpg-net/issues/6220))
