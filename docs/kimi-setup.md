@@ -89,3 +89,11 @@ dotnet tool restore   # MCP-сервер cwm-roslyn-navigator — локальн
 
 Новый MCP-сервер и новые скиллы подхватываются при старте сессии — после изменений запускай
 новую сессию (`/new`) или перезапускай CLI.
+
+## `DOTNET_ROLL_FORWARD=LatestMajor` в `.mcp.json`
+
+Не удаляй и не «упрощай» до `Major`: cwm-roslyn-navigator поставляется под net10.0, и если
+единственный установленный SDK новее мажором (например, SDK 11 при рантайме 10), сервер не
+стартует — MSBuild из свежего SDK не грузится на старом рантайме. `LatestMajor` принудительно
+запускает инструмент на самом новом рантайме, где фильтр SDK проходит. См. коммит
+`chore(mcp): DOTNET_ROLL_FORWARD=LatestMajor для cwm-roslyn-navigator`.
