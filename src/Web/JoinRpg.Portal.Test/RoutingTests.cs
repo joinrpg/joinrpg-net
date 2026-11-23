@@ -42,6 +42,7 @@ public class RoutingTests(IntegrationTestPortalFactory factory)
     [InlineData(typeof(ClaimController), nameof(ClaimController.Edit), "{ProjectId}/claim/{ClaimId}/Edit")]
     [InlineData(typeof(DiscussionRedirectController), nameof(DiscussionRedirectController.ToDiscussion), "{ProjectId}/goto/discussion/{CommentDiscussionId}")]
     [InlineData(typeof(FinancesController), nameof(FinancesController.Setup), "{projectId}/money/Setup")]
+    [InlineData(typeof(FinancesController), nameof(FinancesController.ByMaster), "{projectId}/money/ByMaster/{masterId:int}")]
     [InlineData(typeof(ForumController), nameof(ForumController.ViewThread), "{projectId}/forums/{forumThreadId}/ViewThread")]
     [InlineData(typeof(GameFieldController), nameof(GameFieldController.Create), "{ProjectId}/fields/Create")]
     [InlineData(typeof(GameGroupsController), nameof(GameGroupsController.Edit), "{projectId}/roles/{characterGroupId}/Edit")]

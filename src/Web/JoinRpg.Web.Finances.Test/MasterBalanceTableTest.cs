@@ -30,7 +30,7 @@ public class MasterBalanceTableTest : BunitContext
         var cut = Render<MasterBalanceTable>(p => p
             .Add(x => x.Rows,
             [
-                Row(1, "Вася", total: 700, fee: 1000, received: 200, sent: 0, expenses: -500, planned: -300, detailsLink: "/1/money/bymaster?masterId=1"),
+                Row(1, "Вася", total: 700, fee: 1000, received: 200, sent: 0, expenses: -500, planned: -300, detailsLink: "/1/money/bymaster/1"),
                 Row(2, "Марья", total: 300, fee: 500, received: 0, sent: -200, expenses: 0, planned: 0),
             ])
             .Add(x => x.ShowTotal, false));
@@ -45,11 +45,11 @@ public class MasterBalanceTableTest : BunitContext
 
         cut.Markup.ShouldContain("Вася");
         cut.Markup.ShouldContain("Марья");
-        cut.Markup.ShouldContain("/1/money/bymaster?masterId=1");
+        cut.Markup.ShouldContain("/1/money/bymaster/1");
 
         // Скобки — обычный текст вокруг ссылки, а не часть текста ссылки
         var detailsLink = cut.FindAll("a").Single(a => a.TextContent == "подробнее");
-        detailsLink.GetAttribute("href").ShouldBe("/1/money/bymaster?masterId=1");
+        detailsLink.GetAttribute("href").ShouldBe("/1/money/bymaster/1");
         // Текст ячейки вокруг ссылки сохраняет скобки
         detailsLink.ParentElement!.TextContent.ShouldContain("(подробнее)");
 
