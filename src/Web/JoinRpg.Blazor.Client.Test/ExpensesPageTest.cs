@@ -323,7 +323,7 @@ public class ExpensesPageTest : BunitContext
     }
 
     [Fact]
-    public async Task SaveFailureKeepsEnteredDataForRetry()
+    public async Task SaveFailureShowsErrorOnPage()
     {
         var cut = Render<ExpensesPage>(p => p.Add(x => x.ProjectId, ProjectId));
 
@@ -340,15 +340,47 @@ public class ExpensesPageTest : BunitContext
 
         cut.WaitForAssertion(() => cut.Markup.ShouldContain("Ошибка: Нет прав на деньги"));
 
-        // Регрессия: старая форма оставалась открытой с введёнными данными. Тот же диалог
-        // должен принять повторный сабмит без потери модели.
+        // Регрессия #6270: диалог не переоткрывается после ошибки — иначе его бэкдроп
+        // (native <dialog> в top layer) перекрыл бы алерт на странице. Детектор — повторный
+        // сабмит: переоткрытый диалог принял бы его и сохранил модель. Введённые данные
+        // при ошибке сервера теряются — осознанное решение владельца.
         expensesClient.CreateFailure = null;
         await SubmitDialogAsync(cut);
+        expensesClient.Created.ShouldBeNull();
+    }
 
-        cut.WaitForAssertion(() => expensesClient.Created.ShouldNotBeNull());
-        expensesClient.Created.Name.ShouldBe("Аренда зала");
-        expensesClient.Created.CategoryPath.ShouldBe("Аренда базы\\Жилые корпуса");
-        expensesClient.Created.PlannedPrice.ShouldBe(1400); // план подставился из факта
+    [Fact]
+    public async Task SaveFailureDoesNotReopenDialogAndShowsErrorOnPage()
+    {
+        var cut = Render<ExpensesPage>(p => p.Add(x => x.ProjectId, ProjectId));
+
+        ClickButton(cut, "Новый расход");
+        var dialog = cut.Find("dialog");
+        dialog.QuerySelectorAll("input[type=text]")[0].Change("Аренда зала");
+        dialog.QuerySelectorAll("input[type=text]")[1].Change("Аренда базы\\Жилые корпуса");
+        SelectMaster(cut, "Иван Мастеров");
+        dialog.QuerySelectorAll("input[type=number]")[2].Change("2"); // факт количество
+        dialog.QuerySelectorAll("input[type=number]")[3].Change("1400"); // факт цена
+
+        expensesClient.CreateFailure = new ServerProblemException("Нет прав на деньги");
+        await SubmitDialogAsync(cut);
+
+        // Ошибка остаётся на странице и видна: диалог закрыт и больше не переоткрывается,
+        // иначе его бэкдроп (native <dialog> в top layer) перекрыл бы алерт — баг #6270.
+        // Закрытый <dialog> остаётся в DOM — проверяем алерт вне диалога. Сам по себе этот
+        // селектор регрессию не ловит (алерт был на странице и раньше): её ловит сабмит ниже.
+        cut.WaitForAssertion(() =>
+        {
+            cut.FindAll(".join-alert--danger")
+                .Any(alert => alert.Closest("dialog") is null && alert.TextContent.Contains("Ошибка: Нет прав на деньги"))
+                .ShouldBeTrue();
+        });
+
+        // Диалог не переоткрыт: повторный «сабмит» того же диалога ни к чему не приводит,
+        // даже если серверная ошибка уже ушла
+        expensesClient.CreateFailure = null;
+        await SubmitDialogAsync(cut);
+        expensesClient.Created.ShouldBeNull();
     }
 
     [Fact]
