@@ -40,6 +40,7 @@ public class CanonicalRoutingTests(IntegrationTestPortalFactory factory)
     [InlineData("{ProjectId}/fields/create", typeof(GameFieldController), nameof(GameFieldController.Create))]
     [InlineData("{projectId}/roles/{characterGroupId}/edit", typeof(GameGroupsController), nameof(GameGroupsController.Edit))]
     [InlineData("{projectId}/subscribe/bymaster/{masterId}", typeof(GameSubscribeController), nameof(GameSubscribeController.ByMaster))]
+    [InlineData("{projectId}/money/bymaster/{masterId:int}", typeof(FinancesController), nameof(FinancesController.ByMaster))]
     [InlineData("{projectId}/tools/apis", typeof(GameToolsController), nameof(GameToolsController.Apis))]
     [InlineData("{projectId}/massmail/forclaims", typeof(MassMailController), nameof(MassMailController.ForClaims))]
     [InlineData("{projectId}/print/character", typeof(PrintController), nameof(PrintController.Character))]

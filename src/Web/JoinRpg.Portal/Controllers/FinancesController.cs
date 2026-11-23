@@ -109,7 +109,9 @@ public class FinancesController(
     }
 
     [MasterAuthorize()]
-    [HttpGet]
+#pragma warning disable ASP0023 // Route conflict detected between controller actions. There is no one because of [action]
+    [HttpGet("{masterId:int}")]
+#pragma warning restore ASP0023 // Route conflict detected between controller actions
     public async Task<ActionResult> ByMaster(ProjectIdentification projectId, int masterId)
     {
         var project = await projectRepository.GetProjectWithFinances(projectId);
