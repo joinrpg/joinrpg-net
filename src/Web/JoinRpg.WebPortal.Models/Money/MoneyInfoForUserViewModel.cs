@@ -1,5 +1,6 @@
 using JoinRpg.DataModel;
 using JoinRpg.DataModel.Finances;
+using JoinRpg.DomainTypes.Finances;
 using JoinRpg.Interfaces;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Models.Money;
@@ -14,7 +15,8 @@ public class MoneyInfoForUserViewModel(IReadOnlyCollection<MoneyTransfer> transf
     PaymentTypeSummaryViewModel[] payments,
     ICurrentUserAccessor currentUserId,
     ProjectInfo projectInfo,
-    UserProfileDetailsBuilder cardBuilder)
+    UserProfileDetailsBuilder cardBuilder,
+    IReadOnlyCollection<ExpenseInfo> expenses)
 {
     public UserProfileDetailsViewModel UserDetails { get; } = cardBuilder.Build(master, projectInfo, currentUserId.UserIdentificationOrDefault, currentUserId.IsAdmin);
     public int ProjectId { get; } = projectInfo.ProjectId;
@@ -24,7 +26,7 @@ public class MoneyInfoForUserViewModel(IReadOnlyCollection<MoneyTransfer> transf
 
     public FinOperationListViewModel Operations { get; } = new FinOperationListViewModel(projectInfo, urlHelper, operations, operationsData, currentUserId.UserIdentificationOrDefault);
 
-    public MasterBalanceViewModel Balance { get; } = new MasterBalanceViewModel(master, projectInfo, operations, transfers);
+    public MasterBalanceViewModel Balance { get; } = new MasterBalanceViewModel(master, projectInfo, operations, transfers, expenses);
 
     public IReadOnlyCollection<PaymentTypeSummaryViewModel> PaymentTypeSummary { get; } = payments;
 }

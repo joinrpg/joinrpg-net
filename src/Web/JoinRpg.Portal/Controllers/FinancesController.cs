@@ -29,6 +29,7 @@ public class FinancesController(
     ICurrentUserAccessor currentUserAccessor,
     IProjectMetadataRepository projectMetadataRepository,
     IClaimsRepository claimsRepository,
+    IExpenseRepository expenseRepository,
     UserProfileDetailsBuilder cardBuilder,
     FinanceReportViewService financeReportViewService
         ) : JoinControllerGameBase
@@ -131,6 +132,8 @@ public class FinancesController(
             .ToArray();
 
 
+        var expenses = await expenseRepository.GetExpensesByMaster(projectId, user.UserId);
+
         var viewModel = new MoneyInfoForUserViewModel(transfers,
             user,
             uriService,
@@ -139,7 +142,8 @@ public class FinancesController(
             payments,
             currentUserAccessor,
             projectInfo,
-            cardBuilder);
+            cardBuilder,
+            expenses);
         return View(viewModel);
     }
 
