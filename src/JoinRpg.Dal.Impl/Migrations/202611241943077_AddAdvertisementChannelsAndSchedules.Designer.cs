@@ -13,7 +13,7 @@ namespace JoinRpg.Dal.Impl.Migrations
         
         string IMigrationMetadata.Id
         {
-            get { return "202611241915502_AddAdvertisementChannelsAndSchedules"; }
+            get { return "202611241943077_AddAdvertisementChannelsAndSchedules"; }
         }
         
         string IMigrationMetadata.Source

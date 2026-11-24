@@ -11,10 +11,10 @@ public partial class AddAdvertisementChannelsAndSchedules : DbMigration
             c => new
             {
                 AdvertisementChannelId = c.Int(nullable: false, identity: true),
-                Name = c.String(maxLength: 256),
+                Name = c.String(nullable: false, maxLength: 256),
                 ProjectId = c.Int(),
                 Kind = c.Int(nullable: false),
-                SettingsJson = c.String(),
+                SettingsJson = c.String(nullable: false),
                 IsActive = c.Boolean(nullable: false),
             })
             .PrimaryKey(t => t.AdvertisementChannelId)

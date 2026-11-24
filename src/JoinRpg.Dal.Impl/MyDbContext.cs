@@ -332,11 +332,13 @@ public class MyDbContext : DbContext, IUnitOfWork
 
         modelBuilder.Entity<JoinRpg.DataModel.AdvertisementChannelEntity>()
             .Property(e => e.Name)
-            .HasMaxLength(256);
+            .HasMaxLength(256)
+            .IsRequired();
 
         modelBuilder.Entity<JoinRpg.DataModel.AdvertisementChannelEntity>()
             .Property(e => e.SettingsJson)
-            .HasMaxLength(int.MaxValue);
+            .HasMaxLength(int.MaxValue)
+            .IsRequired();
 
         // AdvertisementSchedule configuration
         modelBuilder.Entity<JoinRpg.DataModel.AdvertisementScheduleEntity>()
