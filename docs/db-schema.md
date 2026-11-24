@@ -233,12 +233,30 @@ erDiagram
 
     AdvertisementLogEntries {
         int AdvertisementLogEntryId PK
-        int ScheduleId "расписание захардкожено, FK нет (ADR010)"
+        int ScheduleId "FK на AdvertisementSchedules нет, ссылается по значению (ADR010)"
         int Method "канал"
         int ProjectId FK
         int CharacterId FK "null = реклама игры, не роли"
         int Status
         datetimeoffset SentAt
+    }
+
+    AdvertisementChannels {
+        int AdvertisementChannelId PK
+        string Name "nvarchar(256)"
+        int ProjectId FK "null = глобальный канал"
+        int Kind "тип канала: 1 = Telegram"
+        string SettingsJson "настройки канала JSON-ом, формат зависит от Kind (chat id для Telegram)"
+        bool IsActive
+    }
+
+    AdvertisementSchedules {
+        int AdvertisementScheduleId PK
+        int AdvertisementChannelId FK
+        int Method "1 = SingleHotRole, 2 = NewlyOpenedProjectsDigest"
+        int DaysOfWeekMask "битовая маска дней недели: Monday = 2, Wednesday = 8, каждый день = 127"
+        string RegionsFilter "null = без фильтра по регионам"
+        bool IsActive
     }
 
     Projects ||--|| ProjectDetails : ""
@@ -248,6 +266,8 @@ erDiagram
     Projects ||--o{ ProjectBadgeTemplates : ""
     Projects ||--o{ GameReport2DTemplate : ""
     Projects ||--o{ AdvertisementLogEntries : ""
+    Projects ||--o{ AdvertisementChannels : ""
+    AdvertisementChannels ||--o{ AdvertisementSchedules : ""
     Projects ||--o{ KogdaIgraGameProjects : ""
     KogdaIgraGames ||--o{ KogdaIgraGameProjects : ""
     ProjectDetails }o--o| Projects : "ClonedFromProject"
@@ -259,6 +279,9 @@ erDiagram
 `CaptainAccessRuleEntities` — отдельный от ACL механизм: капитан группы, который может
 согласовывать заявки в свою группу. Таблица `AdvertisementLogEntries` отображается
 с класса `AdvertisementLogEntryEntity` (имя таблицы задано явно в `MyDbContext`).
+Каналы и расписания рекламы — `AdvertisementChannels`/`AdvertisementSchedules` (ADR010 §2);
+на расписания 1–4 ссылается `AdvertisementLogEntries.ScheduleId` без FK, поэтому их Id
+закреплены бэкфиллом миграции `AddAdvertisementChannelsAndSchedules`.
 
 ---
 
