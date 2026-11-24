@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using JoinRpg.DomainTypes.Advertisement;
 
 namespace JoinRpg.DataModel;
 
@@ -16,7 +17,7 @@ public class AdvertisementScheduleEntity
     [ForeignKey(nameof(AdvertisementChannelId))]
     public virtual AdvertisementChannelEntity Channel { get; set; }
 
-    public int Method { get; set; }
+    public AdvertisementMethod Method { get; set; }
 
     public int DaysOfWeekMask { get; set; }
 

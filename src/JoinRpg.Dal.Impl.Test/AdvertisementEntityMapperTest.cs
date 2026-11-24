@@ -10,48 +10,37 @@ namespace JoinRpg.Dal.Impl.Test;
 public class AdvertisementEntityMapperTest
 {
     [Fact]
-    public void MaskToDays_Zero_ReturnsEmptySet() =>
-        AdvertisementEntityMapper.MaskToDays(0).ShouldBeEmpty();
+    public void ToInfo_ScheduleWithZeroMask_ReturnsEmptyDays() =>
+        AdvertisementEntityMapper.ToInfo(CreateScheduleEntity(daysOfWeekMask: 0)).Days.ShouldBeEmpty();
 
     [Fact]
-    public void MaskToDays_AllBitsSet_ReturnsAllSevenDays() =>
-        AdvertisementEntityMapper.MaskToDays(127).OrderBy(day => day)
+    public void ToInfo_ScheduleWithAllBitsSet_ReturnsAllSevenDays() =>
+        AdvertisementEntityMapper.ToInfo(CreateScheduleEntity(daysOfWeekMask: 127)).Days.OrderBy(day => day)
             .ShouldBe(Enum.GetValues<DayOfWeek>());
 
     [Theory]
-    [InlineData(0)]
-    [InlineData(2)] // Monday
-    [InlineData(8)] // Wednesday
-    [InlineData(127)]
-    public void DaysMask_RoundTrip_ReturnsSameMask(int mask) =>
-        AdvertisementEntityMapper.DaysToMask(AdvertisementEntityMapper.MaskToDays(mask)).ShouldBe(mask);
+    [InlineData(2, DayOfWeek.Monday)]
+    [InlineData(8, DayOfWeek.Wednesday)]
+    public void ToInfo_ScheduleMask_MapsSingleDay(int mask, DayOfWeek expectedDay) =>
+        AdvertisementEntityMapper.ToInfo(CreateScheduleEntity(daysOfWeekMask: mask)).Days.ShouldBe([expectedDay]);
 
     // Точные литералы бэкфилла миграции (задача 3): формат запинан, менять нельзя.
     [Theory]
     [InlineData(-1004315256401)]
     [InlineData(-1002544815071)]
-    public void DeserializeSettings_TelegramKind_ReadsBackfillLiteral(long chatId)
+    public void ToInfo_ChannelWithBackfillSettingsLiteral_ReadsChatId(long chatId)
     {
-        var settings = AdvertisementEntityMapper.DeserializeSettings(
-            1, $"{{\"ChatId\":\"TelegramChatId({chatId})\"}}");
+        var entity = CreateChannelEntity(settingsJson: $"{{\"ChatId\":\"TelegramChatId({chatId})\"}}");
 
-        settings.ShouldBe(new TelegramChannelSettings(new TelegramChatId(chatId)));
+        var info = AdvertisementEntityMapper.ToInfo(entity);
+
+        info.Settings.ShouldBe(new TelegramChannelSettings(new TelegramChatId(chatId)));
     }
 
     [Fact]
-    public void Settings_SerializeDeserialize_RoundTrip()
-    {
-        var original = new TelegramChannelSettings(new TelegramChatId(-1002544815071));
-
-        var restored = AdvertisementEntityMapper.DeserializeSettings(
-            1, AdvertisementEntityMapper.SerializeSettings(original));
-
-        restored.ShouldBe(original);
-    }
-
-    [Fact]
-    public void DeserializeSettings_UnknownKind_Throws() =>
-        Should.Throw<InvalidOperationException>(() => AdvertisementEntityMapper.DeserializeSettings(99, "{}"));
+    public void ToInfo_ChannelWithUnknownKind_Throws() =>
+        Should.Throw<InvalidOperationException>(() =>
+            AdvertisementEntityMapper.ToInfo(CreateChannelEntity(kind: (AdvertisementChannelKind)99)));
 
     [Fact]
     public void ToInfo_Channel_MapsAllFields()
@@ -61,7 +50,7 @@ public class AdvertisementEntityMapperTest
             AdvertisementChannelId = 5,
             Name = "Телеграм-канал",
             ProjectId = 42,
-            Kind = 1,
+            Kind = AdvertisementChannelKind.Telegram,
             SettingsJson = "{\"ChatId\":\"TelegramChatId(-1004315256401)\"}",
             IsActive = false,
         };
@@ -79,15 +68,7 @@ public class AdvertisementEntityMapperTest
     [Fact]
     public void ToInfo_ChannelWithoutProject_BoundProjectIdIsNull()
     {
-        var entity = new AdvertisementChannelEntity
-        {
-            AdvertisementChannelId = 1,
-            Name = "Глобальный",
-            ProjectId = null,
-            Kind = 1,
-            SettingsJson = "{\"ChatId\":\"TelegramChatId(-1004315256401)\"}",
-            IsActive = true,
-        };
+        var entity = CreateChannelEntity();
 
         AdvertisementEntityMapper.ToInfo(entity).BoundProjectId.ShouldBeNull();
     }
@@ -115,21 +96,29 @@ public class AdvertisementEntityMapperTest
         AdvertisementEntityMapper.ToInfo(entity).RegionsFilter.ShouldBe("Москва, СПб");
     }
 
-    private static AdvertisementScheduleEntity CreateScheduleEntity(string? regionsFilter) =>
+    private static AdvertisementChannelEntity CreateChannelEntity(
+        string settingsJson = "{\"ChatId\":\"TelegramChatId(-1004315256401)\"}",
+        AdvertisementChannelKind kind = AdvertisementChannelKind.Telegram) =>
+        new()
+        {
+            AdvertisementChannelId = 1,
+            Name = "Глобальный",
+            ProjectId = null,
+            Kind = kind,
+            SettingsJson = settingsJson,
+            IsActive = true,
+        };
+
+    private static AdvertisementScheduleEntity CreateScheduleEntity(
+        string? regionsFilter = null,
+        int daysOfWeekMask = 2 | 8) => // Monday + Wednesday
         new()
         {
             AdvertisementScheduleId = 7,
             AdvertisementChannelId = 3,
-            Channel = new AdvertisementChannelEntity
-            {
-                AdvertisementChannelId = 3,
-                Name = "Канал",
-                Kind = 1,
-                SettingsJson = "{\"ChatId\":\"TelegramChatId(-1004315256401)\"}",
-                IsActive = true,
-            },
-            Method = (int)AdvertisementMethod.SingleHotRole,
-            DaysOfWeekMask = 2 | 8, // Monday + Wednesday
+            Channel = CreateChannelEntity(),
+            Method = AdvertisementMethod.SingleHotRole,
+            DaysOfWeekMask = daysOfWeekMask,
             RegionsFilter = regionsFilter,
             IsActive = true,
         };

@@ -16,13 +16,12 @@ MVP (`JoinRpg.Services.Advertisement` + `JoinRpg.Services.Advertisement.Test`) �
 вертикальный срез — два способа (`SingleHotRole`, `NewlyOpenedProjectsDigest`), один вид канала
 (Telegram); каналы, расписания и лог рекламы хранятся в БД:
 
-- ✅ **§1 Доменные типы** — реализовано, с упрощениями: отдельный enum `AdvertisementChannelKind`
-  не введён — в домене вид канала определяется через `is TelegramChannelSettings`, а в БД `Kind`
-  хранится как int с маппингом kind↔тип настроек в `AdvertisementEntityMapper` (1 = Telegram);
+- ✅ **§1 Доменные типы** — реализовано, с упрощениями: в БД `Kind` хранится как int
+  (`AdvertisementChannelKind`), десериализация настроек по виду — в `AdvertisementEntityMapper`;
   нет обёртки `WeeklyAdvertisementSchedule` — дни недели хранятся прямо в
   `AdvertisementScheduleInfo.Days`.
 - ✅ **§2 Хранение в БД** — реализовано. Таблицы `AdvertisementChannels`/`AdvertisementSchedules`
-  созданы миграцией `202611241915502_AddAdvertisementChannelsAndSchedules`; бэкфилл переносит
+  созданы миграцией `202611242002126_AddAdvertisementChannelsAndSchedules`; бэкфилл переносит
   ранее захардкоженные каналы и расписания с сохранением Id (на расписания 1–4 ссылается
   `AdvertisementLogEntries` без FK). Колонка `LastRunDate` из исходного дизайна не создавалась —
   идемпотентность обеспечивает трекинг джоб ADR002 (`DailyJob`). Добавлена колонка
@@ -178,7 +177,7 @@ DAL проекта — **EF6**, не EF Core (см. память проекта)
 | `AdvertisementChannelId` | int PK identity | |
 | `Name` | nvarchar | человекочитаемое имя для админки |
 | `ProjectId` | int? FK Projects | `null` = общий канал; иначе привязан к 1 игре |
-| `Kind` | int | `AdvertisementChannelKind` (enum не введён; маппинг kind↔тип настроек — в `AdvertisementEntityMapper`, 1 = Telegram) |
+| `Kind` | int | `AdvertisementChannelKind` (1 = Telegram); десериализация настроек по виду — в `AdvertisementEntityMapper` |
 | `SettingsJson` | nvarchar(max) | сериализованный `AdvertisementChannelSettings` (включая секрет бота), десериализация по `Kind` |
 | `IsActive` | bit | мягкое отключение канала |
 
