@@ -5,8 +5,8 @@ namespace JoinRpg.DataModel;
 
 /// <summary>
 /// Факт отправки рекламы (роли/игры) в конкретном канале в рамках расписания.
-/// Каналы и расписания (ADR010 §2) пока захардкожены, поэтому ScheduleId хранится
-/// как обычный int без FK.
+/// Каналы и расписания хранятся в БД (ADR010 §2), <see cref="ScheduleId"/> — FK на
+/// <see cref="AdvertisementScheduleEntity"/>.
 /// </summary>
 public class AdvertisementLogEntryEntity
 {
@@ -14,6 +14,9 @@ public class AdvertisementLogEntryEntity
     public int AdvertisementLogEntryId { get; set; }
 
     public int ScheduleId { get; set; }
+
+    [ForeignKey(nameof(ScheduleId))]
+    public virtual AdvertisementScheduleEntity Schedule { get; set; }
 
     public int Method { get; set; }
 

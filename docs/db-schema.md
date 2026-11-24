@@ -233,7 +233,7 @@ erDiagram
 
     AdvertisementLogEntries {
         int AdvertisementLogEntryId PK
-        int ScheduleId "FK на AdvertisementSchedules нет, ссылается по значению (ADR010)"
+        int ScheduleId FK "FK на AdvertisementSchedules"
         int Method "канал"
         int ProjectId FK
         int CharacterId FK "null = реклама игры, не роли"
@@ -268,6 +268,7 @@ erDiagram
     Projects ||--o{ AdvertisementLogEntries : ""
     Projects ||--o{ AdvertisementChannels : ""
     AdvertisementChannels ||--o{ AdvertisementSchedules : ""
+    AdvertisementSchedules ||--o{ AdvertisementLogEntries : ScheduleId
     Projects ||--o{ KogdaIgraGameProjects : ""
     KogdaIgraGames ||--o{ KogdaIgraGameProjects : ""
     ProjectDetails }o--o| Projects : "ClonedFromProject"
@@ -280,8 +281,8 @@ erDiagram
 согласовывать заявки в свою группу. Таблица `AdvertisementLogEntries` отображается
 с класса `AdvertisementLogEntryEntity` (имя таблицы задано явно в `MyDbContext`).
 Каналы и расписания рекламы — `AdvertisementChannels`/`AdvertisementSchedules` (ADR010 §2);
-на расписания 1–4 ссылается `AdvertisementLogEntries.ScheduleId` без FK, поэтому их Id
-закреплены бэкфиллом миграции `AddAdvertisementChannelsAndSchedules`.
+на расписания 1–4 ссылается `AdvertisementLogEntries.ScheduleId` (FK на `AdvertisementSchedules`),
+поэтому их Id закреплены бэкфиллом миграции `AddAdvertisementChannelsAndSchedules`.
 
 ---
 

@@ -23,7 +23,8 @@ MVP (`JoinRpg.Services.Advertisement` + `JoinRpg.Services.Advertisement.Test`) �
 - ✅ **§2 Хранение в БД** — реализовано. Таблицы `AdvertisementChannels`/`AdvertisementSchedules`
   созданы миграцией `202611242002126_AddAdvertisementChannelsAndSchedules`; бэкфилл переносит
   ранее захардкоженные каналы и расписания с сохранением Id (на расписания 1–4 ссылается
-  `AdvertisementLogEntries` без FK). Колонка `LastRunDate` из исходного дизайна не создавалась —
+  `AdvertisementLogEntries.ScheduleId`; FK добавлен миграцией `AddAdvertisementLogScheduleForeignKey`).
+  Колонка `LastRunDate` из исходного дизайна не создавалась —
   идемпотентность обеспечивает трекинг джоб ADR002 (`DailyJob`). Добавлена колонка
   `RegionsFilter` (nvarchar(max), null) — «Фильтр по регионам», задел под фильтрацию по региону
   игры, пока нигде не используется. Таблица `AdvertisementLog` есть (миграция

@@ -312,6 +312,12 @@ public class MyDbContext : DbContext, IUnitOfWork
             .WillCascadeOnDelete(false);
 
         modelBuilder.Entity<JoinRpg.DataModel.AdvertisementLogEntryEntity>()
+            .HasRequired(e => e.Schedule)
+            .WithMany()
+            .HasForeignKey(e => e.ScheduleId)
+            .WillCascadeOnDelete(false);
+
+        modelBuilder.Entity<JoinRpg.DataModel.AdvertisementLogEntryEntity>()
             .HasIndex(e => e.ProjectId);
 
         modelBuilder.Entity<JoinRpg.DataModel.AdvertisementLogEntryEntity>()
