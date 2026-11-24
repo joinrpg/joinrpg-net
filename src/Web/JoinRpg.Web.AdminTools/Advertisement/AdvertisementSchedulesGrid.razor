@@ -8,6 +8,7 @@
             <th>Способ</th>
             <th>Дни</th>
             <th>Активно</th>
+            <th>Фильтр по регионам</th>
         </tr>
     </HeadContent>
     <ItemTemplate>
@@ -17,6 +18,7 @@
             <td>@schedule.Method</td>
             <td>@DescribeDays(schedule.Days)</td>
             <td>@DescribeActivity(schedule)</td>
+            <td>@(schedule.RegionsFilter ?? "—")</td>
         </tr>
     </ItemTemplate>
 </JoinBorderedTable>
