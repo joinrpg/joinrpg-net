@@ -26,6 +26,10 @@ public class MyDbContext : DbContext, IUnitOfWork
 
     public DbSet<JoinRpg.DataModel.AdvertisementLogEntryEntity> AdvertisementLogEntriesSet => Set<JoinRpg.DataModel.AdvertisementLogEntryEntity>();
 
+    public DbSet<JoinRpg.DataModel.AdvertisementChannelEntity> AdvertisementChannelsSet => Set<JoinRpg.DataModel.AdvertisementChannelEntity>();
+
+    public DbSet<JoinRpg.DataModel.AdvertisementScheduleEntity> AdvertisementSchedulesSet => Set<JoinRpg.DataModel.AdvertisementScheduleEntity>();
+
     public DbSet<User> UserSet => Set<User>();
 
     public DbSet<Claim> ClaimSet => Set<Claim>();
@@ -315,6 +319,37 @@ public class MyDbContext : DbContext, IUnitOfWork
 
         modelBuilder.Entity<JoinRpg.DataModel.AdvertisementLogEntryEntity>()
             .HasIndex(e => e.ScheduleId);
+
+        // AdvertisementChannel configuration
+        modelBuilder.Entity<JoinRpg.DataModel.AdvertisementChannelEntity>()
+            .ToTable("AdvertisementChannels");
+
+        modelBuilder.Entity<JoinRpg.DataModel.AdvertisementChannelEntity>()
+            .HasOptional(e => e.Project)
+            .WithMany()
+            .HasForeignKey(e => e.ProjectId)
+            .WillCascadeOnDelete(false);
+
+        modelBuilder.Entity<JoinRpg.DataModel.AdvertisementChannelEntity>()
+            .Property(e => e.Name)
+            .HasMaxLength(256);
+
+        modelBuilder.Entity<JoinRpg.DataModel.AdvertisementChannelEntity>()
+            .Property(e => e.SettingsJson)
+            .HasMaxLength(int.MaxValue);
+
+        // AdvertisementSchedule configuration
+        modelBuilder.Entity<JoinRpg.DataModel.AdvertisementScheduleEntity>()
+            .ToTable("AdvertisementSchedules");
+
+        modelBuilder.Entity<JoinRpg.DataModel.AdvertisementScheduleEntity>()
+            .HasRequired(e => e.Channel)
+            .WithMany()
+            .HasForeignKey(e => e.AdvertisementChannelId)
+            .WillCascadeOnDelete(false);
+
+        modelBuilder.Entity<JoinRpg.DataModel.AdvertisementScheduleEntity>()
+            .HasIndex(e => e.AdvertisementChannelId);
 
         modelBuilder.Entity<UserForumSubscription>().HasRequired(ufs => ufs.User).WithMany()
             .WillCascadeOnDelete(false);
