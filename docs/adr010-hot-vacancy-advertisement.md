@@ -13,8 +13,8 @@
 ## Статус реализации
 
 MVP (`JoinRpg.Services.Advertisement` + `JoinRpg.Services.Advertisement.Test`) реализует
-только вертикальный срез — один способ (`SingleHotRole`), один вид канала (Telegram); каналы,
-расписания и лог рекламы хранятся в БД:
+вертикальный срез — два способа (`SingleHotRole`, `NewlyOpenedProjectsDigest`), один вид канала
+(Telegram); каналы, расписания и лог рекламы хранятся в БД:
 
 - ✅ **§1 Доменные типы** — реализовано, с упрощениями: отдельный enum `AdvertisementChannelKind`
   не введён — в домене вид канала определяется через `is TelegramChannelSettings`, а в БД `Kind`
@@ -48,8 +48,12 @@ MVP (`JoinRpg.Services.Advertisement` + `JoinRpg.Services.Advertisement.Test`) �
   в последние `MinOtherAdvertisementsBetweenRepeats = 3` отправленные рекламы этого расписания —
   эквивалент «меньше 3 реклам других игр с прошлого раза»), выбор наименее рекламированной роли —
   `HotRoleSelector` (среди наименее рекламированных берётся персонаж с наибольшим `CharacterId`,
-  т.е. созданный последним; выбор детерминированный, без `Random`). `HotRolesDigest`/
-  `OpenVacanciesDigest` не реализованы. Anti-repeat роли (шаг «не повторять роль в канале») —
+  т.е. созданный последним; выбор детерминированный, без `Random`). Для `NewlyOpenedProjectsDigest`
+  реализованы своя выборка кандидатов (`IProjectRepository.GetPublicProjectsOpenedForClaimsInLastWeek()`)
+  и та же валидация проекта (публичность/открытость заявок, кулдаун, карточка КогдаИгры в будущем),
+  лимит — хардкод-константа `MaxProjectsInDigest = 10`, запись в лог пачкой через
+  `RecordAdvertisementBatch`. `HotRolesDigest`/`OpenVacanciesDigest` из исходного дизайна не
+  реализованы. Anti-repeat роли (шаг «не повторять роль в канале») —
   реализован и работает: `AlreadySentForSchedule` считается по реальному логу.
 - ❌ **§5 Секрет бота и безопасность** — не реализовано. Каналы используют общего бота из
   конфигурации приложения (`TelegramLoginOptions`/`TelegramBotClient`, тот же, что и для личных
@@ -58,9 +62,11 @@ MVP (`JoinRpg.Services.Advertisement` + `JoinRpg.Services.Advertisement.Test`) �
   обычная ежедневная (`AddJob<AdvertisementJob>` из `JoinRpg.Common.WebInfrastructure.Interfaces`,
   `[JobDelay(9)]` = 09:00 UTC / 12:00 МСК), выполняется под роботом-админом — этот пункт §5
   реализован.
-- ✅ **§6 Формирование сообщений** — реализовано для `SingleHotRole`
-  (`TelegramSingleHotRoleSender.BuildMessage`): русский текст, ссылка на заявку через
-  `ICharacterUriLocator`, HTML переживает телеграм-санитайзер (`b`/`strong`/`em`/`a`; `h1`-`h6` и
+- ✅ **§6 Формирование сообщений** — реализовано для обоих способов: `SingleHotRole`
+  (`TelegramSingleHotRoleSender.BuildMessage`) и `NewlyOpenedProjectsDigest`
+  (`TelegramNewlyOpenedProjectsDigestSender.BuildMessage`): русский текст, ссылки через
+  `ICharacterUriLocator` (заявка на роль) и `IUriLocator<ProjectIdentification>` (проект в дайджесте),
+  HTML переживает телеграм-санитайзер (`b`/`strong`/`em`/`a`; `h1`-`h6` и
   `small` сознательно не используются — телеграм-санитайзер вырезает их вместе с содержимым), даты
   игры и регион/МГ — из `KogdaIgraGameData` (через `IProjectMetadataRepository.GetProjectDetails`,
   без обращения к `IKogdaIgraSyncClient`).
