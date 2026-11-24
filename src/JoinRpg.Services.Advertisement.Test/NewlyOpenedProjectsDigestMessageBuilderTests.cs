@@ -51,6 +51,20 @@ public class NewlyOpenedProjectsDigestMessageBuilderTests
     }
 
     [Fact]
+    public Task BuildMessage_MasterGroupNameWithQuotes_NotWrappedInQuotes()
+    {
+        var entries = new[]
+        {
+            (MakeCandidate(1, "Зимний путь"), MakeGame("Московская область", "Мастерская «Северный ветер»", new DateOnly(2026, 3, 1), new DateOnly(2026, 3, 5))),
+            (MakeCandidate(2, "Летний ветер"), MakeGame("Лениградская область", "Гильдия \"Стальной клык\"", new DateOnly(2026, 7, 10), new DateOnly(2026, 7, 12))),
+        };
+
+        var message = TelegramNewlyOpenedProjectsDigestSender.BuildMessage(entries, GetProjectUri);
+
+        return Verify(message.Contents);
+    }
+
+    [Fact]
     public Task BuildMessage_ProjectNameWithHtmlSpecialChars_EscapesThem()
     {
         var entries = new[]
