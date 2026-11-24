@@ -29,7 +29,11 @@ public record AdvertisementScheduleInfo(
     AdvertisementChannelInfo Channel,
     AdvertisementMethod Method,
     IReadOnlySet<DayOfWeek> Days,
-    bool IsActive = true)
+    bool IsActive = true,
+    /// <summary>
+    /// Фильтр по регионам (текст). Пока нигде не используется — задел под фильтрацию по <c>KogdaIgraGameData.RegionName</c>.
+    /// </summary>
+    string? RegionsFilter = null)
 {
     /// <summary>
     /// Расписание фактически активно, только если активно и оно само, и его канал.
