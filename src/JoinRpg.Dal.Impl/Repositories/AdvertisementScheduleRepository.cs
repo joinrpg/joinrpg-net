@@ -14,5 +14,8 @@ internal class AdvertisementScheduleRepository(MyDbContext ctx) : IAdvertisement
             .Select(AdvertisementEntityMapper.ToInfo)];
 
     public async Task<IReadOnlyCollection<AdvertisementScheduleInfo>> GetAllSchedules() =>
-        [.. (await Query.ToListAsync()).Select(AdvertisementEntityMapper.ToInfo)];
+        [.. (await Query
+            .OrderBy(s => s.AdvertisementScheduleId)
+            .ToListAsync())
+            .Select(AdvertisementEntityMapper.ToInfo)];
 }
