@@ -29,17 +29,29 @@ internal class TelegramNewlyOpenedProjectsDigestSender(
         return new TelegramHtmlString(text);
     }
 
+    private static readonly char[] QuoteChars = ['«', '»', '"', '\'', '„', '“', '”', '‚', '‘', '’'];
+
     private static string BuildLine(ProjectAdvertisementCandidate project, KogdaIgraGameData game, Uri projectUri)
     {
         // Как и в TelegramSingleHotRoleSender, только <strong>/<em>/<a> переживают санитайзер Telegram.
         var masterGroupSuffix = string.IsNullOrWhiteSpace(game.MasterGroupName)
             ? string.Empty
-            : $" ({WebUtility.HtmlEncode($"«{game.MasterGroupName}»")})";
+            : BuildMasterGroupSuffix(game.MasterGroupName);
 
         var dateRangeString = DateRangeFormatter.FormatDisplay(
             new DateRange(game.Begin, game.End), CultureInfo.GetCultureInfo("ru-RU"));
 
         return $"«<a href=\"{projectUri}\">{WebUtility.HtmlEncode(project.ProjectName.Value)}</a>», " +
             $"{WebUtility.HtmlEncode(game.RegionName)}{masterGroupSuffix}, {dateRangeString} ";
+    }
+
+    private static string BuildMasterGroupSuffix(string masterGroupName)
+    {
+        var encoded = WebUtility.HtmlEncode(masterGroupName);
+
+        // Если название уже содержит кавычки — не оборачиваем его ещё раз.
+        return masterGroupName.IndexOfAny(QuoteChars) >= 0
+            ? $" ({encoded})"
+            : $" («{encoded}»)";
     }
 }
