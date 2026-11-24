@@ -24,12 +24,16 @@ public enum AdvertisementMethod
     NewlyOpenedProjectsDigest = 2,
 }
 
+/// <param name="RegionsFilter">
+/// Фильтр по регионам (текст). Пока нигде не используется — задел под фильтрацию по <c>KogdaIgraGameData.RegionName</c>.
+/// </param>
 public record AdvertisementScheduleInfo(
     AdvertisementScheduleIdentification ScheduleId,
     AdvertisementChannelInfo Channel,
     AdvertisementMethod Method,
     IReadOnlySet<DayOfWeek> Days,
-    bool IsActive = true)
+    bool IsActive = true,
+    string? RegionsFilter = null)
 {
     /// <summary>
     /// Расписание фактически активно, только если активно и оно само, и его канал.

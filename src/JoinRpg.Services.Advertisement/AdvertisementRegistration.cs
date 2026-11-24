@@ -9,8 +9,6 @@ public static class AdvertisementRegistration
     public static IJoinServiceCollection AddJoinAdvertisement(this IJoinServiceCollection services)
     {
         _ = services
-            .AddScoped<IAdvertisementChannelRepository, HardcodedAdvertisementChannelRepository>()
-            .AddScoped<IAdvertisementScheduleRepository, HardcodedAdvertisementScheduleRepository>()
             .AddScoped<IAdvSenderFactory, AdvSenderFactory>();
         services.AddJob<AdvertisementJob>();
         return services;

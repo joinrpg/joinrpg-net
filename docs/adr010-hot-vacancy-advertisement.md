@@ -2,35 +2,44 @@
 
 ## Статус
 
-Частично реализовано. Первая итерация (MVP) подняла сквозной путь только для `SingleHotRole`
-поверх **захардкоженных** канала/расписания; лог рекламы (`AdvertisementLog`) с тех пор
-переведён на реальное хранение в БД (#4653) — см. «Статус реализации» ниже. Хранение
-каналов/расписаний в БД (§2), безопасность секрета бота (§5) и UI (§8) по-прежнему отложены;
-новые поля DataModel по-прежнему требуют согласования с @leotsarev (см.
-[CLAUDE.md](../CLAUDE.md)), когда до них дойдёт очередь.
+Частично реализовано. Первая итерация (MVP) подняла сквозной путь только для `SingleHotRole`;
+лог рекламы (`AdvertisementLog`) с тех пор переведён на реальное хранение в БД (#4653), а затем
+и каналы с расписаниями (`AdvertisementChannels`/`AdvertisementSchedules`, §2) — захардкоженных
+заглушек больше нет, см. «Статус реализации» ниже. Безопасность секрета бота (§5) и CRUD-UI (§8)
+по-прежнему отложены — есть только read-only дашборд `/admin/advertisement`; новые поля DataModel
+по-прежнему требуют согласования с @leotsarev (см. [CLAUDE.md](../CLAUDE.md)), когда до них
+дойдёт очередь.
 
 ## Статус реализации
 
 MVP (`JoinRpg.Services.Advertisement` + `JoinRpg.Services.Advertisement.Test`) реализует
-только вертикальный срез — один способ (`SingleHotRole`), один вид канала (Telegram); канал и
-расписание захардкожены, но лог рекламы хранится в БД по-настоящему:
+вертикальный срез — два способа (`SingleHotRole`, `NewlyOpenedProjectsDigest`), один вид канала
+(Telegram); каналы, расписания и лог рекламы хранятся в БД:
 
-- ✅ **§1 Доменные типы** — реализовано, с упрощениями: нет отдельного
-  `AdvertisementChannelKind`, вид канала определяется через `is TelegramChannelSettings`; нет
-  обёртки `WeeklyAdvertisementSchedule` — дни недели хранятся прямо в
+- ✅ **§1 Доменные типы** — реализовано, с упрощениями: в БД `Kind` хранится как int
+  (`AdvertisementChannelKind`), десериализация настроек по виду — в `AdvertisementEntityMapper`;
+  нет обёртки `WeeklyAdvertisementSchedule` — дни недели хранятся прямо в
   `AdvertisementScheduleInfo.Days`.
-- ⚠️ **§2 Хранение в БД** — частично. Таблица `AdvertisementLog` есть (миграция
+- ✅ **§2 Хранение в БД** — реализовано. Таблицы `AdvertisementChannels`/`AdvertisementSchedules`
+  созданы миграцией `202611242002126_AddAdvertisementChannelsAndSchedules`; бэкфилл переносит
+  ранее захардкоженные каналы и расписания с сохранением Id (на расписания 1–4 ссылается
+  `AdvertisementLogEntries.ScheduleId`; FK добавлен миграцией `AddAdvertisementLogScheduleForeignKey`).
+  Колонка `LastRunDate` из исходного дизайна не создавалась —
+  идемпотентность обеспечивает трекинг джоб ADR002 (`DailyJob`). Добавлена колонка
+  `RegionsFilter` (nvarchar(max), null) — «Фильтр по регионам», задел под фильтрацию по региону
+  игры, пока нигде не используется. Таблица `AdvertisementLog` есть (миграция
   `202608261348069_AddAdvertisementLog`), `AdvertisementLogRepository` — реальная EF6-реализация
   поверх неё (не заглушка); anti-repeat роли (§4) и кулдаун проекта (§4) работают на реальных
-  данных. Таблиц `AdvertisementChannels`/`AdvertisementSchedules` по-прежнему нет — канал и
-  расписание захардкожены (`HardcodedAdvertisementChannelRepository`,
-  `HardcodedAdvertisementScheduleRepository`).
+  данных.
 - ⚠️ **§3 Слои и проекты** — частично. Проект `JoinRpg.Services.Advertisement` создан и
   зарегистрирован через `AddJoinAdvertisement(this IJoinServiceCollection)` (не Autofac), но без
   выделенных `IAdvertisementChannelService`/`IAdvertisementDispatchService` — вся оркестрация в
   `SingleHotRoleAdvertisementJob` (ныне `AdvertisementJob`). Доставка — через `ISingleHotRoleSender`/`IAdvSenderFactory`
   (аналог `IAdvertisementSender` из ADR, но заточен под один способ) вместо
-  `TelegramAdvertisementSender`.
+  `TelegramAdvertisementSender`. Репозитории каналов и расписаний переехали из hardcoded-заглушек
+  в `JoinRpg.Dal.Impl` (`AdvertisementChannelRepository`, `AdvertisementScheduleRepository`,
+  интерфейсы в `JoinRpg.Data.Interfaces`, регистрация в `Registraton.cs`);
+  `HardcodedAdvertisement*Repository` удалены.
 - ⚠️ **§4 Выборка контента** — реализованы шаги 1, 2 (кулдаун проекта), 3, 4, 5 (частично) для
   `SingleHotRole`: кандидаты — `IProjectRepository.GetPublicProjectsOpenForHotRoleAdvertisement()`,
   ранжирование игр — `AdvertisementGameRanking` (та же формула
@@ -39,26 +48,34 @@ MVP (`JoinRpg.Services.Advertisement` + `JoinRpg.Services.Advertisement.Test`) �
   в последние `MinOtherAdvertisementsBetweenRepeats = 3` отправленные рекламы этого расписания —
   эквивалент «меньше 3 реклам других игр с прошлого раза»), выбор наименее рекламированной роли —
   `HotRoleSelector` (среди наименее рекламированных берётся персонаж с наибольшим `CharacterId`,
-  т.е. созданный последним; выбор детерминированный, без `Random`). `HotRolesDigest`/
-  `OpenVacanciesDigest` не реализованы. Anti-repeat роли (шаг «не повторять роль в канале») —
+  т.е. созданный последним; выбор детерминированный, без `Random`). Для `NewlyOpenedProjectsDigest`
+  реализованы своя выборка кандидатов (`IProjectRepository.GetPublicProjectsOpenedForClaimsInLastWeek()`)
+  и та же валидация проекта (публичность/открытость заявок, кулдаун, карточка КогдаИгры в будущем),
+  лимит — хардкод-константа `MaxProjectsInDigest = 10`, запись в лог пачкой через
+  `RecordAdvertisementBatch`. `HotRolesDigest`/`OpenVacanciesDigest` из исходного дизайна не
+  реализованы. Anti-repeat роли (шаг «не повторять роль в канале») —
   реализован и работает: `AlreadySentForSchedule` считается по реальному логу.
-- ❌ **§5 Секрет бота и безопасность** — не реализовано. Канал использует общего бота из
+- ❌ **§5 Секрет бота и безопасность** — не реализовано. Каналы используют общего бота из
   конфигурации приложения (`TelegramLoginOptions`/`TelegramBotClient`, тот же, что и для личных
-  уведомлений), захардкоженный `chatId`; отдельного хранения/шифрования секрета в БД нет. Джоба
-  зарегистрирована как обычная ежедневная (`AddJob<AdvertisementJob>` из `JoinRpg.Common.WebInfrastructure.Interfaces`,
+  уведомлений); `chatId` теперь лежит в `SettingsJson` канала в БД, но секрета бота в настройках
+  нет — отдельного хранения/шифрования секрета по-прежнему нет. Джоба зарегистрирована как
+  обычная ежедневная (`AddJob<AdvertisementJob>` из `JoinRpg.Common.WebInfrastructure.Interfaces`,
   `[JobDelay(9)]` = 09:00 UTC / 12:00 МСК), выполняется под роботом-админом — этот пункт §5
   реализован.
-- ✅ **§6 Формирование сообщений** — реализовано для `SingleHotRole`
-  (`TelegramSingleHotRoleSender.BuildMessage`): русский текст, ссылка на заявку через
-  `ICharacterUriLocator`, HTML переживает телеграм-санитайзер (`b`/`strong`/`em`/`a`; `h1`-`h6` и
+- ✅ **§6 Формирование сообщений** — реализовано для обоих способов: `SingleHotRole`
+  (`TelegramSingleHotRoleSender.BuildMessage`) и `NewlyOpenedProjectsDigest`
+  (`TelegramNewlyOpenedProjectsDigestSender.BuildMessage`): русский текст, ссылки через
+  `ICharacterUriLocator` (заявка на роль) и `IUriLocator<ProjectIdentification>` (проект в дайджесте),
+  HTML переживает телеграм-санитайзер (`b`/`strong`/`em`/`a`; `h1`-`h6` и
   `small` сознательно не используются — телеграм-санитайзер вырезает их вместе с содержимым), даты
   игры и регион/МГ — из `KogdaIgraGameData` (через `IProjectMetadataRepository.GetProjectDetails`,
   без обращения к `IKogdaIgraSyncClient`).
 - ✅ **§7 Обработка ошибок доставки** — реализовано: `AdvertisementLogEntryInfo.Status`
   (`Sent`/`Failed`) пишется в реальный лог, anti-repeat (§4) учитывает только `Sent`-записи —
   провал доставки не блокирует повторную попытку в следующий запуск.
-- ❌ **§8 UI** — не реализовано. CRUD каналов/расписаний отсутствует; единственный канал и
-  единственное расписание заведены в коде.
+- ⚠️ **§8 UI** — частично. CRUD-формы нет; есть read-only дашборд `/admin/advertisement`
+  (`AdvertisementDashboard`, `[AdminAuthorize]`) с гридами каналов и расписаний (включая колонку
+  «Фильтр по регионам»).
 
 ## Контекст
 
@@ -161,7 +178,7 @@ DAL проекта — **EF6**, не EF Core (см. память проекта)
 | `AdvertisementChannelId` | int PK identity | |
 | `Name` | nvarchar | человекочитаемое имя для админки |
 | `ProjectId` | int? FK Projects | `null` = общий канал; иначе привязан к 1 игре |
-| `Kind` | int (enum) | `AdvertisementChannelKind` |
+| `Kind` | int | `AdvertisementChannelKind` (1 = Telegram); десериализация настроек по виду — в `AdvertisementEntityMapper` |
 | `SettingsJson` | nvarchar(max) | сериализованный `AdvertisementChannelSettings` (включая секрет бота), десериализация по `Kind` |
 | `IsActive` | bit | мягкое отключение канала |
 
@@ -178,9 +195,12 @@ DAL проекта — **EF6**, не EF Core (см. память проекта)
 | `AdvertisementScheduleId` | int PK identity | |
 | `AdvertisementChannelId` | int FK | канал назначения |
 | `Method` | int (enum) | `AdvertisementMethod` |
-| `DaysOfWeekMask` | int | битовая маска дней недели (время суток общее, в конфиге джобы) |
+| `DaysOfWeekMask` | int | битовая маска дней недели (бит = `(int)DayOfWeek`; время суток общее, в конфиге джобы) |
+| `RegionsFilter` | nvarchar(max)? | «Фильтр по регионам» (текст) — задел под фильтрацию по региону игры, пока нигде не используется |
 | `IsActive` | bit | |
-| `LastRunDate` | date? | защита от повторного запуска в тот же день (идемпотентность джобы) |
+
+Колонка `LastRunDate` из исходного дизайна не понадобилась и не создавалась: идемпотентность
+(at-most-once в сутки) обеспечивает трекинг джоб ADR002 (`DailyJob`).
 
 **`AdvertisementLog`** — по одной строке на **каждую** отрекламированную роль/игру (не на отправку
 целиком). Это принципиально для выборки «не повторять роль» и «наименее часто рекламируемые
@@ -302,9 +322,9 @@ DAL проекта — **EF6**, не EF Core (см. память проекта)
 
 **Тип джобы.** Одна **ежедневная** джоба (`IJob`, планировщик `MidnightJobsScheduler`, ADR002),
 запускаемая **каждый день в 12:00 по МСК** (`[JobDelay(9)]` = 09:00 UTC). Она перебирает активные расписания,
-чей `DaysOfWeekMask` включает сегодняшний день недели и у которых `LastRunDate` не сегодня,
-выполняет по одной отправке на каждое и проставляет `LastRunDate` (at-most-once в сутки,
-идемпотентность по ADR002). Отдельное время суток на расписание не нужно.
+чей `DaysOfWeekMask` включает сегодняшний день недели, и выполняет по одной отправке на каждое;
+at-most-once в сутки обеспечивает трекинг самого `DailyJob` (ADR002) — колонка `LastRunDate` не
+нужна и не создавалась. Отдельное время суток на расписание не нужно.
 
 ### 6. Формирование сообщений
 
