@@ -16,15 +16,16 @@ internal class FileS3Uploader(IAmazonS3 amazonS3client,
 
     public async Task UploadFileAsync(string key, Stream content, string contentType, CancellationToken ct)
     {
-        if (content.CanSeek)
-        {
-            // Вызывающий отдал стрим после записи — читаем с начала
-            content.Seek(0, SeekOrigin.Begin);
-        }
-
         var retries = 0;
         while (true)
         {
+            if (content.CanSeek)
+            {
+                // Перед каждой попыткой, а не один раз: неудачная попытка могла
+                // дочитать стрим до конца, и ретрай отправил бы хвост вместо файла
+                content.Seek(0, SeekOrigin.Begin);
+            }
+
             logger.LogInformation("Start uploading file {key} to S3 storage", key);
 
             var putRequest = new PutObjectRequest

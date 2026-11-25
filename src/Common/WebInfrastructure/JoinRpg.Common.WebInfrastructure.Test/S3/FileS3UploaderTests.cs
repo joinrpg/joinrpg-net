@@ -17,7 +17,7 @@ public class FileS3UploaderTests
     public async Task RetrySucceedsOnSecondAttempt()
     {
         var attempts = 0;
-        using var client = new StubS3Client(() =>
+        using var client = new StubS3Client(_ =>
         {
             attempts++;
             if (attempts == 1)
@@ -33,11 +33,45 @@ public class FileS3UploaderTests
         uploadHealth.LastFailureErrorCode.ShouldBeNull();
     }
 
+    /// <summary>
+    /// Регрессия: первая попытка PutObject могла дочитать стрим до конца (сбой после отправки тела).
+    /// Ретрай обязан отправить файл целиком, а не хвост с текущей позиции.
+    /// </summary>
+    [Fact]
+    public async Task RetryAfterPartiallyReadStreamSendsWholeFile()
+    {
+        var attempts = 0;
+        byte[]? secondAttemptBody = null;
+        using var client = new StubS3Client(request =>
+        {
+            attempts++;
+            if (attempts == 1)
+            {
+                // Первая попытка «успела» прочитать стрим до конца и упала
+                _ = request.InputStream.ReadByte();
+                while (request.InputStream.ReadByte() >= 0)
+                {
+                }
+                throw new AmazonS3Exception("connection reset") { ErrorCode = "InternalError" };
+            }
+            using var body = new MemoryStream();
+            request.InputStream.CopyTo(body);
+            secondAttemptBody = body.ToArray();
+        });
+        var uploadHealth = new S3UploadHealth();
+
+        await CreateUploader(client, uploadHealth).UploadFileAsync("key", new MemoryStream([1, 2, 3]), "image/jpeg", CancellationToken.None);
+
+        attempts.ShouldBe(2);
+        secondAttemptBody.ShouldBe(new byte[] { 1, 2, 3 });
+        uploadHealth.LastFailureErrorCode.ShouldBeNull();
+    }
+
     [Fact]
     public async Task GivesUpAfterThreeRetries()
     {
         var attempts = 0;
-        using var client = new StubS3Client(() =>
+        using var client = new StubS3Client(_ =>
         {
             attempts++;
             throw new AmazonS3Exception("Access Denied") { ErrorCode = "AccessDenied" };
@@ -54,7 +88,7 @@ public class FileS3UploaderTests
     [Fact]
     public async Task SuccessfulUploadClearsFailure()
     {
-        using var client = new StubS3Client(() => { });
+        using var client = new StubS3Client(_ => { });
         var uploadHealth = new S3UploadHealth();
         uploadHealth.ReportFailure("AccessDenied");
 
@@ -75,12 +109,12 @@ public class FileS3UploaderTests
             NullLogger<FileS3Uploader>.Instance,
             uploadHealth);
 
-    private sealed class StubS3Client(Action behavior)
+    private sealed class StubS3Client(Action<PutObjectRequest> behavior)
         : AmazonS3Client("key", "secret", new AmazonS3Config { ServiceURL = "https://s3.example.invalid" })
     {
         public override Task<PutObjectResponse> PutObjectAsync(PutObjectRequest request, CancellationToken cancellationToken = default)
         {
-            behavior();
+            behavior(request);
             return Task.FromResult(new PutObjectResponse());
         }
     }
