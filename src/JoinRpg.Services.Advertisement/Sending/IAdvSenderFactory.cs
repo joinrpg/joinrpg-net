@@ -6,12 +6,12 @@ internal interface IAdvSenderFactory
     /// Определяет вид канала по <paramref name="channel"/>.Settings и строит подходящего отправителя.
     /// Возвращает null, если вид канала не поддерживается или его настройки некорректны.
     /// </summary>
-    ISingleHotRoleSender? Create(AdvertisementChannelInfo channel);
+    ISingleHotRoleSender? Create(PostingChannelInfo channel);
 
     /// <summary>
     /// Определяет вид канала по <paramref name="channel"/>.Settings и строит отправителя дайджеста
     /// недавно открывшихся проектов. Возвращает null, если вид канала не поддерживается или его
     /// настройки некорректны.
     /// </summary>
-    INewlyOpenedProjectsDigestSender? CreateNewlyOpenedProjectsDigestSender(AdvertisementChannelInfo channel);
+    INewlyOpenedProjectsDigestSender? CreateNewlyOpenedProjectsDigestSender(PostingChannelInfo channel);
 }

@@ -2,8 +2,8 @@ namespace JoinRpg.Services.Advertisement.Test;
 
 public class AdvertisementScheduleInfoTests
 {
-    private static AdvertisementChannelInfo Channel(bool isActive) =>
-        new(new AdvertisementChannelIdentification(1), Name: "Test", BoundProjectId: null, new TelegramChannelSettings(new TelegramChatId(-100)), IsActive: isActive);
+    private static PostingChannelInfo Channel(bool isActive) =>
+        new(new PostingChannelIdentification(1), Name: "Test", BoundProjectId: null, new TelegramChannelSettings(new TelegramChatId(-100)), IsActive: isActive);
 
     private static AdvertisementScheduleInfo Schedule(bool scheduleActive, bool channelActive) =>
         new(new AdvertisementScheduleIdentification(1), Channel(channelActive), AdvertisementMethod.SingleHotRole, Enum.GetValues<DayOfWeek>().ToHashSet(), IsActive: scheduleActive);

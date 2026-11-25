@@ -56,7 +56,7 @@ public static class Registraton
             .AddTransient<IProjectBadgeTemplateRepository, ProjectBadgeTemplateRepository>()
             .AddTransient<IFinanceOperationsRepository, FinanceOperationsRepository>()
             .AddTransient<IAdvertisementLogRepository, AdvertisementLogRepository>()
-            .AddTransient<IAdvertisementChannelRepository, AdvertisementChannelRepository>()
+            .AddTransient<IPostingChannelRepository, PostingChannelRepository>()
             .AddTransient<IAdvertisementScheduleRepository, AdvertisementScheduleRepository>()
             .AddTransient<IUserMergeRepository, UserMergeRepository>()
             .AddTransient<IProjectRestoreLookupRepository, ProjectRestoreLookupRepository>()

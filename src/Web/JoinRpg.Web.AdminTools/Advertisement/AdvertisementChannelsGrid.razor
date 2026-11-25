@@ -1,4 +1,4 @@
-@using JoinRpg.DomainTypes.Advertisement
+@using JoinRpg.DomainTypes.Posting
 @using JoinRpg.Web.ProjectCommon.Projects
 @inject IProjectUriLocator ProjectUriLocator
 
@@ -35,12 +35,11 @@
 @code {
     [Parameter]
     [EditorRequired]
-    public IReadOnlyList<AdvertisementChannelInfo> Model { get; set; } = default!;
+    public IReadOnlyList<PostingChannelInfo> Model { get; set; } = default!;
 
-    private static string DescribeSettings(AdvertisementChannelSettings settings) =>
+    private static string DescribeSettings(PostingChannelSettings settings) =>
         settings switch
         {
             TelegramChannelSettings telegram => $"Telegram, chat {telegram.ChatId}",
-            _ => settings.GetType().Name,
         };
 }
