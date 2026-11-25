@@ -146,7 +146,7 @@ public class PlotPagesSmokeScenario(JoinApplicationFactory factory) : IClassFixt
                 ?? throw new InvalidOperationException($"У панели вводной {elementId} нет тела");
             panelBody.ShouldNotBeNull();
             // Стрелки перемещения (JoinMoveControl) — в обёртке панели, вне сворачиваемого details.
-            panel.SelectSingleNode(panelRoot)
+            panel.SelectSingleNode(panelRoot).ShouldNotBeNull()
                 .SelectNodes(".//use[contains(@href, 'arrow-down')]")
                 .ShouldNotBeNull($"У панели вводной {elementId} нет стрелок перемещения");
         }

@@ -83,7 +83,8 @@ public class AccommodationRoomTypeListScenario(SmokeProjectFixture fixture)
                 node.SelectSingleNode("span[contains(@class,'join-tooltip')]")?.InnerText ?? "").Trim())
             .ToDictionary(
                 group => group.Key,
-                group => group.Select(node => WebUtility.HtmlDecode(node.SelectSingleNode("span[1]").InnerText).Trim()).ToList());
+                group => group.Select(node =>
+                    WebUtility.HtmlDecode(node.SelectSingleNode("span[1]").ShouldNotBeNull().InnerText).Trim()).ToList());
 
         var placed = fixture.Residents.Count(resident => resident.IsPlaced);
         var totalCapacity = fixture.RoomCapacity * fixture.RoomNames.Count;

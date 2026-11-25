@@ -113,7 +113,7 @@ public class PrintPagesSmokeScenario(JoinApplicationFactory factory) : IClassFix
         // ним уедет, бейджи напечатаются без позиционирования и максимальным шрифтом — а страница
         // по-прежнему отдаст 200.
         var page = await (await context.MasterClient.GetAsync(BadgesUrl(context, templateId.ProjectBadgeTemplateId))).AsHtmlDocument();
-        var assets = page.DocumentNode.SelectNodes("//script[@src]|//link[@rel='stylesheet']")
+        var assets = page.DocumentNode.SelectNodes("//script[@src]|//link[@rel='stylesheet']").ShouldNotBeNull()
             .Select(node => node.GetAttributeValue("src", null) ?? node.GetAttributeValue("href", ""))
             .ToList();
         foreach (var asset in assets.Where(a => a.Contains("printable-badge") || IsScopedCssBundle(a)))
@@ -152,9 +152,9 @@ public class PrintPagesSmokeScenario(JoinApplicationFactory factory) : IClassFix
 
         // Ссылки выбора несут и шаблон, и персонажей — по ним открывается сама печать.
         var choice = await (await context.MasterClient.GetAsync(BadgesUrl(context, templateId: null))).AsHtmlDocument();
-        var link = WebUtility.HtmlDecode(choice.DocumentNode.SelectNodes("//a[contains(@href, 'badgeTemplateId=')]").First().GetAttributeValue("href", ""));
+        var link = WebUtility.HtmlDecode(choice.DocumentNode.SelectNodes("//a[contains(@href, 'badgeTemplateId=')]").ShouldNotBeNull().First().GetAttributeValue("href", ""));
         var printed = await (await context.MasterClient.GetAsync(link)).AsHtmlDocument();
-        printed.DocumentNode.SelectSingleNode("//title").InnerText.ShouldStartWith("Бейджи");
+        printed.DocumentNode.SelectSingleNode("//title").ShouldNotBeNull().InnerText.ShouldStartWith("Бейджи");
         printed.DocumentNode.SelectNodes("//*[contains(@class, 'join-printable-badge-line')]").ShouldNotBeNull();
     }
 
@@ -179,7 +179,7 @@ public class PrintPagesSmokeScenario(JoinApplicationFactory factory) : IClassFix
                 projectId, "Единственный шаблон", new BadgeLayout(90, 55, null, [])));
 
         var single = await (await context.MasterClient.GetAsync(url)).AsHtmlDocument();
-        WebUtility.HtmlDecode(single.DocumentNode.SelectSingleNode("//title").InnerText).ShouldBe("Бейджи: Единственный шаблон");
+        WebUtility.HtmlDecode(single.DocumentNode.SelectSingleNode("//title").ShouldNotBeNull().InnerText).ShouldBe("Бейджи: Единственный шаблон");
     }
 
     // Права в WebApi проверяются по projectId из query — шаблон чужого проекта по своему projectId не отдаётся:
