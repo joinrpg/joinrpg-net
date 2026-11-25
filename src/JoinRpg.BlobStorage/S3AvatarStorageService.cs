@@ -1,14 +1,20 @@
 using System.Security.Cryptography;
 using System.Text;
 using Amazon.S3.Model;
+using JoinRpg.Common.WebInfrastructure.Files;
 
 namespace JoinRpg.BlobStorage;
 
-internal class S3AvatarStorageService(AvatarDownloader avatarDownloader,
+internal class S3AvatarStorageService(IFileDownloader downloader,
     IOptions<S3StorageOptions> options,
     ILogger<S3AvatarStorageService> logger,
     IAmazonS3 amazonS3client) : IAvatarStorageService
 {
+    /// <summary>
+    /// Размер аватарки ограничен 1 МБ: пользователь стоит и ждёт ответа, например, на редирект логина.
+    /// </summary>
+    private const long MaxAvatarSize = 1 * 1024 * 1024;
+
     private readonly S3StorageOptions options = options.Value;
 
     public async Task<Uri?> StoreAvatar(Uri remoteUri, CancellationToken ct = default)
@@ -21,7 +27,13 @@ internal class S3AvatarStorageService(AvatarDownloader avatarDownloader,
                 logger.LogInformation("Start uploading avatar from {avatarUri}", remoteUri);
 
                 using var memoryStream = new MemoryStream(8192);
-                var (contentType, extension) = await avatarDownloader.DownloadAvatarAsync(remoteUri, memoryStream, ct);
+                var contentType = await downloader.DownloadAsync(remoteUri, memoryStream, MaxAvatarSize, ct);
+
+                if (ParseContentTypeToExtension(contentType) is not string extension)
+                {
+                    logger.LogWarning("Не удалось закешировать аватарку с {avatarUri}: неподходящий media type {mediaType}", remoteUri, contentType);
+                    return null;
+                }
 
                 var avatarName = CreateAvatarBlobName(remoteUri, extension);
 
@@ -61,7 +73,7 @@ internal class S3AvatarStorageService(AvatarDownloader avatarDownloader,
                 return uri;
             }
         }
-        catch (AvatarDownloadException exception)
+        catch (FileDownloadException exception)
         {
             logger.LogWarning(exception, "Не удалось закешировать аватарку с {avatarUri}", remoteUri);
             return null;
@@ -72,5 +84,18 @@ internal class S3AvatarStorageService(AvatarDownloader avatarDownloader,
     {
         var hash = SHA1.HashData(Encoding.UTF8.GetBytes(remoteUri.AbsoluteUri + Random.Shared.Next().ToString("X")));
         return Convert.ToHexString(hash) + extension;
+    }
+
+    private static string? ParseContentTypeToExtension(string mediaType)
+    {
+        return mediaType switch
+        {
+            "image/jpeg" => ".jpeg",
+            "image/png" => ".png",
+            "image/webp" => ".webp",
+            "image/avif" => ".avif",
+            "image/gif" => ".gif",
+            _ => null,
+        };
     }
 }

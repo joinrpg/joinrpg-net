@@ -1,4 +1,5 @@
 using Amazon.S3;
+using JoinRpg.Common.WebInfrastructure.Files;
 using JoinRpg.Common.WebInfrastructure.S3;
 using Microsoft.Extensions.Options;
 
@@ -16,7 +17,10 @@ public static class AmazonS3Registration
     {
         _ = services.AddHealthChecks().AddCheck<HealthCheckS3Storage>("S3 storage");
 
+        _ = services.AddHttpClient(FileDownloader.HttpClientName, client => client.Timeout = FileDownloader.DownloadTimeout);
+
         return services
+            .AddTransient<IFileDownloader, FileDownloader>()
             .AddSingleton<S3UploadHealth>()
             .AddSingleton<IAmazonS3>(sp => CreateS3Client(sp.GetRequiredService<IOptions<S3StorageOptions>>().Value));
     }
