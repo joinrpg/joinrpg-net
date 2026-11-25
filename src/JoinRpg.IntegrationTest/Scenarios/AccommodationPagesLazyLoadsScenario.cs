@@ -51,7 +51,7 @@ public class AccommodationPagesLazyLoadsScenario(SmokeProjectFixture fixture)
 
         // Первая ячейка строки — название комнаты.
         var shownRooms = roomRows
-            .Select(row => WebUtility.HtmlDecode(row.SelectSingleNode("td").InnerText).Trim())
+            .Select(row => WebUtility.HtmlDecode(row.SelectSingleNode("td").ShouldNotBeNull().InnerText).Trim())
             .OrderBy(name => name, StringComparer.Ordinal)
             .ToList();
         shownRooms.ShouldBe(

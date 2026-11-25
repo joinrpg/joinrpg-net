@@ -99,7 +99,7 @@ public class CheckInOverrideScenario(JoinApplicationFactory factory) : IClassFix
             .SelectSingleNode("//form[.//input[@name='overrideFeeDue']]").ShouldNotBeNull();
         // Форма панели — статический компонент: токен антифорджери он кладёт сам, иначе браузер получит 400.
         form.SelectSingleNode($".//input[@name='{AntiforgeryPostHelpers.FormFieldName}']").ShouldNotBeNull();
-        var hiddenFields = form.SelectNodes(".//input[@type='hidden']")
+        var hiddenFields = form.SelectNodes(".//input[@type='hidden']").ShouldNotBeNull()
             .Select(input => (Name: input.GetAttributeValue("name", ""), Value: WebUtility.HtmlDecode(input.GetAttributeValue("value", ""))))
             .Where(field => field.Name != AntiforgeryPostHelpers.FormFieldName);
         var token = await client.GetAntiforgeryTokenAsync(pageUrl);
