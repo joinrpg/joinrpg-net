@@ -326,19 +326,21 @@ internal class ProjectRepository(MyDbContext ctx) : GameRepositoryImplBase(ctx),
     {
         var weekAgo = DateTime.UtcNow.AddDays(-7);
         var activeClaimPredicate = ClaimPredicates.GetClaimStatusPredicate(ClaimStatusSpec.Active);
+        var staleThreshold = DateTime.UtcNow.AddDays(-AdvertisementStaleThresholdDays);
 
         // Ранжирование между собой — вне репозитория, той же формулой, что и для горячих ролей
         // (AdvertisementGameRanking), поэтому здесь порядок не важен.
-        var query = PublicOpenProjects
-            .Where(p => p.ClaimsOpenedDate >= weekAgo)
-            .Select(p => new
-            {
-                p.ProjectId,
-                p.ProjectName,
-                ActiveClaimsCount = p.Claims.Count(claim => activeClaimPredicate.Invoke(claim)),
-                AdvertisementCount = Ctx.AdvertisementLogEntriesSet.Count(e =>
-                    e.ProjectId == p.ProjectId && e.Status == (int)AdvertisementLogStatus.Sent),
-            });
+        var query = from project in PublicOpenProjects.Where(p => p.ClaimsOpenedDate >= weekAgo)
+                    join update in GetProjectWithLastUpdateQuery() on project.ProjectId equals update.ProjectId
+                    where update.LastUpdated >= staleThreshold
+                    select new
+                    {
+                        project.ProjectId,
+                        project.ProjectName,
+                        ActiveClaimsCount = project.Claims.Count(claim => activeClaimPredicate.Invoke(claim)),
+                        AdvertisementCount = Ctx.AdvertisementLogEntriesSet.Count(e =>
+                            e.ProjectId == project.ProjectId && e.Status == (int)AdvertisementLogStatus.Sent),
+                    };
 
         var result = await query.ToListAsync();
 
