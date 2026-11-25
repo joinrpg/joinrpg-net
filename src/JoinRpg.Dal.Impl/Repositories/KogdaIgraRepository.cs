@@ -8,8 +8,8 @@ internal class KogdaIgraRepository(MyDbContext Ctx) : IKogdaIgraRepository
 {
     public async Task<KogdaIgraListItem[]> GetNotUpdated()
     {
-        var result = await GetNotUpdatedQuery().Take(100).Select(ki => new { ki.KogdaIgraGameId, ki.Name, ki.Begin }).ToListAsync();
-        return [.. result.Select(x => new KogdaIgraListItem(new KogdaIgraIdentification(x.KogdaIgraGameId), x.Name, x.Begin?.Year))];
+        var result = await GetNotUpdatedQuery().Take(100).Select(ki => new ListRow(ki.KogdaIgraGameId, ki.Name, ki.Begin, ki.Status)).ToListAsync();
+        return [.. result.Select(ToListItem)];
     }
 
     public Task<KogdaIgraGame[]> GetNotUpdatedObjects() => GetNotUpdatedQuery().Take(100).ToArrayAsync();
@@ -37,9 +37,9 @@ internal class KogdaIgraRepository(MyDbContext Ctx) : IKogdaIgraRepository
             .Where(ki => ki.Active)
             .Where(ki => ki.LastUpdatedAt!.Value.Year > (DateTimeOffset.Now.Year - 2))
             .Where(ki => ki.Name.Length > 0)
-            .Select(ki => new { ki.KogdaIgraGameId, ki.Name, ki.Begin })
+            .Select(ki => new ListRow(ki.KogdaIgraGameId, ki.Name, ki.Begin, ki.Status))
             .ToListAsync();
-        return [.. result.Select(x => new KogdaIgraListItem(new KogdaIgraIdentification(x.KogdaIgraGameId), x.Name, x.Begin?.Year))];
+        return [.. result.Select(ToListItem)];
     }
 
     async Task<KogdaIgraListItem[]> IKogdaIgraRepository.GetActiveFuture()
@@ -49,10 +49,15 @@ internal class KogdaIgraRepository(MyDbContext Ctx) : IKogdaIgraRepository
             .Where(ki => ki.Active)
             .Where(ki => ki.Begin != null && ki.Begin.Value >= DateTime.Today)
             .Where(ki => ki.Name.Length > 0)
-            .Select(ki => new { ki.KogdaIgraGameId, ki.Name, ki.Begin })
+            .Select(ki => new ListRow(ki.KogdaIgraGameId, ki.Name, ki.Begin, ki.Status))
             .ToListAsync();
-        return [.. result.Select(x => new KogdaIgraListItem(new KogdaIgraIdentification(x.KogdaIgraGameId), x.Name, x.Begin?.Year))];
+        return [.. result.Select(ToListItem)];
     }
+
+    private sealed record ListRow(int KogdaIgraGameId, string Name, DateTime? Begin, int? Status);
+
+    private static KogdaIgraListItem ToListItem(ListRow x)
+        => new(new KogdaIgraIdentification(x.KogdaIgraGameId), x.Name, x.Begin?.Year, (KogdaIgraGameStatus?)x.Status);
 
     public Task<int> GetNotUpdatedCount() => GetNotUpdatedQuery().CountAsync();
 

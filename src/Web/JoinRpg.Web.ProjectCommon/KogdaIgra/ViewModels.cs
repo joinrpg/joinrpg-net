@@ -8,7 +8,7 @@ public record class KogdaIgraBindViewModel(
     KogdaIgraIdentification[] KogdaIgraIdentifications,
     bool DisableKogdaIgraMapping);
 
-public record class KogdaIgraShortViewModel(KogdaIgraIdentification KogdaIgraId, string Name, Uri KogdaIgraLink, int? Year);
+public record class KogdaIgraShortViewModel(KogdaIgraIdentification KogdaIgraId, string Name, Uri KogdaIgraLink, int? Year, KogdaIgraGameStatus? Status = null);
 
 public record class KogdaIgraCardViewModel(
     KogdaIgraIdentification KogdaIgraId,

@@ -26,5 +26,7 @@ public record class KogdaIgraGameInfo(
     string? LiveJournalCommunity,
     string? TelegramChannel,
     // На КогдаИгре игра помечена удалённой (deleted_flag = 1), но API по-прежнему отдаёт её данные
-    bool IsDeleted
+    bool IsDeleted,
+    // Числовой код статуса игры на КогдаИгре (0=OK, 1=Прошла, 3=Отложена, 5=Отменена и т.д.); null — API его не вернула
+    int? Status
     );

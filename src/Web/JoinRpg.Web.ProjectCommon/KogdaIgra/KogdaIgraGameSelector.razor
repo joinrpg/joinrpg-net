@@ -9,7 +9,7 @@
                ToListItem="@(m => TypedSelectList.CreateItem(
                    Value: m.KogdaIgraId,
                    Text: m.Name,
-                   Subtext: m.Year?.ToString() ?? ""))"
+                   Subtext: m.ToSelectorSubtext()))"
                SelectedValues="@KogdaIgraIds"
                SelectedValuesChanged="@HandleSelectedValuesChanged"
                SelectedItemsChanged="@KogdaIgrasChanged"

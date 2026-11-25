@@ -27,7 +27,7 @@ internal class KogdaIgraSyncManager(
 
     private KogdaIgraShortViewModel[] ToShortViewModels(KogdaIgraListItem[] items)
         => items
-            .Select(i => new KogdaIgraShortViewModel(i.KogdaIgraId, i.Name, new Uri(kograIgraOptions.Value.HostName + "game/" + i.KogdaIgraId.Value), i.Year))
+            .Select(i => new KogdaIgraShortViewModel(i.KogdaIgraId, i.Name, new Uri(kograIgraOptions.Value.HostName + "game/" + i.KogdaIgraId.Value), i.Year, i.Status))
             .OrderBy(i => i.Name)
             .ToArray();
 

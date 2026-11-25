@@ -221,6 +221,7 @@ erDiagram
         string VkClub
         string LjComm
         string TelegramChannel
+        int Status "код статуса игры на КогдаИгре; null = неизвестен"
         string JsonGameData "сырой ответ КогдаИгры"
         datetimeoffset UpdateRequestedAt "UpdateRequestedAt больше LastUpdatedAt = пора обновить"
         datetimeoffset LastUpdatedAt

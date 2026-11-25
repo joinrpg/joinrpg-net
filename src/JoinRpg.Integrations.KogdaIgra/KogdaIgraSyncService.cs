@@ -122,6 +122,7 @@ internal class KogdaIgraSyncService(
         dbRecord.VkClub = kiData.VkClub;
         dbRecord.LjComm = kiData.LiveJournalCommunity;
         dbRecord.TelegramChannel = kiData.TelegramChannel;
+        dbRecord.Status = kiData.Status;
         dbRecord.Active = !kiData.IsDeleted;
 
         await unitOfWork.SaveChangesAsync();
@@ -135,6 +136,7 @@ internal class KogdaIgraSyncService(
         dbRecord.Name = "Удалено " + kogdaIgraGameId;
         dbRecord.JsonGameData = "{}";
         dbRecord.LastUpdatedAt = dbRecord.UpdateRequestedAt; // Когда игра не возвращает дату для удаления
+        dbRecord.Status = null; // Как и у прочих записей с затёртым JsonGameData, статус неизвестен
         dbRecord.Active = false;
 
         await unitOfWork.SaveChangesAsync();

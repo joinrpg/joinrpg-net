@@ -3,7 +3,7 @@ using JoinRpg.DataModel.Projects;
 
 namespace JoinRpg.Data.Interfaces.AdminTools;
 
-public record KogdaIgraListItem(KogdaIgraIdentification KogdaIgraId, string Name, int? Year);
+public record KogdaIgraListItem(KogdaIgraIdentification KogdaIgraId, string Name, int? Year, KogdaIgraGameStatus? Status = null);
 
 public interface IKogdaIgraRepository
 {
