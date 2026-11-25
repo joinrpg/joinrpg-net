@@ -17,9 +17,9 @@ public record ProjectDetails(
     MarkdownString PreferentialFeeConditions,
     IReadOnlyCollection<PaymentTypePlayerInfo> PlayerPaymentTypes)
 {
-    public KogdaIgraGameData? NearestFutureKogdaIgraCard =>
+    public KogdaIgraGameData? NearestFutureOkKogdaIgraCard =>
         KogdaIgraCards
-            .Where(g => g.IsActive && g.Begin > DateOnly.FromDateTime(DateTime.UtcNow))
+            .Where(g => g.IsActive && g.Status == KogdaIgraGameStatus.Ok && g.Begin > DateOnly.FromDateTime(DateTime.UtcNow))
             .OrderBy(g => g.Begin)
             .FirstOrDefault();
 }
