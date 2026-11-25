@@ -1,4 +1,5 @@
 global using Amazon.S3;
+global using JoinRpg.Common.WebInfrastructure.S3;
 global using JoinRpg.DomainTypes.Users;
 global using JoinRpg.Services.Interfaces.Avatars;
 global using Microsoft.Extensions.Logging;

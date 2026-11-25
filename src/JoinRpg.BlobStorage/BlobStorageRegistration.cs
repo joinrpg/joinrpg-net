@@ -1,4 +1,3 @@
-using JoinRpg.Services.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace JoinRpg.BlobStorage;

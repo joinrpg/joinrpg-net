@@ -7,6 +7,7 @@ using JoinRpg.Common.Telegram;
 using JoinRpg.Common.WebComponents;
 using JoinRpg.Common.WebInfrastructure;
 using JoinRpg.Common.WebInfrastructure.Logging.Filters;
+using JoinRpg.Common.WebInfrastructure.S3;
 using JoinRpg.Dal.Impl;
 using JoinRpg.Dal.Notifications;
 using JoinRpg.Domain;

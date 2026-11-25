@@ -6,7 +6,7 @@ using JoinRpg.IdPortal.Components.Account;
 using JoinRpg.IdPortal.OAuthServer;
 using JoinRpg.Interfaces;
 using JoinRpg.Services.Impl;
-using JoinRpg.Services.Interfaces;
+using JoinRpg.Common.WebInfrastructure.S3;
 using JoinRpg.Services.Notifications;
 using Microsoft.AspNetCore.Components.Authorization;
 

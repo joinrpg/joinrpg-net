@@ -1,5 +1,4 @@
 using Amazon.S3.Model;
-using JoinRpg.Services.Interfaces;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 
 namespace JoinRpg.BlobStorage;

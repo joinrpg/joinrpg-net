@@ -2,7 +2,7 @@ using System.Net;
 using System.Net.Http.Headers;
 using Amazon.S3;
 using Amazon.S3.Model;
-using JoinRpg.Services.Interfaces;
+using JoinRpg.Common.WebInfrastructure.S3;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Shouldly;

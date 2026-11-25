@@ -1,1 +1,16 @@
 #nullable enable
+JoinRpg.Common.WebInfrastructure.S3.S3StorageOptions
+JoinRpg.Common.WebInfrastructure.S3.S3StorageOptions.AccessKey.get -> string?
+JoinRpg.Common.WebInfrastructure.S3.S3StorageOptions.AccessKey.set -> void
+JoinRpg.Common.WebInfrastructure.S3.S3StorageOptions.BucketName.get -> string?
+JoinRpg.Common.WebInfrastructure.S3.S3StorageOptions.BucketName.set -> void
+JoinRpg.Common.WebInfrastructure.S3.S3StorageOptions.Configured.get -> bool
+JoinRpg.Common.WebInfrastructure.S3.S3StorageOptions.Enabled.get -> bool
+JoinRpg.Common.WebInfrastructure.S3.S3StorageOptions.Enabled.set -> void
+JoinRpg.Common.WebInfrastructure.S3.S3StorageOptions.Endpoint.get -> string?
+JoinRpg.Common.WebInfrastructure.S3.S3StorageOptions.Endpoint.set -> void
+JoinRpg.Common.WebInfrastructure.S3.S3StorageOptions.PublicBaseUrl.get -> string?
+JoinRpg.Common.WebInfrastructure.S3.S3StorageOptions.PublicBaseUrl.set -> void
+JoinRpg.Common.WebInfrastructure.S3.S3StorageOptions.S3StorageOptions() -> void
+JoinRpg.Common.WebInfrastructure.S3.S3StorageOptions.SecretKey.get -> string?
+JoinRpg.Common.WebInfrastructure.S3.S3StorageOptions.SecretKey.set -> void

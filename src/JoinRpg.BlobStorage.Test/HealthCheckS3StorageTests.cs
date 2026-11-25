@@ -1,6 +1,6 @@
 using Amazon.S3;
 using Amazon.S3.Model;
-using JoinRpg.Services.Interfaces;
+using JoinRpg.Common.WebInfrastructure.S3;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
