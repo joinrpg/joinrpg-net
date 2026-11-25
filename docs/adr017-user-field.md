@@ -202,6 +202,8 @@ public static Task<IReadOnlyDictionary<UserIdentification, UserInfoHeader>> Load
 **Даёт имя и ссылку на профиль — ровно то, что и так видно.** Профиль `/user/{id}` открыт
 анонимам ([UserController.cs:19](../src/JoinRpg.Portal/Controllers/UserProfile/UserController.cs))
 и показывает `DisplayName`, аватар и публичные проекты; контакты там закрыты тем же `GetAccess`.
+`UserLinkViewModel` может нести `Slug` — человекочитаемый идентификатор того же публичного
+профиля для ссылок вида `/member/{slug}` (#6302): контактом не является, доступа не добавляет.
 
 **Публичное поле разрешено.** Формально `ProjectFieldVisibility.Public` у user-поля обходит
 настройку персонажа «скрыть игрока» (`HidePlayerForCharacter` → `ViewMode.Hide`, см.

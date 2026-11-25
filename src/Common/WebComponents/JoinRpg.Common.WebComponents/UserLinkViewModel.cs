@@ -9,9 +9,12 @@ namespace JoinRpg.Common.WebComponents;
 /// не принимает неположительные значения (был баг: сетка ролей падала на UserId(-1)).</param>
 /// <param name="DisplayName">Текст ссылки.</param>
 /// <param name="ViewMode">Как показывать: ссылкой, заглушкой вместо неё или пояснением.</param>
+/// <param name="Slug">Человекочитаемый идентификатор профиля (например, «ivanov» для ссылки
+/// вида /member/ivanov). Опционален: хост заполняет его при маппинге своей модели пользователя,
+/// а локатор решает, строить ссылку по slug или по id.</param>
 // JsonConstructor нужен, потому что конструкторов стало два, и System.Text.Json не умеет выбирать сам.
 [method: JsonConstructor]
-public record UserLinkViewModel(UserIdentification? UserId, string DisplayName, ViewMode ViewMode)
+public record UserLinkViewModel(UserIdentification? UserId, string DisplayName, ViewMode ViewMode, string? Slug = null)
 {
     public static UserLinkViewModel Hidden = new((UserIdentification?)null, "скрыто", ViewMode.Hide);
 
