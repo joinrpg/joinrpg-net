@@ -113,6 +113,30 @@ public class JoinMoveControlTest
         cut.FindAll(".join-select__list input:not([value=''])").Select(i => i.GetAttribute("value")).ShouldBe(["1", "3"]);
     }
 
+    /// <summary>
+    /// Оформление подписи в диалоге сортировки — в scoped CSS компонента, опора на Bootstrap
+    /// (class="control-label") запрещена: без Bootstrap CSS подпись должна выглядеть так же (#6146).
+    /// </summary>
+    [Fact]
+    public void SortDialogLabel_DoesNotUseBootstrapControlLabelClass()
+    {
+        using var ctx = CreateContext();
+        var dialogModule = ctx.JSInterop.SetupModule("/_content/JoinRpg.Common.WebComponents/component-interop.js");
+        dialogModule.SetupVoid("showModal", _ => true).SetVoidResult();
+        var cut = ctx.Render<JoinMoveControl<Item>>(p => p
+            .Add(x => x.Items, Items)
+            .Add(x => x.Self, Items[1]));
+
+        _ = cut.Find("button[aria-label='Переместить в любую позицию']").ClickAsync(new MouseEventArgs());
+
+        cut.WaitForAssertion(() =>
+        {
+            var label = cut.Find("dialog label");
+            label.ClassList.ShouldNotContain("control-label");
+            label.ClassList.ShouldContain("join-move__label");
+        });
+    }
+
     [Fact]
     public void SkipGroup_WithoutOwnSize_TakesOuterGroupSize()
     {

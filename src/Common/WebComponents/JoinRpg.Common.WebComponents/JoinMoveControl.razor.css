@@ -1,0 +1,11 @@
+/*
+ * Подпись «Поместить после» в диалоге сортировки. Значения перенесены из Bootstrap 3.4.0
+ * (базовый label из scaffolding — control-label вне .form-horizontal ничего не добавлял),
+ * чтобы подпись выглядела так же, но без опоры на классы Bootstrap.
+ */
+.join-move__label {
+    display: inline-block;
+    max-width: 100%;
+    margin-bottom: 5px;
+    font-weight: 700;
+}

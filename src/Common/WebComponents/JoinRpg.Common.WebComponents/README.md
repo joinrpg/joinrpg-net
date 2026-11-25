@@ -50,7 +50,7 @@ Bootstrap 3 пакет не приносит. На его CSS рассчитан
 `col-md-*`, `form-control`, `help-block`, `control-label`). Без Bootstrap (и его JS) обходятся
 `JoinPanel`, `JoinButton`, `JoinBadge`, `JoinCollapsePanel`, `JoinAlert` (и рендерящие его `JoinLoadingMessage` и `JoinErrorMessage`),
 `JoinInputNumber`, `JoinTextInput`, `Tooltip`, `TypedSelector`, `JoinDropdownButton` и его обёртки `JoinDotsMenu` и
-`TypedDropdownButton`, `JoinDialog`.
+`TypedDropdownButton`, `JoinDialog`, `JoinMoveControl`.
 
 ## Что зарегистрировать у себя
 
