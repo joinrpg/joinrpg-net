@@ -1,5 +1,4 @@
 using System.Text.Json.Serialization;
-using JoinRpg.DomainTypes.ProjectMetadata;
 
 namespace JoinRpg.DomainTypes.Posting;
 

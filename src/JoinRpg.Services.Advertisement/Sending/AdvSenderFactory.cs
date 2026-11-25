@@ -27,18 +27,10 @@ internal class AdvSenderFactory(
         return new TelegramNewlyOpenedProjectsDigestSender(chatId, telegramNotificationService, projectUriLocator);
     }
 
-    private static TelegramChatId? TryGetTelegramChatId(PostingChannelInfo channel)
-    {
-        if (channel.Settings is not TelegramChannelSettings telegramSettings)
+    private static TelegramChatId? TryGetTelegramChatId(PostingChannelInfo channel) =>
+        channel.Settings switch
         {
-            return null;
-        }
-
-        if (telegramSettings.ChatId.Id == 0)
-        {
-            return null;
-        }
-
-        return telegramSettings.ChatId;
-    }
+            TelegramChannelSettings { ChatId.Id: 0 } => null,
+            TelegramChannelSettings telegramSettings => telegramSettings.ChatId,
+        };
 }

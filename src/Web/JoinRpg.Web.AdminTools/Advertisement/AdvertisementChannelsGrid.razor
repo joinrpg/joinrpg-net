@@ -41,6 +41,5 @@
         settings switch
         {
             TelegramChannelSettings telegram => $"Telegram, chat {telegram.ChatId}",
-            _ => settings.GetType().Name,
         };
 }

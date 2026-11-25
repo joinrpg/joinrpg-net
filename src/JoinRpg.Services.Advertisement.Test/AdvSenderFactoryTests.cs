@@ -29,16 +29,6 @@ public class AdvSenderFactoryTests
     }
 
     [Fact]
-    public void Create_UnsupportedSettings_ReturnsNull()
-    {
-        var factory = CreateFactory();
-        var channel = new PostingChannelInfo(
-            new PostingChannelIdentification(1), Name: "Test", BoundProjectId: null, new UnsupportedChannelSettings());
-
-        factory.Create(channel).ShouldBeNull();
-    }
-
-    [Fact]
     public void CreateNewlyOpenedProjectsDigestSender_TelegramSettingsWithChatId_ReturnsSender()
     {
         var factory = CreateFactory();
@@ -60,18 +50,6 @@ public class AdvSenderFactoryTests
 
         factory.CreateNewlyOpenedProjectsDigestSender(channel).ShouldBeNull();
     }
-
-    [Fact]
-    public void CreateNewlyOpenedProjectsDigestSender_UnsupportedSettings_ReturnsNull()
-    {
-        var factory = CreateFactory();
-        var channel = new PostingChannelInfo(
-            new PostingChannelIdentification(1), Name: "Test", BoundProjectId: null, new UnsupportedChannelSettings());
-
-        factory.CreateNewlyOpenedProjectsDigestSender(channel).ShouldBeNull();
-    }
-
-    private sealed record UnsupportedChannelSettings : PostingChannelSettings;
 
     private sealed class FakeTelegramNotificationService : ITelegramNotificationService
     {
