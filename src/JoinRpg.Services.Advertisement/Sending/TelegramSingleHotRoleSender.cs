@@ -11,8 +11,8 @@ internal class TelegramSingleHotRoleSender(
 {
     public Task<SendingResult> Send(ProjectInfo project, DomainTypes.ProjectMetadata.ProjectDetails details, Character character, Uri addClaimUri)
     {
-        var nearestFutureCard = details.NearestFutureKogdaIgraCard
-            ?? throw new InvalidOperationException($"У проекта {project.ProjectId} нет карточки КогдаИгры в будущем");
+        var nearestFutureCard = details.NearestFutureOkKogdaIgraCard
+            ?? throw new InvalidOperationException($"У проекта {project.ProjectId} нет карточки КогдаИгры в будущем со статусом Ок");
 
         var kogdaIgraCardUri = new Uri(kogdaIgraOptions.HostName, $"/game/{nearestFutureCard.Id.Value}/");
 

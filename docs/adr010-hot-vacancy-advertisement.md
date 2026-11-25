@@ -50,7 +50,8 @@ MVP (`JoinRpg.Services.Advertisement` + `JoinRpg.Services.Advertisement.Test`) �
   `HotRoleSelector` (среди наименее рекламированных берётся персонаж с наибольшим `CharacterId`,
   т.е. созданный последним; выбор детерминированный, без `Random`). Для `NewlyOpenedProjectsDigest`
   реализованы своя выборка кандидатов (`IProjectRepository.GetPublicProjectsOpenedForClaimsInLastWeek()`)
-  и та же валидация проекта (публичность/открытость заявок, кулдаун, карточка КогдаИгры в будущем),
+  и та же валидация проекта (публичность/открытость заявок, кулдаун, карточка КогдаИгры в будущем
+  со статусом Ок),
   лимит — хардкод-константа `MaxProjectsInDigest = 10`, запись в лог пачкой через
   `RecordAdvertisementBatch`. `HotRolesDigest`/`OpenVacanciesDigest` из исходного дизайна не
   реализованы. Anti-repeat роли (шаг «не повторять роль в канале») —

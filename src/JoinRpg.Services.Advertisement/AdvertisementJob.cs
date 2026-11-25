@@ -110,13 +110,13 @@ internal class AdvertisementJob(
             {
                 return;
             }
-            // проект не подошёл (нет карточки КогдаИгры в будущем или не осталось горячих ролей) — пробуем следующий по приоритету
+            // проект не подошёл (нет карточки КогдаИгры в будущем со статусом Ок или не осталось горячих ролей) — пробуем следующий по приоритету
         }
 
         logger.LogInformation("Расписание {scheduleId}: не нашлось ни одной подходящей роли ни в одном проекте", schedule.ScheduleId);
     }
 
-    /// <returns>true, если для проекта была выбрана и отправлена роль; false — если проект не подошёл (не открыт для рекламы, нет карточки КогдаИгры в будущем или горячих ролей).</returns>
+    /// <returns>true, если для проекта была выбрана и отправлена роль; false — если проект не подошёл (не открыт для рекламы, нет карточки КогдаИгры в будущем со статусом Ок или горячих ролей).</returns>
     private async Task<bool> TryAdvertiseProject(ProjectIdentification projectId, AdvertisementScheduleInfo schedule, ISingleHotRoleSender sender)
     {
         if (await ValidateForAdvertisement(projectId, schedule) is not { } details)
@@ -144,7 +144,7 @@ internal class AdvertisementJob(
     /// <summary>
     /// Общие проверки перед рекламой проекта — используются и для одиночной горячей роли, и для
     /// дайджеста: проект сейчас публичный и открыт для заявок, не на кулдауне в этом расписании,
-    /// есть карточка КогдаИгры в будущем.
+    /// есть карточка КогдаИгры в будущем со статусом Ок.
     /// </summary>
     private async Task<DomainTypes.ProjectMetadata.ProjectDetails?> ValidateForAdvertisement(
         ProjectIdentification projectId, AdvertisementScheduleInfo schedule)
@@ -167,10 +167,10 @@ internal class AdvertisementJob(
             return null;
         }
 
-        if (details.NearestFutureKogdaIgraCard is null)
+        if (details.NearestFutureOkKogdaIgraCard is null)
         {
             logger.LogInformation(
-                "Расписание {scheduleId}: у проекта {projectId} нет карточки КогдаИгры в будущем (привязано карточек: {cardCount}), пропускаем",
+                "Расписание {scheduleId}: у проекта {projectId} нет карточки КогдаИгры в будущем со статусом Ок (привязано карточек: {cardCount}), пропускаем",
                 schedule.ScheduleId, projectId, details.KogdaIgraCards.Count);
             return null;
         }
@@ -195,7 +195,7 @@ internal class AdvertisementJob(
                 continue;
             }
 
-            digest.Add((candidate, details.NearestFutureKogdaIgraCard!));
+            digest.Add((candidate, details.NearestFutureOkKogdaIgraCard!));
         }
 
         if (digest.Count == 0)

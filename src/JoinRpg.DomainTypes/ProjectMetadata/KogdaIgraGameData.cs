@@ -12,4 +12,5 @@ public record class KogdaIgraGameData(
     bool IsActive,
     VkId? VkClub = null,
     LiveJournalId? LjComm = null,
-    string? TelegramChannel = null);
+    string? TelegramChannel = null,
+    KogdaIgraGameStatus? Status = null);
