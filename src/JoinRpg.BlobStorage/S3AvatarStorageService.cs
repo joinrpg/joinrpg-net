@@ -7,8 +7,7 @@ namespace JoinRpg.BlobStorage;
 internal class S3AvatarStorageService(AvatarDownloader avatarDownloader,
     IOptions<S3StorageOptions> options,
     ILogger<S3AvatarStorageService> logger,
-    IAmazonS3 amazonS3client,
-    S3UploadHealth uploadHealth) : IAvatarStorageService
+    IAmazonS3 amazonS3client) : IAvatarStorageService
 {
     private readonly S3StorageOptions options = options.Value;
 
@@ -51,10 +50,8 @@ internal class S3AvatarStorageService(AvatarDownloader avatarDownloader,
                         continue;
                     }
                     logger.LogError(s3exception, "Проблема при загрузке аватара {avatarUri} в S3 хранилище (Type={s3errorType}, Code={s3errorCode}: {message}", remoteUri, s3exception.ErrorType, s3exception.ErrorCode, s3exception.Message);
-                    uploadHealth.ReportFailure(s3exception.ErrorCode ?? s3exception.Message);
                     throw;
                 }
-                uploadHealth.ReportSuccess();
                 var uri = new Uri($"{options.Endpoint}/{options.BucketName}/{avatarName}");
 
                 logger.LogInformation(
