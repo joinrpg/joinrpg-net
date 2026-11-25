@@ -43,6 +43,12 @@ public class KogdaIgraGame
     public string? TelegramChannel { get; set; }
 
     /// <summary>
+    /// Числовой код статуса игры на КогдаИгре (0=OK, 1=Прошла, 3=Отложена, 5=Отменена и т.д.).
+    /// NULL — статус неизвестен: данных ещё не было (запись-заглушка) или игра удалена и JSON затёрт.
+    /// </summary>
+    public int? Status { get; set; }
+
+    /// <summary>
     /// Привязанные проекты. Пусто = ничего не привязано.
     /// </summary>
 

@@ -46,7 +46,7 @@ public class SelectorListPrerenderTransferTest
 
     [Fact]
     public Task KogdaIgraShortViewModel() => ShouldSurviveTransfer(
-        new KogdaIgraShortViewModel(new KogdaIgraIdentification(60), "Игра", new Uri("https://kogda-igra.ru/game/60"), Year: 2026));
+        new KogdaIgraShortViewModel(new KogdaIgraIdentification(60), "Игра", new Uri("https://kogda-igra.ru/game/60"), Year: 2026, Status: KogdaIgraGameStatus.Cancelled));
 
     [Fact]
     public Task ProjectRolesListDto() => ShouldSurviveTransfer(
