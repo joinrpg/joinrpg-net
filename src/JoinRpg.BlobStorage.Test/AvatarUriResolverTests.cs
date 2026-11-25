@@ -1,4 +1,4 @@
-using JoinRpg.Services.Interfaces;
+using JoinRpg.Common.WebInfrastructure.S3;
 using Shouldly;
 using Xunit;
 

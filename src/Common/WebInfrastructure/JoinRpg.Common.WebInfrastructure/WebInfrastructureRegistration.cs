@@ -69,6 +69,8 @@ public static class WebInfrastructureRegistration
 
         services.AddJoinHealthChecks();
 
+        services.AddJoinS3Storage();
+
         services.AddJoinHtmlSanitizers();
 
         _ = services.AddJoinRobotsTxt();

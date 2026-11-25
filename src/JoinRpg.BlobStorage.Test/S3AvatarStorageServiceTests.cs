@@ -1,8 +1,5 @@
-using System.Net;
-using System.Net.Http.Headers;
-using Amazon.S3;
-using Amazon.S3.Model;
-using JoinRpg.Services.Interfaces;
+using JoinRpg.Common.WebInfrastructure.Files;
+using JoinRpg.Common.WebInfrastructure.S3;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Shouldly;
@@ -11,38 +8,60 @@ using Xunit;
 namespace JoinRpg.BlobStorage;
 
 /// <summary>
-/// Загрузка аватарки сообщает свой исход в <see cref="S3UploadHealth"/>, по которому health check
-/// видит, что запись в бакет не проходит.
+/// Аватарная политика поверх общих IFileDownloader/IFileS3Uploader: лимит размера,
+/// whitelist image-типов, имя файла. Ретраи и репортинг в S3 — забота FileS3Uploader.
 /// </summary>
 public class S3AvatarStorageServiceTests
 {
     private static readonly Uri RemoteUri = new("https://example.invalid/avatar.jpg");
 
     [Fact]
-    public async Task DeniedUploadIsReported()
+    public async Task UnknownMediaTypeReturnsNull()
     {
-        using var client = new StubS3Client(() => throw new AmazonS3Exception("Access Denied") { ErrorCode = "AccessDenied" });
-        var uploadHealth = new S3UploadHealth();
+        var uploader = new StubUploader();
+        var service = CreateService(new StubDownloader("text/html"), uploader);
 
-        _ = await Should.ThrowAsync<AmazonS3Exception>(() => CreateService(client, uploadHealth).StoreAvatar(RemoteUri));
+        var result = await service.StoreAvatar(RemoteUri);
 
-        uploadHealth.LastFailureErrorCode.ShouldBe("AccessDenied");
+        result.ShouldBeNull();
+        uploader.UploadedKey.ShouldBeNull("не-image контент не должен попадать в хранилище");
     }
 
     [Fact]
-    public async Task SuccessfulUploadClearsFailure()
+    public async Task DownloadFailureReturnsNull()
     {
-        using var client = new StubS3Client(() => { });
-        var uploadHealth = new S3UploadHealth();
-        uploadHealth.ReportFailure("AccessDenied");
+        var service = CreateService(new StubDownloader(throwOnDownload: true), new StubUploader());
 
-        _ = await CreateService(client, uploadHealth).StoreAvatar(RemoteUri);
+        var result = await service.StoreAvatar(RemoteUri);
 
-        uploadHealth.LastFailureErrorCode.ShouldBeNull();
+        result.ShouldBeNull();
     }
 
-    private static S3AvatarStorageService CreateService(IAmazonS3 client, S3UploadHealth uploadHealth)
-        => new(new AvatarDownloader(new StubHttpClientFactory(), NullLogger<AvatarDownloader>.Instance),
+    [Fact]
+    public async Task SuccessfulUploadReturnsUri()
+    {
+        var uploader = new StubUploader();
+        var service = CreateService(new StubDownloader("image/jpeg"), uploader);
+
+        var result = await service.StoreAvatar(RemoteUri);
+
+        uploader.UploadedKey.ShouldNotBeNull().ShouldEndWith(".jpeg");
+        uploader.UploadedContentType.ShouldBe("image/jpeg");
+        result.ShouldNotBeNull();
+        result.AbsoluteUri.ShouldBe($"https://s3.example.invalid/bucket/{uploader.UploadedKey}");
+    }
+
+    [Fact]
+    public async Task UploadFailurePropagates()
+    {
+        // Сервис ловит только FileDownloadException; сбои загрузки (после ретраев uploader'а) идут наружу
+        var service = CreateService(new StubDownloader("image/jpeg"), new StubUploader(throwOnUpload: true));
+
+        _ = await Should.ThrowAsync<InvalidOperationException>(() => service.StoreAvatar(RemoteUri));
+    }
+
+    private static S3AvatarStorageService CreateService(StubDownloader downloader, StubUploader uploader)
+        => new(downloader,
             Options.Create(new S3StorageOptions
             {
                 Endpoint = "https://s3.example.invalid",
@@ -51,31 +70,35 @@ public class S3AvatarStorageServiceTests
                 BucketName = "bucket",
             }),
             NullLogger<S3AvatarStorageService>.Instance,
-            client,
-            uploadHealth);
+            uploader);
 
-    private sealed class StubS3Client(Action behavior)
-        : AmazonS3Client("key", "secret", new AmazonS3Config { ServiceURL = "https://s3.example.invalid" })
+    private sealed class StubDownloader(string? mediaType = null, bool throwOnDownload = false) : IFileDownloader
     {
-        public override Task<PutObjectResponse> PutObjectAsync(PutObjectRequest request, CancellationToken cancellationToken = default)
+        public async Task<string> DownloadAsync(Uri source, Stream target, long maxSize, CancellationToken ct)
         {
-            behavior();
-            return Task.FromResult(new PutObjectResponse());
+            if (throwOnDownload)
+            {
+                throw new FileDownloadException("Файл слишком большой.");
+            }
+            await target.WriteAsync(new byte[] { 1, 2, 3 }, ct);
+            return mediaType!;
         }
     }
 
-    private sealed class StubHttpClientFactory : IHttpClientFactory
+    private sealed class StubUploader(bool throwOnUpload = false) : IFileS3Uploader
     {
-        public HttpClient CreateClient(string name) => new(new StubHandler());
-    }
+        public string? UploadedKey { get; private set; }
+        public string? UploadedContentType { get; private set; }
 
-    private sealed class StubHandler : HttpMessageHandler
-    {
-        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        public Task UploadFileAsync(string key, Stream content, string contentType, CancellationToken ct)
         {
-            var content = new ByteArrayContent([1, 2, 3]);
-            content.Headers.ContentType = new MediaTypeHeaderValue("image/jpeg");
-            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK) { Content = content });
+            if (throwOnUpload)
+            {
+                throw new InvalidOperationException("S3 unavailable");
+            }
+            UploadedKey = key;
+            UploadedContentType = contentType;
+            return Task.CompletedTask;
         }
     }
 }

@@ -1,4 +1,4 @@
-namespace JoinRpg.Services.Interfaces;
+namespace JoinRpg.Common.WebInfrastructure.S3;
 
 public class S3StorageOptions
 {

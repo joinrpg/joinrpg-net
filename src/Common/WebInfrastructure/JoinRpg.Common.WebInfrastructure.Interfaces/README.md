@@ -1,13 +1,15 @@
 # JoinRpg.Common.WebInfrastructure.Interfaces
 
-Контракты фоновых джоб Joinrpg — лёгкая зависимость для проектов, которые объявляют джобы,
-но не должны тянуть весь пакет `JoinRpg.Common.WebInfrastructure` (Serilog, OpenTelemetry, EF Core).
+Контракты общей веб-инфраструктуры Joinrpg — лёгкая зависимость для проектов, которые объявляют
+джобы или работают с файловым/S3-хранилищем, но не должны тянуть весь пакет
+`JoinRpg.Common.WebInfrastructure` (Serilog, OpenTelemetry, EF Core, AWS SDK).
 
 ```
 dotnet add package JoinRpg.Common.WebInfrastructure.Interfaces
 ```
 
-Нужен net11.0, всё лежит в `JoinRpg.Common.WebInfrastructure.Job`.
+Нужен net11.0. Джобы — в `JoinRpg.Common.WebInfrastructure.Job`, файловое хранилище —
+в `JoinRpg.Common.WebInfrastructure.Files` и `JoinRpg.Common.WebInfrastructure.S3`.
 
 ## Джоба и регистрация
 
@@ -43,6 +45,13 @@ services.AddJob<AdvertisementJob>();
 
 Временно для статических вызовов есть `JoinHtmlSanitizerLocator` (Obsolete — уберём, когда рендеринг
 markdown переведут на DI).
+
+## Файловое/S3-хранилище (Files, S3)
+
+Контракты работы с файлами: `IFileDownloader` (скачивание по URL в поток с лимитом размера,
+бросает `FileDownloadException`), `IFileS3Uploader` (загрузка потока в бакет с ретраями) и опции
+`S3StorageOptions` (endpoint, ключи, бакет, публичный базовый адрес). Реализация и регистрация
+`AddJoinS3Storage()` — в пакете `JoinRpg.Common.WebInfrastructure`.
 
 ## Типы
 

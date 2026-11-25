@@ -2,11 +2,12 @@
 
     <PropertyGroup>
         <IsPackable>true</IsPackable>
-        <Description>ASP.NET Core web infrastructure: Serilog logging, OpenTelemetry, EF Core data protection in PostgreSQL, health checks, midnight job scheduler (contracts in JoinRpg.Common.WebInfrastructure.Interfaces), OIDC login against id.joinrpg.ru.</Description>
+        <Description>ASP.NET Core web infrastructure: Serilog logging, OpenTelemetry, EF Core data protection in PostgreSQL, health checks, midnight job scheduler (contracts in JoinRpg.Common.WebInfrastructure.Interfaces), OIDC login against id.joinrpg.ru, S3 file storage (AWS SDK, Yandex Object Storage compatible).</Description>
     </PropertyGroup>
 
     <ItemGroup>
         <PackageReference Include="OpenTelemetry.Api" />
+        <PackageReference Include="AWSSDK.S3" />
         <FrameworkReference Include="Microsoft.AspNetCore.App" />
         <PackageReference Include="Microsoft.AspNetCore.DataProtection.EntityFrameworkCore" />
         <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" />

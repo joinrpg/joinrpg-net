@@ -1,10 +1,12 @@
+using Amazon.S3;
 using Amazon.S3.Model;
-using JoinRpg.Services.Interfaces;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
-namespace JoinRpg.BlobStorage;
+namespace JoinRpg.Common.WebInfrastructure.S3;
 
-internal class HealthCheckS3Storage(IAmazonS3 amazonS3,
+internal class HealthCheckS3Storage(IServiceProvider serviceProvider,
     ILogger<HealthCheckS3Storage> logger,
     IOptions<S3StorageOptions> options,
     S3UploadHealth uploadHealth) : IHealthCheck
@@ -15,8 +17,13 @@ internal class HealthCheckS3Storage(IAmazonS3 amazonS3,
     {
         if (!options.Configured)
         {
-            return HealthCheckResult.Degraded("Not configured");
+            // Чек зарегистрирован у всех хостов платформы (AddJoinWebPlatform): без настроек S3
+            // он не должен деградировать /health — S3 этому хосту просто не нужен.
+            return HealthCheckResult.Healthy("Not configured");
         }
+
+        // IAmazonS3 резолвится лениво: без настроек его создание падает (AmazonS3Client требует ServiceURL)
+        var amazonS3 = serviceProvider.GetRequiredService<IAmazonS3>();
         var data = new Dictionary<string, object> { { "bucket", options.BucketName ?? "null" } };
         try
         {
@@ -30,7 +37,7 @@ internal class HealthCheckS3Storage(IAmazonS3 amazonS3,
             if (uploadHealth.LastFailureErrorCode is string errorCode)
             {
                 data["lastUploadError"] = errorCode;
-                return HealthCheckResult.Unhealthy($"Last avatar upload failed: {errorCode}", data: data);
+                return HealthCheckResult.Unhealthy($"Last file upload failed: {errorCode}", data: data);
             }
 
             return HealthCheckResult.Healthy(data: data);

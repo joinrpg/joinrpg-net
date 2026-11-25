@@ -1,13 +1,13 @@
 using Amazon.S3;
 using Amazon.S3.Model;
-using JoinRpg.Services.Interfaces;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Shouldly;
 using Xunit;
 
-namespace JoinRpg.BlobStorage;
+namespace JoinRpg.Common.WebInfrastructure.S3;
 
 /// <summary>
 /// Регрессия на #4994: чек ходил в S3 через AmazonS3Util.DoesS3BucketExistV2Async, который не
@@ -88,7 +88,11 @@ public class HealthCheckS3StorageTests
     }
 
     private static HealthCheckS3Storage CreateCheck(IAmazonS3 client, S3UploadHealth? uploadHealth = null)
-        => new(client,
+    {
+        var serviceProvider = new ServiceCollection()
+            .AddSingleton(client)
+            .BuildServiceProvider();
+        return new HealthCheckS3Storage(serviceProvider,
             NullLogger<HealthCheckS3Storage>.Instance,
             Options.Create(new S3StorageOptions
             {
@@ -98,6 +102,7 @@ public class HealthCheckS3StorageTests
                 BucketName = "bucket",
             }),
             uploadHealth ?? new S3UploadHealth());
+    }
 
     /// <summary>
     /// Настоящий клиент AWS SDK с подменённым единственным вызовом, который делает чек.

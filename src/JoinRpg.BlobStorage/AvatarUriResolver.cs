@@ -1,5 +1,3 @@
-using JoinRpg.Services.Interfaces;
-
 namespace JoinRpg.BlobStorage;
 
 internal class AvatarUriResolver(IOptions<S3StorageOptions> options) : IAvatarUriResolver
