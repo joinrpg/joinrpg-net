@@ -2,7 +2,7 @@ namespace JoinRpg.Data.Interfaces;
 
 public interface IAdvertisementChannelRepository
 {
-    Task<AdvertisementChannelInfo?> GetChannel(AdvertisementChannelIdentification channelId);
+    Task<PostingChannelInfo?> GetChannel(PostingChannelIdentification channelId);
 
-    Task<IReadOnlyCollection<AdvertisementChannelInfo>> GetAllChannels();
+    Task<IReadOnlyCollection<PostingChannelInfo>> GetAllChannels();
 }

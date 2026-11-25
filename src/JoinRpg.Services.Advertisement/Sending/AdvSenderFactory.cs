@@ -7,7 +7,7 @@ internal class AdvSenderFactory(
     IOptions<KogdaIgraOptions> kogdaIgraOptions,
     IUriLocator<ProjectIdentification> projectUriLocator) : IAdvSenderFactory
 {
-    public ISingleHotRoleSender? Create(AdvertisementChannelInfo channel)
+    public ISingleHotRoleSender? Create(PostingChannelInfo channel)
     {
         if (TryGetTelegramChatId(channel) is not { } chatId)
         {
@@ -17,7 +17,7 @@ internal class AdvSenderFactory(
         return new TelegramSingleHotRoleSender(chatId, telegramNotificationService, kogdaIgraOptions.Value);
     }
 
-    public INewlyOpenedProjectsDigestSender? CreateNewlyOpenedProjectsDigestSender(AdvertisementChannelInfo channel)
+    public INewlyOpenedProjectsDigestSender? CreateNewlyOpenedProjectsDigestSender(PostingChannelInfo channel)
     {
         if (TryGetTelegramChatId(channel) is not { } chatId)
         {
@@ -27,7 +27,7 @@ internal class AdvSenderFactory(
         return new TelegramNewlyOpenedProjectsDigestSender(chatId, telegramNotificationService, projectUriLocator);
     }
 
-    private static TelegramChatId? TryGetTelegramChatId(AdvertisementChannelInfo channel)
+    private static TelegramChatId? TryGetTelegramChatId(PostingChannelInfo channel)
     {
         if (channel.Settings is not TelegramChannelSettings telegramSettings)
         {

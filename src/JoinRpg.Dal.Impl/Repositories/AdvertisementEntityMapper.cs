@@ -1,5 +1,6 @@
 using System.Text.Json;
 using JoinRpg.DomainTypes.Advertisement;
+using JoinRpg.DomainTypes.Posting;
 
 namespace JoinRpg.Dal.Impl.Repositories;
 
@@ -8,9 +9,9 @@ namespace JoinRpg.Dal.Impl.Repositories;
 /// </summary>
 internal static class AdvertisementEntityMapper
 {
-    public static AdvertisementChannelInfo ToInfo(AdvertisementChannelEntity entity) =>
+    public static PostingChannelInfo ToInfo(AdvertisementChannelEntity entity) =>
         new(
-            new AdvertisementChannelIdentification(entity.AdvertisementChannelId),
+            new PostingChannelIdentification(entity.AdvertisementChannelId),
             entity.Name,
             ProjectIdentification.FromOptional(entity.ProjectId),
             DeserializeSettings(entity.Kind, entity.SettingsJson),
@@ -30,10 +31,10 @@ internal static class AdvertisementEntityMapper
             .Where(day => (mask & (1 << (int)day)) != 0)
             .ToHashSet();
 
-    private static TelegramChannelSettings DeserializeSettings(AdvertisementChannelKind kind, string json) =>
+    private static TelegramChannelSettings DeserializeSettings(PostingChannelKind kind, string json) =>
         kind switch
         {
-            AdvertisementChannelKind.Telegram => JsonSerializer.Deserialize<TelegramChannelSettings>(json)!,
+            PostingChannelKind.Telegram => JsonSerializer.Deserialize<TelegramChannelSettings>(json)!,
             _ => throw new InvalidOperationException($"Неизвестный Kind канала рекламы: {kind}"),
         };
 }

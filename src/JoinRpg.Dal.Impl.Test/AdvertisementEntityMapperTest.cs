@@ -2,6 +2,7 @@ using JoinRpg.Common.PrimitiveTypes;
 using JoinRpg.Dal.Impl.Repositories;
 using JoinRpg.DataModel;
 using JoinRpg.DomainTypes.Advertisement;
+using JoinRpg.DomainTypes.Posting;
 using Shouldly;
 using Xunit;
 
@@ -40,7 +41,7 @@ public class AdvertisementEntityMapperTest
     [Fact]
     public void ToInfo_ChannelWithUnknownKind_Throws() =>
         Should.Throw<InvalidOperationException>(() =>
-            AdvertisementEntityMapper.ToInfo(CreateChannelEntity(kind: (AdvertisementChannelKind)99)));
+            AdvertisementEntityMapper.ToInfo(CreateChannelEntity(kind: (PostingChannelKind)99)));
 
     [Fact]
     public void ToInfo_Channel_MapsAllFields()
@@ -50,15 +51,15 @@ public class AdvertisementEntityMapperTest
             AdvertisementChannelId = 5,
             Name = "Телеграм-канал",
             ProjectId = 42,
-            Kind = AdvertisementChannelKind.Telegram,
+            Kind = PostingChannelKind.Telegram,
             SettingsJson = "{\"ChatId\":\"TelegramChatId(-1004315256401)\"}",
             IsActive = false,
         };
 
         var info = AdvertisementEntityMapper.ToInfo(entity);
 
-        info.ShouldBe(new AdvertisementChannelInfo(
-            new AdvertisementChannelIdentification(5),
+        info.ShouldBe(new PostingChannelInfo(
+            new PostingChannelIdentification(5),
             "Телеграм-канал",
             new JoinRpg.DomainTypes.ProjectIdentification(42),
             new TelegramChannelSettings(new TelegramChatId(-1004315256401)),
@@ -98,7 +99,7 @@ public class AdvertisementEntityMapperTest
 
     private static AdvertisementChannelEntity CreateChannelEntity(
         string settingsJson = "{\"ChatId\":\"TelegramChatId(-1004315256401)\"}",
-        AdvertisementChannelKind kind = AdvertisementChannelKind.Telegram) =>
+        PostingChannelKind kind = PostingChannelKind.Telegram) =>
         new()
         {
             AdvertisementChannelId = 1,

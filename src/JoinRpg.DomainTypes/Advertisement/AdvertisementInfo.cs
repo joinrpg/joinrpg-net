@@ -1,18 +1,8 @@
 using System.Text.Json.Serialization;
+using JoinRpg.DomainTypes.Posting;
 using JoinRpg.DomainTypes.ProjectMetadata;
 
 namespace JoinRpg.DomainTypes.Advertisement;
-
-[method: JsonConstructor]
-[TypedEntityId(ShortName = "AdvChannel")]
-public partial record AdvertisementChannelIdentification(int Value);
-
-public record AdvertisementChannelInfo(
-    AdvertisementChannelIdentification ChannelId,
-    string Name,
-    ProjectIdentification? BoundProjectId, // null = глобальный канал
-    AdvertisementChannelSettings Settings,
-    bool IsActive = true);
 
 [method: JsonConstructor]
 [TypedEntityId(ShortName = "AdvSchedule")]
@@ -29,7 +19,7 @@ public enum AdvertisementMethod
 /// </param>
 public record AdvertisementScheduleInfo(
     AdvertisementScheduleIdentification ScheduleId,
-    AdvertisementChannelInfo Channel,
+    PostingChannelInfo Channel,
     AdvertisementMethod Method,
     IReadOnlySet<DayOfWeek> Days,
     bool IsActive = true,

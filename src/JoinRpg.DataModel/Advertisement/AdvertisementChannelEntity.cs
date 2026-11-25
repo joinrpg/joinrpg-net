@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using JoinRpg.DomainTypes.Advertisement;
+using JoinRpg.DomainTypes.Posting;
 
 namespace JoinRpg.DataModel;
 
@@ -20,7 +20,7 @@ public class AdvertisementChannelEntity
     [ForeignKey(nameof(ProjectId))]
     public virtual Project? Project { get; set; }
 
-    public AdvertisementChannelKind Kind { get; set; }
+    public PostingChannelKind Kind { get; set; }
 
     public string SettingsJson { get; set; }
 

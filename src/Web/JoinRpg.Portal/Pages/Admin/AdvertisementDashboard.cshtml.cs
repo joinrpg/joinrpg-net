@@ -1,5 +1,6 @@
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DomainTypes.Advertisement;
+using JoinRpg.DomainTypes.Posting;
 using JoinRpg.Portal.Infrastructure.Authorization;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
@@ -10,7 +11,7 @@ public class AdvertisementDashboardModel(
     IAdvertisementChannelRepository channelRepository,
     IAdvertisementScheduleRepository scheduleRepository) : PageModel
 {
-    public IReadOnlyList<AdvertisementChannelInfo> Channels { get; private set; } = null!;
+    public IReadOnlyList<PostingChannelInfo> Channels { get; private set; } = null!;
     public IReadOnlyList<AdvertisementScheduleInfo> Schedules { get; private set; } = null!;
 
     public async Task OnGetAsync()
