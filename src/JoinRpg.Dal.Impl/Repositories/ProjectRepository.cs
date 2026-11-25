@@ -11,6 +11,9 @@ namespace JoinRpg.Dal.Impl.Repositories;
 
 internal class ProjectRepository(MyDbContext ctx) : GameRepositoryImplBase(ctx), IProjectRepository
 {
+    // Проекты без обновлений за этот срок не рекламируем — мастера их забросили.
+    private const int AdvertisementStaleThresholdDays = 14;
+
     private IQueryable<Project> AllProjects => Ctx.ProjectsSet.AsExpandable();
 
     public Task<Project> GetProjectAsync(int project) => AllProjects.SingleOrDefaultAsync(p => p.ProjectId == project);
@@ -298,18 +301,21 @@ internal class ProjectRepository(MyDbContext ctx) : GameRepositoryImplBase(ctx),
     async Task<IReadOnlyCollection<ProjectAdvertisementCandidate>> IProjectRepository.GetPublicProjectsOpenForHotRoleAdvertisement()
     {
         var activeClaimPredicate = ClaimPredicates.GetClaimStatusPredicate(ClaimStatusSpec.Active);
+        var staleThreshold = DateTime.UtcNow.AddDays(-AdvertisementStaleThresholdDays);
 
-        var query = PublicOpenProjects
-            .Where(ProjectPredicates.HasFutureKogdaIgraGame())
-            .Where(p => p.Characters.AsQueryable().Any(CharacterPredicates.Hot()))
-            .Select(p => new
-            {
-                p.ProjectId,
-                p.ProjectName,
-                ActiveClaimsCount = p.Claims.Count(claim => activeClaimPredicate.Invoke(claim)),
-                AdvertisementCount = Ctx.AdvertisementLogEntriesSet.Count(e =>
-                    e.ProjectId == p.ProjectId && e.Status == (int)AdvertisementLogStatus.Sent),
-            });
+        var query = from project in PublicOpenProjects
+                        .Where(ProjectPredicates.HasFutureKogdaIgraGame())
+                        .Where(p => p.Characters.AsQueryable().Any(CharacterPredicates.Hot()))
+                    join update in GetProjectWithLastUpdateQuery() on project.ProjectId equals update.ProjectId
+                    where update.LastUpdated >= staleThreshold
+                    select new
+                    {
+                        project.ProjectId,
+                        project.ProjectName,
+                        ActiveClaimsCount = project.Claims.Count(claim => activeClaimPredicate.Invoke(claim)),
+                        AdvertisementCount = Ctx.AdvertisementLogEntriesSet.Count(e =>
+                            e.ProjectId == project.ProjectId && e.Status == (int)AdvertisementLogStatus.Sent),
+                    };
 
         var result = await query.ToListAsync();
 
