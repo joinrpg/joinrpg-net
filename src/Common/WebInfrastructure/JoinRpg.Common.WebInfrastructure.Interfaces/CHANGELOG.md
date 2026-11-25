@@ -4,6 +4,9 @@
 
 ## Не выпущено
 
+### Добавлено
+- Контракты файлового/S3-хранилища: `IFileDownloader` (скачивание по URL в поток с лимитом размера), `IFileS3Uploader` (загрузка потока в бакет с ретраями), `FileDownloadException` и опции `S3StorageOptions` (namespace `Files`/`S3`). Реализация (`AddJoinS3Storage`) — в `JoinRpg.Common.WebInfrastructure`.
+
 ## 2026.9.760 — 2026-11-22
 
 ### Ломающие изменения

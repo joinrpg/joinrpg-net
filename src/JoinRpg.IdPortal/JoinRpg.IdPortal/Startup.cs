@@ -1,12 +1,12 @@
 using JoinRpg.BlobStorage;
 using JoinRpg.Common.WebInfrastructure;
+using JoinRpg.Common.WebInfrastructure.S3;
 using JoinRpg.Dal.Impl;
 using JoinRpg.Dal.Notifications;
 using JoinRpg.IdPortal.Components.Account;
 using JoinRpg.IdPortal.OAuthServer;
 using JoinRpg.Interfaces;
 using JoinRpg.Services.Impl;
-using JoinRpg.Common.WebInfrastructure.S3;
 using JoinRpg.Services.Notifications;
 using Microsoft.AspNetCore.Components.Authorization;
 

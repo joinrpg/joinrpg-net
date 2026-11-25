@@ -1,6 +1,6 @@
 # JoinRpg.Common.WebInfrastructure
 
-Общая веб-инфраструктура для ASP.NET Core приложений JoinRpg: логирование (Serilog), OpenTelemetry, Data Protection, кеширование, health checks, поддержка PostgreSQL, логин через id.joinrpg.ru.
+Общая веб-инфраструктура для ASP.NET Core приложений JoinRpg: логирование (Serilog), OpenTelemetry, Data Protection, кеширование, health checks, поддержка PostgreSQL, логин через id.joinrpg.ru, S3-хранилище файлов.
 
 ## Подключение
 
@@ -144,6 +144,7 @@ options.Filters.Add<SerilogRazorPagesFilter>();
 | **Конфигурация хостов** | `JoinRpgHostNamesOptions` | Имена хостов всех сервисов JoinRpg (основной сайт, IdPortal, KogdaIgra, рейтинг) |
 | **MVC фильтры** | `SerilogMvcFilter`, `SerilogRazorPagesFilter` | Обогащение логов данными из HTTP-контекста для MVC и Razor Pages |
 | **HTML-санитайзеры** | `AddJoinHtmlSanitizers()` (вызывается из `AddJoinWebPlatform`) | Transient-регистрации `IJoinSimpleHtmlSanitizer`, `IJoinRemoveAllHtmlSanitizer`, `IJoinTelegramHtmlSanitizer` (контракты — в пакете `JoinRpg.Common.WebInfrastructure.Interfaces`) поверх пула `Microsoft.Extensions.ObjectPool`: экземпляр берётся из пула при создании и возвращается при `Dispose`. Используются при рендеринге markdown и для подготовки сообщений Telegram |
+| **S3-хранилище файлов** | `AddJoinS3Storage()` (вызывается из `AddJoinWebPlatform`) | Синглтон `IAmazonS3` (AWS SDK, совместим с Яндекс Object Storage), `IFileS3Uploader` — загрузка потока в бакет с ретраями (до 3 повторов при `AmazonS3Exception`), `IFileDownloader` — скачивание по URL в поток (именованный `HttpClient` с таймаутом 10 с, лимит размера — параметр вызова). Health check «S3 storage»: при заполненных настройках проверяет бакет (`GetBucketLocation`) и исход последней реальной загрузки (права на запись); без настроек отвечает Healthy («Not configured»). Контракты и `S3StorageOptions` — в пакете `JoinRpg.Common.WebInfrastructure.Interfaces`, настройки — секция `S3BlobStorage` |
 
 ---
 
@@ -243,6 +244,21 @@ internal class MyPoller : ILeaderElectedService
 | `IdHost` | Портал аккаунтов (например, `id.joinrpg.ru`) |
 | `KogdaIgraHost` | Сервис KogdaIgra |
 | `RatingHost` | Сервис рейтинга Бастилии |
+
+#### S3BlobStorage
+
+Настройки S3-хранилища файлов (`S3StorageOptions`). Без них хост работает, но `IFileS3Uploader`
+не сможет загружать (health check «S3 storage» отвечает Healthy «Not configured»).
+
+| Параметр | По умолчанию | Описание |
+|----------|--------------|----------|
+| `Endpoint` | `null` | Адрес S3-совместимого API (например, `https://storage.yandexcloud.net`) |
+| `AccessKey` / `SecretKey` | `null` | Ключи сервисного аккаунта |
+| `BucketName` | `null` | Бакет для загрузок |
+| `PublicBaseUrl` | `null` | Публичный адрес объектов бакета (например, CDN); если не задан — `{Endpoint}/{BucketName}` |
+| `Enabled` | `true` | `false` полностью отключает хранилище, даже при заполненных ключах |
+
+Хранилище считается настроенным (`Configured`), когда заполнены `Endpoint`, `AccessKey`, `SecretKey`, `BucketName` и `Enabled = true`.
 
 #### RobotsTxt
 

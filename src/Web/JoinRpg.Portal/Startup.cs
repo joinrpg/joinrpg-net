@@ -30,7 +30,6 @@ using JoinRpg.Services.Impl;
 using JoinRpg.Services.Impl.Accommodation;
 using JoinRpg.Services.Impl.Characters;
 using JoinRpg.Services.Impl.Projects;
-using JoinRpg.Services.Interfaces;
 using JoinRpg.Services.Interfaces.Projects;
 using JoinRpg.Services.Notifications;
 using JoinRpg.Services.Notifications.Senders;

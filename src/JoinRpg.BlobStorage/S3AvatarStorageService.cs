@@ -1,7 +1,6 @@
 using System.Security.Cryptography;
 using System.Text;
 using JoinRpg.Common.WebInfrastructure.Files;
-using JoinRpg.Common.WebInfrastructure.S3;
 
 namespace JoinRpg.BlobStorage;
 
