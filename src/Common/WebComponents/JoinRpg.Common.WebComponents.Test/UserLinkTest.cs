@@ -29,6 +29,18 @@ public class UserLinkTest : IDisposable
         cut.Markup.ShouldContain(UserIconName);
     }
 
+    /// <summary>
+    /// Slug едет в локатор внутри модели — решение, строить ссылку по id или по slug,
+    /// принимает локатор хоста (issue #6302).
+    /// </summary>
+    [Fact]
+    public void Show_PassesSlugToLocator()
+    {
+        _ = Render(new UserLinkViewModel(new UserIdentification(42), "Иванов", ViewMode.Show, "ivanov"));
+
+        _locator.Calls.ShouldHaveSingleItem().Slug.ShouldBe("ivanov");
+    }
+
     [Fact]
     public void Show_HasNoPrivateHighlight()
     {

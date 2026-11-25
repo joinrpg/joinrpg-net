@@ -62,7 +62,8 @@ public class UserLinkResolveControllerTest
     }
 
     /// <summary>
-    /// Инвариант ADR017 §6: через этот канал не уходят контакты — только id и отображаемое имя.
+    /// Инвариант ADR017 §6: через этот канал не уходят контакты — только id, отображаемое имя
+    /// и slug публичного профиля (#6302 — не контакт, профиль по нему открыт анонимам).
     /// Проверяем именно текст ответа: подмена модели на «более красивую»
     /// (<c>UserProfileDetailsViewModel</c> отдаёт email, телефон и соцсети) сломала бы это молча.
     /// </summary>
@@ -78,7 +79,7 @@ public class UserLinkResolveControllerTest
         var json = JsonDocument.Parse(JsonSerializer.Serialize(ok.Value)).RootElement;
 
         var propertyNames = json.EnumerateObject().Select(p => p.Name).ToList();
-        propertyNames.ShouldBe(["UserId", "DisplayName", "ViewMode"], ignoreOrder: true);
+        propertyNames.ShouldBe(["UserId", "DisplayName", "ViewMode", "Slug"], ignoreOrder: true);
     }
 
     private sealed class FakeClient : IUserLinkResolveClient

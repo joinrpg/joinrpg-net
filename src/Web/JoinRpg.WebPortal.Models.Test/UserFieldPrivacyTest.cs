@@ -115,10 +115,12 @@ public class UserFieldPrivacyTest
         // Весь публичный состав модели ссылки — целиком. Новое свойство (Email, PhoneNumber,
         // Social, «а давайте ещё UserInfo целиком») уронит этот тест, и это ровно то, чего мы
         // хотим: ADR017 §6 разрешает показывать только имя и ссылку на профиль.
+        // Slug — не контакт, а человекочитаемый идентификатор того же публичного профиля
+        // (#6302): профиль по нему открыт анонимам так же, как /user/{id}.
         typeof(UserLinkViewModel)
             .GetProperties()
             .Select(p => p.Name)
-            .ShouldBe(["UserId", "DisplayName", "ViewMode"], ignoreOrder: true);
+            .ShouldBe(["UserId", "DisplayName", "ViewMode", "Slug"], ignoreOrder: true);
     }
 
     /// <summary>Заводит в проекте user-поле и вписывает туда указанного пользователя.</summary>

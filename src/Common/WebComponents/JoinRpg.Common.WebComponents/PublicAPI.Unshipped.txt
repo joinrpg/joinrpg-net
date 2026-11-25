@@ -1,1 +1,7 @@
 #nullable enable
+*REMOVED*JoinRpg.Common.WebComponents.UserLinkViewModel.Deconstruct(out JoinRpg.Common.PrimitiveTypes.UserIdentification? UserId, out string! DisplayName, out JoinRpg.Common.WebComponents.ViewMode ViewMode) -> void
+*REMOVED*JoinRpg.Common.WebComponents.UserLinkViewModel.UserLinkViewModel(JoinRpg.Common.PrimitiveTypes.UserIdentification? UserId, string! DisplayName, JoinRpg.Common.WebComponents.ViewMode ViewMode) -> void
+JoinRpg.Common.WebComponents.UserLinkViewModel.Deconstruct(out JoinRpg.Common.PrimitiveTypes.UserIdentification? UserId, out string! DisplayName, out JoinRpg.Common.WebComponents.ViewMode ViewMode, out string? Slug) -> void
+JoinRpg.Common.WebComponents.UserLinkViewModel.Slug.get -> string?
+JoinRpg.Common.WebComponents.UserLinkViewModel.Slug.init -> void
+JoinRpg.Common.WebComponents.UserLinkViewModel.UserLinkViewModel(JoinRpg.Common.PrimitiveTypes.UserIdentification? UserId, string! DisplayName, JoinRpg.Common.WebComponents.ViewMode ViewMode, string? Slug = null) -> void
