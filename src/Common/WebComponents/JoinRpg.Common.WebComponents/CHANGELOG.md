@@ -4,6 +4,9 @@
 
 ## Не выпущено
 
+### Изменено
+- `JoinMoveControl`: подпись в диалоге сортировки больше не получает Bootstrap-класс `control-label` (оформление — собственный scoped CSS, компонент работает без Bootstrap). ([#6146](https://github.com/joinrpg/joinrpg-net/issues/6146))
+
 ## 2026.9.760 — 2026-11-22
 
 ### Ломающие изменения
