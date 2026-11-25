@@ -21,6 +21,7 @@ public static class AmazonS3Registration
 
         return services
             .AddTransient<IFileDownloader, FileDownloader>()
+            .AddTransient<IFileS3Uploader, FileS3Uploader>()
             .AddSingleton<S3UploadHealth>()
             .AddSingleton<IAmazonS3>(sp => CreateS3Client(sp.GetRequiredService<IOptions<S3StorageOptions>>().Value));
     }
