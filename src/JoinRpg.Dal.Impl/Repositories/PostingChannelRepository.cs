@@ -2,7 +2,7 @@ using JoinRpg.DomainTypes.Posting;
 
 namespace JoinRpg.Dal.Impl.Repositories;
 
-internal class AdvertisementChannelRepository(MyDbContext ctx) : IAdvertisementChannelRepository
+internal class PostingChannelRepository(MyDbContext ctx) : IPostingChannelRepository
 {
     public async Task<PostingChannelInfo?> GetChannel(PostingChannelIdentification channelId)
     {

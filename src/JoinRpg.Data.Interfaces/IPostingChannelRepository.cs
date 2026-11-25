@@ -1,6 +1,6 @@
 namespace JoinRpg.Data.Interfaces;
 
-public interface IAdvertisementChannelRepository
+public interface IPostingChannelRepository
 {
     Task<PostingChannelInfo?> GetChannel(PostingChannelIdentification channelId);
 

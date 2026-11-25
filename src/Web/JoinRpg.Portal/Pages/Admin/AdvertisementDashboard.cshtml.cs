@@ -8,7 +8,7 @@ namespace JoinRpg.Portal.Pages.Admin;
 
 [AdminAuthorize]
 public class AdvertisementDashboardModel(
-    IAdvertisementChannelRepository channelRepository,
+    IPostingChannelRepository channelRepository,
     IAdvertisementScheduleRepository scheduleRepository) : PageModel
 {
     public IReadOnlyList<PostingChannelInfo> Channels { get; private set; } = null!;
