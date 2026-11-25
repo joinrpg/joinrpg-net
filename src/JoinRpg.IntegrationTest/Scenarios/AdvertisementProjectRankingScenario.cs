@@ -102,4 +102,89 @@ public class AdvertisementProjectRankingScenario(JoinApplicationFactory factory)
             candidate.AdvertisementCount.ShouldBe(2);
         }
     }
+
+    // Проект, который никто не обновлял больше двух недель, — заброшенный, рекламировать его не надо.
+    [Fact]
+    public async Task GetPublicProjectsOpenForHotRoleAdvertisement_ExcludesProjectsNotUpdatedInTwoWeeks()
+    {
+        UserIdentification masterId;
+        ProjectIdentification stale;
+        ProjectIdentification fresh;
+        using (var scope = factory.Services.CreateScope())
+        {
+            masterId = await TestUserProjectHelpers.CreateTestUserAsync(scope.ServiceProvider);
+            stale = await TestUserProjectHelpers.CreateProjectAsync(scope.ServiceProvider, masterId, "Заброшенный проект");
+            fresh = await TestUserProjectHelpers.CreateProjectAsync(scope.ServiceProvider, masterId, "Живой проект");
+        }
+
+        // Оба проекта — полноценные кандидаты: публичные, открытые для заявок, с горячей ролью
+        // и будущей активной карточкой КогдаИгра (по образцу первого теста этого класса).
+        async Task PrepareCandidate(ProjectIdentification projectId)
+        {
+            await factory.Services.RunAsAsync(masterId, async sp =>
+            {
+                var projectService = sp.GetRequiredService<IProjectService>();
+                var metadataRepository = sp.GetRequiredService<IProjectMetadataRepository>();
+                var projectInfo = await metadataRepository.GetProjectMetadata(projectId);
+                await projectService.SetClaimSettings(
+                    projectId,
+                    projectInfo.ClaimSettings with { IsAcceptingClaims = true });
+
+                var characterService = sp.GetRequiredService<ICharacterService>();
+                await characterService.AddCharacter(new AddCharacterRequest(
+                    projectId,
+                    ParentCharacterGroupIds: [],
+                    new CharacterTypeInfo(CharacterType.Player, IsHot: true, SlotLimit: null, SlotName: null, CharacterVisibility.Public),
+                    FieldValues: FieldLayerContainer.Empty(projectInfo)));
+            });
+
+            using var scope = factory.Services.CreateScope();
+            var myDb = scope.ServiceProvider.GetRequiredService<MyDbContext>();
+            var project = await myDb.Set<Project>()
+                .Include(p => p.KogdaIgraGames)
+                .Include(p => p.Details)
+                .SingleAsync(p => p.ProjectId == projectId.Value);
+
+            project.Details.DisableKogdaIgraMapping = false;
+            project.KogdaIgraGames.Add(new KogdaIgraGame
+            {
+                KogdaIgraGameId = projectId.Value + 2_000_000,
+                Name = "Тестовая будущая игра КогдаИгра",
+                JsonGameData = "{}",
+                Active = true,
+                Begin = DateTime.UtcNow.AddDays(30),
+                End = DateTime.UtcNow.AddDays(33),
+                UpdateRequestedAt = DateTimeOffset.UtcNow,
+                LastUpdatedAt = DateTimeOffset.UtcNow,
+            });
+            await myDb.SaveChangesAsync();
+        }
+
+        await PrepareCandidate(stale);
+        await PrepareCandidate(fresh);
+
+        // «Старим» все записи обновления заброшенного проекта (персонажи и группы — единственные
+        // источники LastUpdated в этом сетапе) — за пределы двух недель. Прямой UPDATE, как в
+        // TestUserProjectHelpers.BlockProjectAsync: загрузка сущностей через EF упирается
+        // в валидацию CharacterGroup при SaveChanges.
+        using (var scope = factory.Services.CreateScope())
+        {
+            var myDb = scope.ServiceProvider.GetRequiredService<MyDbContext>();
+            var staleDate = DateTime.UtcNow.AddDays(-20);
+            _ = await myDb.Database.ExecuteSqlCommandAsync(
+                "UPDATE dbo.Characters SET UpdatedAt = @p0 WHERE ProjectId = @p1", staleDate, stale.Value);
+            _ = await myDb.Database.ExecuteSqlCommandAsync(
+                "UPDATE dbo.CharacterGroups SET UpdatedAt = @p0 WHERE ProjectId = @p1", staleDate, stale.Value);
+        }
+
+        using (var scope = factory.Services.CreateScope())
+        {
+            var projectRepository = scope.ServiceProvider.GetRequiredService<IProjectRepository>();
+            var candidates = await projectRepository.GetPublicProjectsOpenForHotRoleAdvertisement();
+            var candidateIds = candidates.Select(c => c.ProjectId).ToHashSet();
+
+            candidateIds.ShouldContain(fresh);
+            candidateIds.ShouldNotContain(stale);
+        }
+    }
 }

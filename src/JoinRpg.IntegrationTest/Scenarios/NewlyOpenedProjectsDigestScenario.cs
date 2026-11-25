@@ -100,4 +100,67 @@ public class NewlyOpenedProjectsDigestScenario(JoinApplicationFactory factory) :
             candidateIds.ShouldNotContain(notPublic);
         });
     }
+
+    // Проект открыл заявки недавно, но никто его не обновлял больше двух недель, — он заброшен,
+    // и в дайджест попадать не должен.
+    [Fact]
+    public async Task GetPublicProjectsOpenedForClaimsInLastWeek_ExcludesProjectsNotUpdatedInTwoWeeks()
+    {
+        UserIdentification masterId;
+        ProjectIdentification stale;
+        ProjectIdentification fresh;
+        using (var scope = factory.Services.CreateScope())
+        {
+            masterId = await TestUserProjectHelpers.CreateTestUserAsync(scope.ServiceProvider);
+            stale = await TestUserProjectHelpers.CreateProjectAsync(scope.ServiceProvider, masterId, "Заброшенный проект");
+            fresh = await TestUserProjectHelpers.CreateProjectAsync(scope.ServiceProvider, masterId, "Живой проект");
+        }
+
+        async Task OpenClaimsAndAddCharacter(ProjectIdentification projectId) =>
+            await factory.Services.RunAsAsync(masterId, async sp =>
+            {
+                var projectService = sp.GetRequiredService<IProjectService>();
+                var metadataRepository = sp.GetRequiredService<IProjectMetadataRepository>();
+                var projectInfo = await metadataRepository.GetProjectMetadata(projectId);
+                await projectService.SetClaimSettings(
+                    projectId,
+                    projectInfo.ClaimSettings with { IsAcceptingClaims = true, IsPublicProject = true });
+
+                var characterService = sp.GetRequiredService<ICharacterService>();
+                await characterService.AddCharacter(new AddCharacterRequest(
+                    projectId,
+                    ParentCharacterGroupIds: [],
+                    new CharacterTypeInfo(CharacterType.Player, IsHot: false, SlotLimit: null, SlotName: null, CharacterVisibility.Public),
+                    FieldValues: FieldLayerContainer.Empty(projectInfo)));
+            });
+
+        await OpenClaimsAndAddCharacter(stale);
+        await OpenClaimsAndAddCharacter(fresh);
+
+        // «Старим» записи обновления заброшенного проекта (персонажи и группы — единственные
+        // источники LastUpdated в этом сетапе); ClaimsOpenedDate остаётся свежей — именно случай
+        // «свежий по дайджесту, старый по обновлениям». Прямой UPDATE, как в
+        // TestUserProjectHelpers.BlockProjectAsync: загрузка сущностей через EF упирается
+        // в валидацию CharacterGroup при SaveChanges.
+        using (var scope = factory.Services.CreateScope())
+        {
+            var myDb = scope.ServiceProvider.GetRequiredService<MyDbContext>();
+            var staleDate = DateTime.UtcNow.AddDays(-20);
+            _ = await myDb.Database.ExecuteSqlCommandAsync(
+                "UPDATE dbo.Characters SET UpdatedAt = @p0 WHERE ProjectId = @p1", staleDate, stale.Value);
+            _ = await myDb.Database.ExecuteSqlCommandAsync(
+                "UPDATE dbo.CharacterGroups SET UpdatedAt = @p0 WHERE ProjectId = @p1", staleDate, stale.Value);
+        }
+
+        // Выборка дайджеста: живой проект — кандидат, заброшенный — нет.
+        await factory.Services.RunAsAsync(masterId, async sp =>
+        {
+            var projectRepository = sp.GetRequiredService<IProjectRepository>();
+            var candidates = await projectRepository.GetPublicProjectsOpenedForClaimsInLastWeek();
+            var candidateIds = candidates.Select(c => c.ProjectId).ToHashSet();
+
+            candidateIds.ShouldContain(fresh);
+            candidateIds.ShouldNotContain(stale);
+        });
+    }
 }

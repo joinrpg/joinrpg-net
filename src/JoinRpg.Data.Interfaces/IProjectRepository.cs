@@ -86,16 +86,17 @@ public interface IProjectRepository : IDisposable
     Task<ProjectPersonalizedInfo[]> GetProjectsByIds(UserIdentification? userId, ProjectIdentification[] ids);
 
     /// <summary>
-    /// Публичные проекты, открытые для рекламы горячих ролей (принимают заявки) и имеющие хотя бы одну
-    /// горячую роль, с их <see cref="ProjectAdvertisementCandidate.ActiveClaimsCount"/> для взвешивания
-    /// по ADR010 §4.
+    /// Публичные проекты, открытые для рекламы горячих ролей (принимают заявки), имеющие хотя бы одну
+    /// горячую роль и обновлявшиеся за последние две недели, с их
+    /// <see cref="ProjectAdvertisementCandidate.ActiveClaimsCount"/> для взвешивания по ADR010 §4.
     /// </summary>
     Task<IReadOnlyCollection<ProjectAdvertisementCandidate>> GetPublicProjectsOpenForHotRoleAdvertisement();
 
     /// <summary>
     /// Публичные проекты, принимающие заявки, у которых дата первого открытия приёма заявок
-    /// (<see cref="DataModel.Project.ClaimsOpenedDate"/>) не старше недели. Проекты, заявки в которых
-    /// ни разу не открывались (дата не задана), не считаются недавно открывшимися.
+    /// (<see cref="DataModel.Project.ClaimsOpenedDate"/>) не старше недели, и которые обновлялись
+    /// за последние две недели. Проекты, заявки в которых ни разу не открывались (дата не задана),
+    /// не считаются недавно открывшимися.
     /// </summary>
     Task<IReadOnlyCollection<ProjectAdvertisementCandidate>> GetPublicProjectsOpenedForClaimsInLastWeek();
 }
