@@ -53,8 +53,9 @@
     миграции EF (`~` в Shipped). Генератор исключён: его типы никто не вызывает, компилятор только загружает.
     -->
     <!-- JoinPublicApiAsWarnings выставляет scripts/Update-PublicApi.ps1: иначе ошибка в одном пакете не даст собрать зависящие от него. -->
+    <!-- RS0025 (дубль строки в PublicAPI-файлах) — ошибкой, потому что дубль молча выключает RS0016/RS0017 для всего проекта (#6309). -->
     <PropertyGroup Condition="'$(IsPackable)' == 'true' And '$(IsRoslynComponent)' != 'true' And '$(JoinPublicApiAsWarnings)' != 'true'">
-        <WarningsAsErrors>$(WarningsAsErrors);RS0016;RS0017;RS0036;RS0037;RS0050</WarningsAsErrors>
+        <WarningsAsErrors>$(WarningsAsErrors);RS0016;RS0017;RS0025;RS0036;RS0037;RS0050</WarningsAsErrors>
     </PropertyGroup>
     <PropertyGroup Condition="'$(IsPackable)' == 'true' And '$(IsRoslynComponent)' != 'true'">
         <NoWarn>$(NoWarn);RS0026;RS0027;RS0041</NoWarn>
