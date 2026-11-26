@@ -1,6 +1,7 @@
 using JoinRpg.Domain;
 using JoinRpg.DomainTypes.Characters;
 using JoinRpg.Web.AdminTools;
+using JoinRpg.Web.AdminTools.Advertisement;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 
@@ -60,6 +61,7 @@ internal class WebApiExceptionHandler(IProblemDetailsService problemDetailsServi
         JoinRpgEntityNotFoundException => (StatusCodes.Status404NotFound, "Запрошенный объект не найден — возможно, он был удалён"),
         // Текст отказа собирается в админском сервисе и уже на русском
         UserAdminActionRefusedException refused => (StatusCodes.Status400BadRequest, refused.Message),
+        PostingChannelActionRefusedException refused => (StatusCodes.Status400BadRequest, refused.Message),
         VisibleReplyToHiddenCommentException => (StatusCodes.Status409Conflict, "Ответ на комментарий, скрытый от игрока, тоже должен быть скрыт от игрока"),
         JoinRpgNameFieldShouldBePublicException => (StatusCodes.Status409Conflict, "Поле, привязанное к имени персонажа, должно быть публичным (видно всем): имена персонажей показываются всем посетителям сайта"),
         _ => null,

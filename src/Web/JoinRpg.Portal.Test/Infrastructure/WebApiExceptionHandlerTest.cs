@@ -6,6 +6,7 @@ using JoinRpg.DomainTypes.Characters;
 using JoinRpg.DomainTypes.ProjectMetadata;
 using JoinRpg.Portal.Infrastructure;
 using JoinRpg.Web.AdminTools;
+using JoinRpg.Web.AdminTools.Advertisement;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
@@ -130,6 +131,20 @@ public class WebApiExceptionHandlerTest
         httpContext.Response.StatusCode.ShouldBe(StatusCodes.Status400BadRequest);
         problem.GetProperty("title").GetString().ShouldBe("Этот email уже используется другим пользователем");
         WebApiExceptionHandler.IsExpectedRefusal(new UserAdminActionRefusedException("")).ShouldBeTrue();
+    }
+
+    // Отказ при создании канала рекламы в админке — штатный, не 500
+    [Fact]
+    public async Task PostingChannelActionRefused_InWebApi_ReturnsBadRequestWithMessage()
+    {
+        var httpContext = CreateHttpContext("/webapi/PostingChannel/CreateChannel");
+
+        var (handled, problem) = await Handle(httpContext, new PostingChannelActionRefusedException("Этот чат уже занят каналом рекламы"));
+
+        handled.ShouldBeTrue();
+        httpContext.Response.StatusCode.ShouldBe(StatusCodes.Status400BadRequest);
+        problem.GetProperty("title").GetString().ShouldBe("Этот чат уже занят каналом рекламы");
+        WebApiExceptionHandler.IsExpectedRefusal(new PostingChannelActionRefusedException("")).ShouldBeTrue();
     }
 
     [Fact]
