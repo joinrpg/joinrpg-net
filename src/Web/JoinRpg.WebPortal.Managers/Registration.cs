@@ -98,6 +98,7 @@ public static class Registration
         .AddScoped<INotificationDashboardClient, AdminTools.NotificationDashboardManager>()
         .AddScoped<INotificationLogClient, AdminTools.NotificationLogManager>()
         .AddScoped<JoinRpg.Web.AdminTools.UserMerge.IUserMergeClient, AdminTools.UserMergeViewService>()
+        .AddScoped<JoinRpg.Web.AdminTools.Advertisement.IPostingChannelClient, AdminTools.PostingChannelViewService>()
         .AddScoped<AdminTools.PscbPaymentsViewService>()
         // Шлюз списка и восстановление (ADR028) делят один экземпляр: восстановление переиспользует
         // скачивание и обогащение списка, а не ходит в банк второй раз.
