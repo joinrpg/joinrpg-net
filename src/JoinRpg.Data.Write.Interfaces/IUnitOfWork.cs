@@ -41,6 +41,13 @@ public interface IUnitOfWork : IDisposable
     /// </summary>
     IUserMergeWriteRepository GetUserMergeWriteRepository();
 
+    /// <summary>
+    /// Репозиторий записи каналов рекламы (ADR010 §3). Доступен только отсюда, а не из DI:
+    /// иначе он получил бы другой <c>DbContext</c>, чем тот, на котором вызывается
+    /// <see cref="SaveChangesAsync"/>.
+    /// </summary>
+    IPostingChannelWriteRepository GetPostingChannelWriteRepository();
+
     IClaimsRepository GetClaimsRepository();
     IPlotRepository GetPlotRepository();
     IForumRepository GetForumRepository();

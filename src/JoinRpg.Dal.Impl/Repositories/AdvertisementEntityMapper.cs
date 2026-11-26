@@ -37,4 +37,8 @@ internal static class AdvertisementEntityMapper
             PostingChannelKind.Telegram => JsonSerializer.Deserialize<TelegramChannelSettings>(json)!,
             _ => throw new InvalidOperationException($"Неизвестный Kind канала рекламы: {kind}"),
         };
+
+    // Тот же сериализатор, что в DeserializeSettings: формат json запинан литералами бэкфилла миграции.
+    // Сериализация по runtime-типу: по статическому базовому PostingChannelSettings свойства наследника теряются.
+    public static string SerializeSettings(PostingChannelSettings settings) => JsonSerializer.Serialize(settings, settings.GetType());
 }

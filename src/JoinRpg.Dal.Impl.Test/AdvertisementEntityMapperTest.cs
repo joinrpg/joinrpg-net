@@ -38,6 +38,18 @@ public class AdvertisementEntityMapperTest
         info.Settings.ShouldBe(new TelegramChannelSettings(new TelegramChatId(chatId)));
     }
 
+    // Точный литерал бэкфилла миграции: SerializeSettings обязан писать в том же формате.
+    [Fact]
+    public void SerializeSettings_TelegramSettings_WritesBackfillCompatibleLiteral()
+    {
+        var settings = new TelegramChannelSettings(new TelegramChatId(-1004315256401));
+
+        var json = AdvertisementEntityMapper.SerializeSettings(settings);
+
+        json.ShouldBe("{\"ChatId\":\"TelegramChatId(-1004315256401)\"}");
+        AdvertisementEntityMapper.ToInfo(CreateChannelEntity(settingsJson: json)).Settings.ShouldBe(settings);
+    }
+
     [Fact]
     public void ToInfo_ChannelWithUnknownKind_Throws() =>
         Should.Throw<InvalidOperationException>(() =>

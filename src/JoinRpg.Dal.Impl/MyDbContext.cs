@@ -117,6 +117,8 @@ public class MyDbContext : DbContext, IUnitOfWork
 
     public IUserMergeWriteRepository GetUserMergeWriteRepository() => new UserMergeWriteRepository(this);
 
+    public IPostingChannelWriteRepository GetPostingChannelWriteRepository() => new PostingChannelWriteRepository(this);
+
     public IClaimsRepository GetClaimsRepository() => new ClaimsRepositoryImpl(this);
     public IPlotRepository GetPlotRepository() => new PlotRepositoryImpl(this);
     public IForumRepository GetForumRepository() => new ForumRepositoryImpl(this);
