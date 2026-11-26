@@ -12,6 +12,9 @@
 ### Изменено
 - `JoinMoveControl`: подпись в диалоге сортировки больше не получает Bootstrap-класс `control-label` (оформление — собственный scoped CSS, компонент работает без Bootstrap). ([#6146](https://github.com/joinrpg/joinrpg-net/issues/6146))
 
+### Исправлено
+- Учёт публичного API: из `PublicAPI.Shipped.txt` убраны дубли строк и исправлены nullable-аннотации (`JoinEditForm.OnValidSubmit`/`OnInvalidSubmit`, `AutoConfirmDialog.OnParametersSet`). Само API не изменилось; дубли молча выключали проверку RS0016/RS0017 для пакета. ([#6309](https://github.com/joinrpg/joinrpg-net/issues/6309))
+
 ## 2026.9.760 — 2026-11-22
 
 ### Ломающие изменения
