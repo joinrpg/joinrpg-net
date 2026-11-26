@@ -2,7 +2,6 @@ using System.Net;
 using System.Text;
 using JoinRpg.Common.PrimitiveTypes;
 using JoinRpg.Services.Interfaces.Notification;
-using Microsoft.Extensions.Options;
 using Telegram.Bot;
 
 namespace JoinRpg.Common.Telegram.Test;
