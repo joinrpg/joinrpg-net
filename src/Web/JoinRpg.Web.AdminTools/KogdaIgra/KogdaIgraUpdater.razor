@@ -44,7 +44,13 @@
           <ul>
             @foreach (var g in NotUpdated)
             {
-                <li><a href="@g.KogdaIgraLink">@(g.Name)</a> </li>
+                <li>
+                    <a href="@g.KogdaIgraLink">@(g.Name)</a>
+                    @if (g.Status.ToWarningLabel() is { } statusLabel)
+                    {
+                        @(" — " + statusLabel)
+                    }
+                </li>
             }
             </ul>
         </Body>
