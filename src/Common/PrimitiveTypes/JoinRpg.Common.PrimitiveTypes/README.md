@@ -47,6 +47,10 @@ string s = email;                                    // неявно в string
 
 - `DateRange` — диапазон дат игры; `DateRangeFormatter.FormatDisplay(range, culture)` выводит
   его («1–5 марта 2026» для `ru-RU`; без `culture` берётся текущая).
+- `Region`, `MacroRegion` — субрегион и макрорегион КогдаИгры (kogda-igra.ru); числовые значения
+  равны id справочника КогдаИгры. `region.ToMacroRegion()` — макрорегион субрегиона,
+  `macroRegion.GetRegions()` — все его субрегионы. Имен для показа в пакете нет — они в
+  `JoinRpg.Common.WebComponents` (`RegionDisplay`).
 - `CountHelper.DisplayCount(5, "заявка", "заявки", "заявок")` — число со склонением.
 - `TelegramChatId` — chat_id Bot API (бывает отрицательным); `TelegramHtmlString` — текст
   сообщения с HTML-разметкой Telegram; `KogdaIgraIdentification` — id игры на kogda-igra.ru.
