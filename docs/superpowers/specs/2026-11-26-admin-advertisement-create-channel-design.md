@@ -75,13 +75,15 @@ Blazor-островам), и `GetUpdates` вызывался бы при каж�
 
 ### UI (остров)
 
-- Новый компонент `AdvertisementChannelCreatePanel` в
+- Новый компонент `PostingChannelCreatePanel` в
   `src/Web/JoinRpg.Web.AdminTools/Advertisement/` — кнопка «Добавить канал» + `JoinFormDialog`
-  (существующий, `JoinRpg.Common.WebComponents`).
+  (существующий, `JoinRpg.Common.WebComponents`). Именование — `PostingChannel*`, а не
+  `AdvertisementChannel*`: по доменным типам (`PostingChannelInfo`, `IPostingChannelRepository`,
+  `PostingChannelSettings`).
 - На `AdvertisementDashboard.cshtml` рядом с гридом каналов добавляется остров
   (`render-mode="WebAssemblyPrerendered"`).
 - Диалог:
-  - При открытии — `GET /webapi/advertisementchannel/availablechats`, список в `<select>`.
+  - При открытии — `GET /webapi/postingchannel/availablechats`, список в `<select>`.
     Отображение: название чата + chat id.
   - Поле «Название» — текстовое, предзаполнено title выбранного чата, редактируемо,
     обязательное.
@@ -94,9 +96,9 @@ Blazor-островам), и `GetUpdates` вызывался бы при каж�
 
 ### Клиентская связка (по существующему паттерну)
 
-- `IAdvertisementChannelClient` в `JoinRpg.Web.AdminTools`:
+- `IPostingChannelClient` в `JoinRpg.Web.AdminTools`:
   `GetAvailableChatsAsync()`, `CreateChannelAsync(request)`.
-- Реализация `AdvertisementChannelClient` в `JoinRpg.Blazor.Client/ApiClients/`,
+- Реализация `PostingChannelClient` в `JoinRpg.Blazor.Client/ApiClients/`,
   регистрация в `HttpClientRegistration.cs`; POST — с `CsrfTokenProvider`.
 - DTO (в `JoinRpg.Web.AdminTools` или общем контрактном проекте по соседним примерам):
   `AvailableChatsResponse(bool Enabled, string? BotName, IReadOnlyCollection<AvailableChatDto> Chats)`,
@@ -107,8 +109,8 @@ Blazor-островам), и `GetUpdates` вызывался бы при каж�
 
 ### WebApi
 
-- `WebApi/AdvertisementChannelController` в `JoinRpg.Portal/Controllers/WebApi/`,
-  `[Route("/webapi/advertisementchannel/[action]")]`, `[AdminAuthorize]`, antiforgery на POST.
+- `WebApi/PostingChannelController` в `JoinRpg.Portal/Controllers/WebApi/`,
+  `[Route("/webapi/postingchannel/[action]")]`, `[AdminAuthorize]`, antiforgery на POST.
 - `GET AvailableChats`:
   1. Сервис Telegram возвращает чаты бота (см. ниже).
   2. Контроллер читает существующие каналы через `IPostingChannelRepository.GetAllChannels()`,
