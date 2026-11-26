@@ -1,1 +1,14 @@
 #nullable enable
+JoinRpg.Common.WebComponents.RegionBadge
+JoinRpg.Common.WebComponents.RegionBadge.Region.get -> JoinRpg.Common.PrimitiveTypes.Region
+JoinRpg.Common.WebComponents.RegionBadge.Region.set -> void
+JoinRpg.Common.WebComponents.RegionBadge.RegionBadge() -> void
+JoinRpg.Common.WebComponents.RegionBadge.Size.get -> JoinRpg.Common.WebComponents.SizeStyleEnum?
+JoinRpg.Common.WebComponents.RegionBadge.Size.set -> void
+JoinRpg.Common.WebComponents.RegionBadge.Variation.get -> JoinRpg.Common.WebComponents.VariationStyleEnum?
+JoinRpg.Common.WebComponents.RegionBadge.Variation.set -> void
+JoinRpg.Common.WebComponents.RegionDisplay
+static JoinRpg.Common.WebComponents.RegionDisplay.GetName(this JoinRpg.Common.PrimitiveTypes.MacroRegion macroRegion) -> string!
+static JoinRpg.Common.WebComponents.RegionDisplay.GetName(this JoinRpg.Common.PrimitiveTypes.Region region) -> string!
+static JoinRpg.Common.WebComponents.RegionDisplay.GetShortName(this JoinRpg.Common.PrimitiveTypes.Region region) -> string!
+~override JoinRpg.Common.WebComponents.RegionBadge.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void

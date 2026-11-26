@@ -1,0 +1,13 @@
+@* Бейдж региона КогдаИгры: короткое имя («СПб»), полное имя — в подсказке. *@
+<JoinBadge Text="@Region.GetShortName()" Title="@Region.GetName()" Variation="@Variation" Size="@Size" />
+
+@code {
+    [Parameter, EditorRequired]
+    public Region Region { get; set; }
+
+    [Parameter]
+    public VariationStyleEnum? Variation { get; set; } = VariationStyleEnum.Info;
+
+    [Parameter]
+    public SizeStyleEnum? Size { get; set; }
+}

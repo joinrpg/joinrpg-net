@@ -1,0 +1,13 @@
+﻿{
+  Belarus: 11,
+  FarEast: 8,
+  Foreign: 13,
+  Kazakhstan: 12,
+  MoscowAndCenter: 3,
+  NorthWest: 2,
+  Siberia: 6,
+  South: 7,
+  Ukraine: 10,
+  Ural: 5,
+  Volga: 9
+}
