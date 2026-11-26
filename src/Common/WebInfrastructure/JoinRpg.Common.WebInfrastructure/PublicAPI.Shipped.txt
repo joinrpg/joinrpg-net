@@ -1,4 +1,5 @@
 #nullable enable
+JoinRpg.Common.WebInfrastructure.AmazonS3Registration
 JoinRpg.Common.WebInfrastructure.AnonymousRateLimiterExtensions
 JoinRpg.Common.WebInfrastructure.AppVersionInfo
 JoinRpg.Common.WebInfrastructure.AppVersionInfo.AppVersionInfo(JoinRpg.Common.WebInfrastructure.AppVersionInfo! original) -> void
@@ -123,6 +124,7 @@ override JoinRpg.Common.WebInfrastructure.AppVersionInfo.ToString() -> string!
 override JoinRpg.Common.WebInfrastructure.ErrorSupportInfo.Equals(object? obj) -> bool
 override JoinRpg.Common.WebInfrastructure.ErrorSupportInfo.GetHashCode() -> int
 override JoinRpg.Common.WebInfrastructure.ErrorSupportInfo.ToString() -> string!
+static JoinRpg.Common.WebInfrastructure.AmazonS3Registration.AddJoinS3Storage(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
 static JoinRpg.Common.WebInfrastructure.AnonymousRateLimiterExtensions.AddJoinAnonymousRateLimiter(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, Microsoft.Extensions.Configuration.IConfiguration! configuration) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
 static JoinRpg.Common.WebInfrastructure.AnonymousRateLimiterExtensions.UseJoinAnonymousRateLimiter(this Microsoft.AspNetCore.Builder.IApplicationBuilder! builder) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
 static JoinRpg.Common.WebInfrastructure.AppVersionInfo.Current.get -> JoinRpg.Common.WebInfrastructure.AppVersionInfo!

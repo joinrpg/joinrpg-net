@@ -4,6 +4,8 @@
 
 ## Не выпущено
 
+## 2026.9.786 — 2026-11-25
+
 ### Добавлено
 - `AddJoinS3Storage()` (вызывается автоматически из `AddJoinWebPlatform`): S3-хранилище файлов — синглтон `IAmazonS3` (AWS SDK, совместим с Яндекс Object Storage), загрузка `IFileS3Uploader` с ретраями (до 3 повторов при `AmazonS3Exception`), скачивание по URL `IFileDownloader` (именованный `HttpClient` с таймаутом 10 с, лимит размера — параметр вызова) и health check «S3 storage». Настройки — `S3StorageOptions` (секция `S3BlobStorage`). Контракты — в `JoinRpg.Common.WebInfrastructure.Interfaces`. Новая зависимость пакета: `AWSSDK.S3`.
 - Health check «S3 storage»: при заполненных настройках проверяет доступность бакета (`GetBucketLocation`) и исход последней реальной загрузки (права на запись); при незаполненных настройках отвечает Healthy («Not configured») — хосты без S3 не получают деградацию `/health`.

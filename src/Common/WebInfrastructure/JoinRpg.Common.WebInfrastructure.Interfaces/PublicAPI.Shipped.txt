@@ -1,4 +1,8 @@
 #nullable enable
+JoinRpg.Common.WebInfrastructure.Files.FileDownloadException
+JoinRpg.Common.WebInfrastructure.Files.FileDownloadException.FileDownloadException(string! message) -> void
+JoinRpg.Common.WebInfrastructure.Files.IFileDownloader
+JoinRpg.Common.WebInfrastructure.Files.IFileDownloader.DownloadAsync(System.Uri! source, System.IO.Stream! target, long maxSize, System.Threading.CancellationToken ct) -> System.Threading.Tasks.Task<string!>!
 JoinRpg.Common.WebInfrastructure.HtmlSanitize.IJoinHtmlSanitizer
 JoinRpg.Common.WebInfrastructure.HtmlSanitize.IJoinHtmlSanitizer.Sanitize(string! html) -> string!
 JoinRpg.Common.WebInfrastructure.HtmlSanitize.IJoinRemoveAllHtmlSanitizer
@@ -45,6 +49,23 @@ JoinRpg.Common.WebInfrastructure.Job.RegisteredJob.JobType.get -> System.Type!
 JoinRpg.Common.WebInfrastructure.Job.RegisteredJob.JobType.init -> void
 JoinRpg.Common.WebInfrastructure.Job.RegisteredJob.RegisteredJob(JoinRpg.Common.WebInfrastructure.Job.RegisteredJob! original) -> void
 JoinRpg.Common.WebInfrastructure.Job.RegisteredJob.RegisteredJob(System.Type! JobType) -> void
+JoinRpg.Common.WebInfrastructure.S3.IFileS3Uploader
+JoinRpg.Common.WebInfrastructure.S3.IFileS3Uploader.UploadFileAsync(string! key, System.IO.Stream! content, string! contentType, System.Threading.CancellationToken ct) -> System.Threading.Tasks.Task!
+JoinRpg.Common.WebInfrastructure.S3.S3StorageOptions
+JoinRpg.Common.WebInfrastructure.S3.S3StorageOptions.AccessKey.get -> string?
+JoinRpg.Common.WebInfrastructure.S3.S3StorageOptions.AccessKey.set -> void
+JoinRpg.Common.WebInfrastructure.S3.S3StorageOptions.BucketName.get -> string?
+JoinRpg.Common.WebInfrastructure.S3.S3StorageOptions.BucketName.set -> void
+JoinRpg.Common.WebInfrastructure.S3.S3StorageOptions.Configured.get -> bool
+JoinRpg.Common.WebInfrastructure.S3.S3StorageOptions.Enabled.get -> bool
+JoinRpg.Common.WebInfrastructure.S3.S3StorageOptions.Enabled.set -> void
+JoinRpg.Common.WebInfrastructure.S3.S3StorageOptions.Endpoint.get -> string?
+JoinRpg.Common.WebInfrastructure.S3.S3StorageOptions.Endpoint.set -> void
+JoinRpg.Common.WebInfrastructure.S3.S3StorageOptions.PublicBaseUrl.get -> string?
+JoinRpg.Common.WebInfrastructure.S3.S3StorageOptions.PublicBaseUrl.set -> void
+JoinRpg.Common.WebInfrastructure.S3.S3StorageOptions.S3StorageOptions() -> void
+JoinRpg.Common.WebInfrastructure.S3.S3StorageOptions.SecretKey.get -> string?
+JoinRpg.Common.WebInfrastructure.S3.S3StorageOptions.SecretKey.set -> void
 const JoinRpg.Common.WebInfrastructure.Job.JobsOptions.SectionName = "DailyJobs" -> string!
 override JoinRpg.Common.WebInfrastructure.Job.JobId.Equals(object? obj) -> bool
 override JoinRpg.Common.WebInfrastructure.Job.JobId.GetHashCode() -> int

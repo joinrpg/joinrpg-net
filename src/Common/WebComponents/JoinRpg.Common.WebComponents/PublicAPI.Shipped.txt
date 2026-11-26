@@ -982,12 +982,14 @@ JoinRpg.Common.WebComponents.UserLink.ShowIcon.get -> bool
 JoinRpg.Common.WebComponents.UserLink.ShowIcon.set -> void
 JoinRpg.Common.WebComponents.UserLink.UserLink() -> void
 JoinRpg.Common.WebComponents.UserLinkViewModel
-JoinRpg.Common.WebComponents.UserLinkViewModel.Deconstruct(out JoinRpg.Common.PrimitiveTypes.UserIdentification? UserId, out string! DisplayName, out JoinRpg.Common.WebComponents.ViewMode ViewMode) -> void
+JoinRpg.Common.WebComponents.UserLinkViewModel.Deconstruct(out JoinRpg.Common.PrimitiveTypes.UserIdentification? UserId, out string! DisplayName, out JoinRpg.Common.WebComponents.ViewMode ViewMode, out string? Slug) -> void
 JoinRpg.Common.WebComponents.UserLinkViewModel.DisplayName.get -> string!
 JoinRpg.Common.WebComponents.UserLinkViewModel.DisplayName.init -> void
+JoinRpg.Common.WebComponents.UserLinkViewModel.Slug.get -> string?
+JoinRpg.Common.WebComponents.UserLinkViewModel.Slug.init -> void
 JoinRpg.Common.WebComponents.UserLinkViewModel.UserId.get -> JoinRpg.Common.PrimitiveTypes.UserIdentification?
 JoinRpg.Common.WebComponents.UserLinkViewModel.UserId.init -> void
-JoinRpg.Common.WebComponents.UserLinkViewModel.UserLinkViewModel(JoinRpg.Common.PrimitiveTypes.UserIdentification? UserId, string! DisplayName, JoinRpg.Common.WebComponents.ViewMode ViewMode) -> void
+JoinRpg.Common.WebComponents.UserLinkViewModel.UserLinkViewModel(JoinRpg.Common.PrimitiveTypes.UserIdentification? UserId, string! DisplayName, JoinRpg.Common.WebComponents.ViewMode ViewMode, string? Slug = null) -> void
 JoinRpg.Common.WebComponents.UserLinkViewModel.UserLinkViewModel(JoinRpg.Common.PrimitiveTypes.Users.UserInfoHeader! user, JoinRpg.Common.WebComponents.ViewMode viewMode = JoinRpg.Common.WebComponents.ViewMode.Show) -> void
 JoinRpg.Common.WebComponents.UserLinkViewModel.UserLinkViewModel(JoinRpg.Common.WebComponents.UserLinkViewModel! original) -> void
 JoinRpg.Common.WebComponents.UserLinkViewModel.ViewMode.get -> JoinRpg.Common.WebComponents.ViewMode
