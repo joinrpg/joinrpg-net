@@ -26,6 +26,17 @@ public static class Registration
                 return services.GetRequiredService<TelegramNotificationServiceImpl>();
             })
             .AddTransient<ITelegramNotificationServiceFactory, DefaultOnlyTelegramNotificationServiceFactory>()
+            .AddTransient<TelegramBotChatsService>()
+            .AddTransient<StubTelegramBotChatsService>()
+            .AddTransient<JoinRpg.Services.Interfaces.Notification.ITelegramBotChatsService>(services =>
+            {
+                var options = services.GetRequiredService<IOptions<TelegramLoginOptions>>();
+                if (!options.Value.Enabled)
+                {
+                    return services.GetRequiredService<StubTelegramBotChatsService>();
+                }
+                return services.GetRequiredService<TelegramBotChatsService>();
+            })
             .AddSingleton(services =>
             {
                 var options = services.GetRequiredService<IOptions<TelegramLoginOptions>>().Value;
