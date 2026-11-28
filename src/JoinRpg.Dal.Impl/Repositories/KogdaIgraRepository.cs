@@ -8,8 +8,8 @@ internal class KogdaIgraRepository(MyDbContext Ctx) : IKogdaIgraRepository
 {
     public async Task<KogdaIgraListItem[]> GetNotUpdated()
     {
-        var result = await GetNotUpdatedQuery().Take(100).Select(ki => new ListRow(ki.KogdaIgraGameId, ki.Name, ki.Begin, ki.Status)).ToListAsync();
-        return [.. result.Select(ToListItem)];
+        var result = await GetNotUpdatedQuery().Take(100).Select(ki => new { ki.KogdaIgraGameId, ki.Name, ki.Begin, ki.Status }).ToListAsync();
+        return [.. result.Select(x => ToListItem(new ListRow(x.KogdaIgraGameId, x.Name, x.Begin, x.Status)))];
     }
 
     public Task<KogdaIgraGame[]> GetNotUpdatedObjects() => GetNotUpdatedQuery().Take(100).ToArrayAsync();
@@ -37,9 +37,9 @@ internal class KogdaIgraRepository(MyDbContext Ctx) : IKogdaIgraRepository
             .Where(ki => ki.Active)
             .Where(ki => ki.LastUpdatedAt!.Value.Year > (DateTimeOffset.Now.Year - 2))
             .Where(ki => ki.Name.Length > 0)
-            .Select(ki => new ListRow(ki.KogdaIgraGameId, ki.Name, ki.Begin, ki.Status))
+            .Select(ki => new { ki.KogdaIgraGameId, ki.Name, ki.Begin, ki.Status })
             .ToListAsync();
-        return [.. result.Select(ToListItem)];
+        return [.. result.Select(x => ToListItem(new ListRow(x.KogdaIgraGameId, x.Name, x.Begin, x.Status)))];
     }
 
     async Task<KogdaIgraListItem[]> IKogdaIgraRepository.GetActiveFuture()
@@ -49,9 +49,9 @@ internal class KogdaIgraRepository(MyDbContext Ctx) : IKogdaIgraRepository
             .Where(ki => ki.Active)
             .Where(ki => ki.Begin != null && ki.Begin.Value >= DateTime.Today)
             .Where(ki => ki.Name.Length > 0)
-            .Select(ki => new ListRow(ki.KogdaIgraGameId, ki.Name, ki.Begin, ki.Status))
+            .Select(ki => new { ki.KogdaIgraGameId, ki.Name, ki.Begin, ki.Status })
             .ToListAsync();
-        return [.. result.Select(ToListItem)];
+        return [.. result.Select(x => ToListItem(new ListRow(x.KogdaIgraGameId, x.Name, x.Begin, x.Status)))];
     }
 
     private sealed record ListRow(int KogdaIgraGameId, string Name, DateTime? Begin, int? Status);
