@@ -93,7 +93,7 @@ internal class AdvertisementJob(
 
     private async Task ProcessCommonSingleHotRole(AdvertisementScheduleInfo schedule, ISingleHotRoleSender sender)
     {
-        var candidates = await projectRepository.GetPublicProjectsOpenForHotRoleAdvertisement();
+        var candidates = await projectRepository.GetPublicProjectsOpenForHotRoleAdvertisement(schedule.Regions);
         if (candidates.Count == 0)
         {
             logger.LogInformation("Расписание {scheduleId}: нет проектов с горячими ролями для рекламы", schedule.ScheduleId);
@@ -175,12 +175,28 @@ internal class AdvertisementJob(
             return null;
         }
 
+        if (schedule.Channel.BoundProjectId is null && schedule.Regions is { } regions)
+        {
+            // Каналы с привязанным проектом фильтром не ограничиваются; для остальных —
+            // страхующая проверка: регион именно той карточки, что будет показана,
+            // должен входить в фильтр (запрос отбирает по существованию подходящей карточки,
+            // а показывается ближайшая будущая — она может быть из другого региона).
+            var cardRegion = details.NearestFutureOkKogdaIgraCard.RegionId;
+            if (cardRegion is null || !regions.Contains(cardRegion.Value))
+            {
+                logger.LogInformation(
+                    "Расписание {scheduleId}: регион показываемой карточки КогдаИгры ({cardRegion}) не входит в фильтр расписания, проект {projectId} пропускаем",
+                    schedule.ScheduleId, cardRegion, projectId);
+                return null;
+            }
+        }
+
         return details;
     }
 
     private async Task ProcessNewlyOpenedProjectsDigest(AdvertisementScheduleInfo schedule, INewlyOpenedProjectsDigestSender sender)
     {
-        var candidates = await projectRepository.GetPublicProjectsOpenedForClaimsInLastWeek();
+        var candidates = await projectRepository.GetPublicProjectsOpenedForClaimsInLastWeek(schedule.Regions);
 
         var digest = new List<(ProjectAdvertisementCandidate Project, KogdaIgraGameData Game)>();
         foreach (var candidate in AdvertisementGameRanking.OrderByPriority(candidates))
