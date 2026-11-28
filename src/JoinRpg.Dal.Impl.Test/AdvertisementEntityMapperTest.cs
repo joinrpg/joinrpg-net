@@ -93,7 +93,7 @@ public class AdvertisementEntityMapperTest
 
         var info = AdvertisementEntityMapper.ToInfo(entity);
 
-        info.RegionsFilter.ShouldBeNull();
+        info.Regions.ShouldBeNull();
         info.ScheduleId.ShouldBe(new AdvertisementScheduleIdentification(7));
         info.Method.ShouldBe(AdvertisementMethod.SingleHotRole);
         info.Days.ShouldBe([DayOfWeek.Monday, DayOfWeek.Wednesday]);
@@ -102,11 +102,19 @@ public class AdvertisementEntityMapperTest
     }
 
     [Fact]
-    public void ToInfo_ScheduleWithRegionsFilter_MapsValue()
+    public void ToInfo_ScheduleWithRegionsFilter_ParsesRegionIds()
     {
-        var entity = CreateScheduleEntity(regionsFilter: "Москва, СПб");
+        var entity = CreateScheduleEntity(regionsFilter: "1,3");
 
-        AdvertisementEntityMapper.ToInfo(entity).RegionsFilter.ShouldBe("Москва, СПб");
+        AdvertisementEntityMapper.ToInfo(entity).Regions.ShouldBe([Region.SanktPeterburg, Region.Moskva]);
+    }
+
+    [Fact]
+    public void ToInfo_ScheduleWithGarbageRegionsFilter_MapsEmptySet()
+    {
+        var entity = CreateScheduleEntity(regionsFilter: "abc");
+
+        AdvertisementEntityMapper.ToInfo(entity).Regions.ShouldBeEmpty();
     }
 
     private static AdvertisementChannelEntity CreateChannelEntity(

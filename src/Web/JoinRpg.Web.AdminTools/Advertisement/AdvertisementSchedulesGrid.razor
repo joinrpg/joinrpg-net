@@ -1,3 +1,4 @@
+@using JoinRpg.Common.WebComponents
 @using JoinRpg.DomainTypes.Advertisement
 
 <JoinBorderedTable Items="Model" Context="schedule">
@@ -18,7 +19,7 @@
             <td>@schedule.Method</td>
             <td>@DescribeDays(schedule.Days)</td>
             <td>@DescribeActivity(schedule)</td>
-            <td>@(schedule.RegionsFilter ?? "—")</td>
+            <td>@DescribeRegions(schedule)</td>
         </tr>
     </ItemTemplate>
 </JoinBorderedTable>
@@ -50,5 +51,13 @@
             (true, true) => "Да",
             (false, _) => "Нет",
             (true, false) => "Нет (канал неактивен)",
+        };
+
+    private static string DescribeRegions(AdvertisementScheduleInfo schedule) =>
+        schedule.Regions switch
+        {
+            null => "Все регионы",
+            { Count: 0 } => "—",
+            { } regions => string.Join(", ", regions.OrderBy(r => r).Select(r => r.GetName())),
         };
 }
