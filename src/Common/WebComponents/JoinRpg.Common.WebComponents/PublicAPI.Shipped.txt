@@ -1035,6 +1035,7 @@ override JoinRpg.Common.WebComponents.Badges.PrintableBadgeLine.ToString() -> st
 override JoinRpg.Common.WebComponents.BooleanRequiredAttribute.IsValid(object? value) -> bool
 override JoinRpg.Common.WebComponents.CheckboxInput.OnInitialized() -> void
 override JoinRpg.Common.WebComponents.CheckboxInput.OnParametersSet() -> void
+override JoinRpg.Common.WebComponents.Dialog.AutoConfirmDialog.OnParametersSet() -> void
 override JoinRpg.Common.WebComponents.Dialog.JoinDialog.OnAfterRenderAsync(bool firstRender) -> System.Threading.Tasks.Task!
 override JoinRpg.Common.WebComponents.Dialog.JoinDialog.OnParametersSet() -> void
 override JoinRpg.Common.WebComponents.Dialog.JoinMessageDialog.OnParametersSet() -> void
@@ -1131,7 +1132,6 @@ virtual JoinRpg.Common.WebComponents.UserLinkViewModel.PrintMembers(System.Text.
 ~override JoinRpg.Common.WebComponents.ContactLink.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
 ~override JoinRpg.Common.WebComponents.DateRangeDisplay.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
 ~override JoinRpg.Common.WebComponents.Dialog.AutoConfirmDialog.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
-override JoinRpg.Common.WebComponents.Dialog.AutoConfirmDialog.OnParametersSet() -> void
 ~override JoinRpg.Common.WebComponents.Dialog.JoinDialog.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
 ~override JoinRpg.Common.WebComponents.Dialog.JoinMessageDialog.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
 ~override JoinRpg.Common.WebComponents.Dialog.JoinMessageIcon.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void

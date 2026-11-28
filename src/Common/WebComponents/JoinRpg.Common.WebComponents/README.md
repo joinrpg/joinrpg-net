@@ -47,10 +47,10 @@ dotnet add package JoinRpg.Common.WebComponents
 
 Bootstrap 3 пакет не приносит. На его CSS рассчитаны `JoinPanelWithList`,
 таблицы, `FormRow` и поля ввода (`list-group`, `table`, `form-group`,
-`col-md-*`, `form-control`, `help-block`, `control-label`). Без Bootstrap (и его JS) обходятся
+`col-md-*`, `form-control`, `control-label`). Без Bootstrap (и его JS) обходятся
 `JoinPanel`, `JoinButton`, `JoinBadge`, `RegionBadge`, `JoinCollapsePanel`, `JoinAlert` (и рендерящие его `JoinLoadingMessage` и `JoinErrorMessage`),
-`JoinInputNumber`, `JoinTextInput`, `Tooltip`, `TypedSelector`, `JoinDropdownButton` и его обёртки `JoinDotsMenu` и
-`TypedDropdownButton`, `JoinDialog`, `JoinMoveControl`.
+`JoinInputNumber`, `JoinTextInput`, `JoinDescription`, `Tooltip`, `TypedSelector`, `JoinDropdownButton` и его обёртки `JoinDotsMenu` и
+`TypedDropdownButton`, `JoinDialog`, `JoinMoveControl`, `EnumRadioButtonGroup`.
 
 ## Что зарегистрировать у себя
 

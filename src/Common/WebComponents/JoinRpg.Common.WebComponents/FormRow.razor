@@ -14,11 +14,11 @@
     </CascadingValue>
     @if (Description is not null)
     {
-      <div class="help-block">@Description</div>
+      <JoinDescription>@Description</JoinDescription>
     }
     else if (DescriptionFragment is not null)
     {
-      <div class="help-block">@DescriptionFragment</div>
+      <JoinDescription>@DescriptionFragment</JoinDescription>
     }
   </div>
 </div>

@@ -1,0 +1,7 @@
+@* Пояснение под полем или значением — единое оформление вместо Bootstrap 3 .help-block. *@
+<div class="join-description">@ChildContent</div>
+
+@code {
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+}

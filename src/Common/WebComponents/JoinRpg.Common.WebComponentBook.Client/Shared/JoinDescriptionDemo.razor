@@ -1,0 +1,12 @@
+<h3>JoinDescription</h3>
+
+<JoinDescription>Пояснение под полем или значением — замена Bootstrap 3 класса <code>help-block</code>.</JoinDescription>
+
+<h4>Внутри формы</h4>
+<FormRow Label="Название" Description="Короткое название игры, которое увидят игроки.">
+    <JoinTextInput @bind-Value="_name" />
+</FormRow>
+
+@code {
+    private string _name = "";
+}
