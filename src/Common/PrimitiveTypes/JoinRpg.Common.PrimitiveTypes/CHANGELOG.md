@@ -8,6 +8,7 @@
 - `Region` и `MacroRegion`: субрегионы и макрорегионы КогдаИгры (значения равны `sub_region_id` и
   `region_id` справочника kogda-igra.ru и не должны меняться). `RegionMapping.ToMacroRegion()` —
   макрорегион субрегиона, `RegionMapping.GetRegions()` — все субрегионы макрорегиона.
+- `RegionMapping.ToRegion(int?)`: субрегион по числовому id из API КогдаИгры, `null` — id вне справочника.
 
 ## 2026.9.786 — 2026-11-25
 

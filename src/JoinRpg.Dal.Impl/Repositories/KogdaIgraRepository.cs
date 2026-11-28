@@ -92,6 +92,7 @@ internal class KogdaIgraRepository(MyDbContext Ctx) : IKogdaIgraRepository
                     VkId.FromOptional(g.VkClub),
                     LiveJournalId.FromOptional(g.LjComm),
                     g.TelegramChannel,
-                    (KogdaIgraGameStatus?)g.Status);
+                    (KogdaIgraGameStatus?)g.Status,
+                    g.RegionId);
     }
 }
