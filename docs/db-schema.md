@@ -214,6 +214,7 @@ erDiagram
         string Name
         bool Active
         string RegionName
+        int RegionId "субрегион проведения (sub_region_id КогдаИгры); null = неизвестен"
         datetime Begin
         datetime End
         string MasterGroupName

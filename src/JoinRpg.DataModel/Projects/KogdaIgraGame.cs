@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using JoinRpg.Common.PrimitiveTypes;
 using JoinRpg.Helpers;
 
 namespace JoinRpg.DataModel.Projects;
@@ -33,6 +34,12 @@ public class KogdaIgraGame
     public bool Active { get; set; } = true;
 
     public string RegionName { get; set; } = "";
+
+    /// <summary>
+    /// Субрегион проведения игры (sub_region_id из КогдаИгры).
+    /// NULL — регион неизвестен: данных не было, API не вернула или id вне справочника <see cref="Region"/>.
+    /// </summary>
+    public Region? RegionId { get; set; }
 
     public DateTime? Begin { get; set; }
     public DateTime? End { get; set; }
