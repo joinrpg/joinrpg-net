@@ -67,6 +67,7 @@ internal static class SmokeExpectations
         ["admin/user-merge"] = "админка сайта, смоук ходит под мастером проекта",
         ["admin/pscb-payments"] = "админка сайта, смоук ходит под мастером проекта",
         ["webapi/UserAdmin/GetAdminPanel"] = "админка сайта, смоук ходит под мастером проекта",
+        ["webapi/PostingChannel/GetAvailableChats"] = "админка сайта, смоук ходит под мастером проекта",
         ["webapi/UserMerge/GetPreview"] = "админка сайта, смоук ходит под мастером проекта",
         ["webapi/PscbPayments/GetPayments"] = "админка сайта, смоук ходит под мастером проекта; к банку тесты не ходят (ADR025)",
         ["webapi/PscbPayments/GetPaymentInfo"] = "админка сайта, смоук ходит под мастером проекта; к банку тесты не ходят (ADR025)",
