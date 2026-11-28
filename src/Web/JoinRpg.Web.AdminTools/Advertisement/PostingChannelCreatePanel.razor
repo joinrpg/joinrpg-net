@@ -76,6 +76,12 @@
             chats = null;
             model.ChatId = null;
             model.Name = "";
+
+            // Диалог открывается сразу (со спиннером загрузки), а не после загрузки: промежуточные
+            // await'ы обработчика не перерисовывают компонент, поэтому открытый после загрузки диалог
+            // показывал бы устаревший спиннер до самого закрытия — вечная «Идёт загрузка...»
+            var dialogTask = dialog.ShowModalAsync();
+
             try
             {
                 var response = await PostingChannelClient.GetAvailableChats();
@@ -88,8 +94,10 @@
                 Logger.LogError(ex, "Ошибка при загрузке списка чатов бота");
                 loadError = true;
             }
+            // Обработчик ещё не завершился, сам Blazor не перерисует — обновляем открытый диалог вручную
+            StateHasChanged();
 
-            var result = await dialog.ShowModalAsync();
+            var result = await dialogTask;
             if (result?.ChatId is not null)
             {
                 await CreateChannelAsync(result.ChatId, result.Name);
