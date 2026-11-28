@@ -1,0 +1,143 @@
+@using System.ComponentModel.DataAnnotations
+@using JoinRpg.Common.WebComponents.Dialog
+@inject IPostingChannelClient PostingChannelClient
+@inject NavigationManager NavigationManager
+@inject ILogger<PostingChannelCreatePanel> Logger
+
+@if (actionError is not null)
+{
+    <JoinAlert Variation="VariationStyleEnum.Danger">@actionError</JoinAlert>
+}
+
+<JoinButton Label="Добавить канал" OnClick="OpenDialogAsync" />
+
+<JoinFormDialog
+    Caption="Новый канал"
+    SubmitButtonPreset="ButtonPreset.Save"
+    Model="@model"
+    FormName="CreatePostingChannelForm"
+    @ref="dialog"
+>
+    @if (loadError)
+    {
+        <JoinAlert Variation="VariationStyleEnum.Danger">Не удалось получить список чатов, попробуйте позже</JoinAlert>
+    }
+    else if (chats is null)
+    {
+        <JoinLoadingMessage />
+    }
+    else if (!enabled)
+    {
+        <JoinAlert Variation="VariationStyleEnum.Warning">Telegram-бот не настроен</JoinAlert>
+    }
+    else if (chats.Count == 0)
+    {
+        <JoinAlert Variation="VariationStyleEnum.Info">
+            Нет доступных чатов. Добавьте бота @BotNameHint в канал и откройте диалог заново (Telegram хранит события ~24 часа).
+        </JoinAlert>
+    }
+    else
+    {
+        <FormRowFor For="@(() => model.ChatId)">
+            <TypedDropdownButton TKey="TelegramChatId" TItem="AvailableChatDto"
+                Label="@SelectedChatLabel"
+                Items="chats.ToArray()"
+                ToListItem="@(chat => TypedSelectList.CreateItem(chat.ChatId, $"{chat.Title} ({chat.ChatId.Value})"))"
+                OnClick="OnChatSelected" />
+        </FormRowFor>
+        <FormRowFor For="@(() => model.Name)">
+            <JoinTextInput @bind-Value="model.Name" />
+        </FormRowFor>
+    }
+</JoinFormDialog>
+
+@code {
+    private JoinFormDialog<CreateChannelFormModel> dialog = default!;
+    private readonly CreateChannelFormModel model = new();
+    private IReadOnlyCollection<AvailableChatDto>? chats;
+    private bool enabled;
+    private string? botName;
+    private bool loadError;
+    private string? actionError;
+
+    private string BotNameHint => botName is null ? "" : "@" + botName;
+
+    private string SelectedChatLabel =>
+        chats?.FirstOrDefault(chat => chat.ChatId == model.ChatId) is { } selected
+            ? $"{selected.Title} ({selected.ChatId.Value})"
+            : "Выберите чат";
+
+    private async Task OpenDialogAsync(ButtonClickEventArgs args)
+    {
+        try
+        {
+            actionError = null;
+            loadError = false;
+            chats = null;
+            model.ChatId = null;
+            model.Name = "";
+            try
+            {
+                var response = await PostingChannelClient.GetAvailableChats();
+                enabled = response.Enabled;
+                botName = response.BotName;
+                chats = response.Chats;
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "Ошибка при загрузке списка чатов бота");
+                loadError = true;
+            }
+
+            var result = await dialog.ShowModalAsync();
+            if (result?.ChatId is not null)
+            {
+                await CreateChannelAsync(result.ChatId, result.Name);
+            }
+        }
+        finally
+        {
+            args.ExitProgressState = true;
+        }
+    }
+
+    private void OnChatSelected(AvailableChatDto chat)
+    {
+        model.ChatId = chat.ChatId;
+        if (string.IsNullOrWhiteSpace(model.Name))
+        {
+            model.Name = chat.Title;
+        }
+    }
+
+    private async Task CreateChannelAsync(TelegramChatId chatId, string name)
+    {
+        try
+        {
+            await PostingChannelClient.CreateChannel(new CreateChannelRequest(chatId, name));
+            // Грид каналов статический, поэтому после создания перезагружаем страницу целиком
+            NavigationManager.Refresh(forceReload: true);
+        }
+        catch (ServerProblemException ex)
+        {
+            // Штатный отказ сервера (чат занят, бот не в чате и т.п.) — показываем как есть
+            actionError = ex.Message;
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Ошибка при создании канала рекламы");
+            actionError = "Не удалось создать канал";
+        }
+    }
+
+    public class CreateChannelFormModel
+    {
+        [Required(ErrorMessage = "Выберите чат")]
+        [Display(Name = "Чат")]
+        public TelegramChatId? ChatId { get; set; }
+
+        [Required(ErrorMessage = "Название канала не указано")]
+        [Display(Name = "Название")]
+        public string Name { get; set; } = "";
+    }
+}
