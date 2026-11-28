@@ -148,6 +148,32 @@ public class GameDataParserTest
         gameInfo.Status.ShouldBeNull();
     }
 
+    [Theory]
+    [InlineData("3", 3)]
+    [InlineData("\"3\"", 3)]
+    public void TestParseSubRegionId(string subRegionId, int expected)
+    {
+        var str = $$"""
+            {"id":12666,"name":"Метро 2033","uri":"","mg":"МГ Негатив","sub_region_id":{{subRegionId}},"begin":"2026-09-27","time":1,"update_date":"2026-09-28T11:04:58+00:00"}
+            """;
+
+        var gameInfo = ResultParser.TryParseGameInfo(str, GameId);
+        gameInfo.ShouldNotBeNull();
+        gameInfo.SubRegionId.ShouldBe(expected);
+    }
+
+    [Fact]
+    public void TestParseWithoutSubRegionId()
+    {
+        var str = """
+            {"id":12666,"name":"Метро 2033","uri":"","mg":"МГ Негатив","sub_region_disp_name":"Бшк","sub_region_name":"Башкортостан","begin":"2026-09-27","time":1,"update_date":"2026-09-28T11:04:58+00:00"}
+            """;
+
+        var gameInfo = ResultParser.TryParseGameInfo(str, GameId);
+        gameInfo.ShouldNotBeNull();
+        gameInfo.SubRegionId.ShouldBeNull();
+    }
+
     [Fact]
     public void TestParseWithIncorrectUri()
     {
