@@ -37,7 +37,8 @@ public class KogdaIgraGame
 
     /// <summary>
     /// Субрегион проведения игры (sub_region_id из КогдаИгры).
-    /// NULL — регион неизвестен: данных не было, API не вернула или id вне справочника <see cref="Region"/>.
+    /// NULL — регион неизвестен: данных не было или API не вернула.
+    /// Id вне справочника <see cref="Region"/> может храниться как есть до ближайшей синхронизации игры.
     /// </summary>
     public Region? RegionId { get; set; }
 

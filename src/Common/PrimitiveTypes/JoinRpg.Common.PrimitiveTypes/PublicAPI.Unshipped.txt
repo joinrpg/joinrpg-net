@@ -185,3 +185,4 @@ JoinRpg.Common.PrimitiveTypes.Region.ZhitomirskayaOblast = 83 -> JoinRpg.Common.
 JoinRpg.Common.PrimitiveTypes.RegionMapping
 static JoinRpg.Common.PrimitiveTypes.RegionMapping.GetRegions(this JoinRpg.Common.PrimitiveTypes.MacroRegion macroRegion) -> System.Collections.Generic.IReadOnlyList<JoinRpg.Common.PrimitiveTypes.Region>!
 static JoinRpg.Common.PrimitiveTypes.RegionMapping.ToMacroRegion(this JoinRpg.Common.PrimitiveTypes.Region region) -> JoinRpg.Common.PrimitiveTypes.MacroRegion
+static JoinRpg.Common.PrimitiveTypes.RegionMapping.ToRegion(int? subRegionId) -> JoinRpg.Common.PrimitiveTypes.Region?

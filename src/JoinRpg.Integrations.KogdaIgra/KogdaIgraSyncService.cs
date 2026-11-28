@@ -119,6 +119,7 @@ internal class KogdaIgraSyncService(
         dbRecord.SiteUri = kiData.SiteUri?.AbsoluteUri;
         dbRecord.MasterGroupName = kiData.MasterGroupName;
         dbRecord.RegionName = kiData.RegionName;
+        dbRecord.RegionId = RegionMapping.ToRegion(kiData.SubRegionId);
         dbRecord.VkClub = kiData.VkClub;
         dbRecord.LjComm = kiData.LiveJournalCommunity;
         dbRecord.TelegramChannel = kiData.TelegramChannel;
@@ -137,6 +138,7 @@ internal class KogdaIgraSyncService(
         dbRecord.JsonGameData = "{}";
         dbRecord.LastUpdatedAt = dbRecord.UpdateRequestedAt; // Когда игра не возвращает дату для удаления
         dbRecord.Status = null; // Как и у прочих записей с затёртым JsonGameData, статус неизвестен
+        dbRecord.RegionId = null; // Регион неизвестен по той же причине
         dbRecord.Active = false;
 
         await unitOfWork.SaveChangesAsync();

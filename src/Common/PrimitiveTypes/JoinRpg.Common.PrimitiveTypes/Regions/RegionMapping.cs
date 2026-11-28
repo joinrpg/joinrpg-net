@@ -193,6 +193,10 @@ public static class RegionMapping
     private static readonly Region[] kazakhstanRegions = [Region.Astana, Region.Almaty, Region.Baykonur, Region.AkmolinskayaOblast, Region.AktyubinskayaOblast, Region.AlmatinskayaOblast, Region.AtyrauskayaOblast, Region.VostochnoKazakhstanskayaOblast, Region.ZhambylskayaOblast, Region.ZapadnoKazakhstanskayaOblast, Region.KaragandinskayaOblast, Region.KostanayskayaOblast, Region.KyzylordinskayaOblast, Region.MangistauskayaOblast, Region.PavlodarskayaOblast, Region.SeveroKazakhstanskayaOblast, Region.YuzhnoKazakhstanskayaOblast];
     private static readonly Region[] foreignRegions = [Region.Armeniya, Region.Kazakhstan, Region.Kirgiziya, Region.Moldaviya, Region.Tadzhikistan, Region.Uzbekistan, Region.Velikobritaniya, Region.Daniya, Region.Irlandiya, Region.Islandiya, Region.Latviya, Region.Litva, Region.Norvegiya, Region.Finlyandiya, Region.Shvetsiya, Region.Estoniya, Region.Vengriya, Region.Gruziya, Region.Polsha, Region.Slovakiya, Region.Chekhiya, Region.Avstriya, Region.Belgiya, Region.Germaniya, Region.Niderlandy, Region.Frantsiya, Region.Shveytsariya, Region.Albaniya, Region.Bolgariya, Region.Gretsiya, Region.Rumyniya, Region.SevernayaMakedoniya, Region.Serbiya, Region.Sloveniya, Region.Turtsiya, Region.Khorvatiya, Region.Chernogoriya, Region.Ispaniya, Region.Italiya, Region.RespublikaKipr, Region.Portugaliya, (Region)172, Region.Izrail];
 
+    /// <summary>Субрегион по числовому id (<c>sub_region_id</c> из API КогдаИгры); null, если id вне справочника.</summary>
+    public static Region? ToRegion(int? subRegionId) =>
+        subRegionId is { } id && Enum.IsDefined(typeof(Region), id) ? (Region)id : null;
+
     /// <summary>Все субрегионы макрорегиона.</summary>
     public static IReadOnlyList<Region> GetRegions(this MacroRegion macroRegion) => macroRegion switch
     {

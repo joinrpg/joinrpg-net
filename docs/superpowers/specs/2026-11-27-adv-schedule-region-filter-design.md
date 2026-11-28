@@ -76,11 +76,12 @@
 - `JoinRpg.DataModel`: `KogdaIgraGame.RegionId` (`Region?`, nullable enum из
   `JoinRpg.Common.PrimitiveTypes`; EF6 маппит enum в int-колонку). Согласовано с @leotsarev.
 - EF6-миграция (`src/JoinRpg.Dal.Impl/Migrations/`, порядок — `docs/ef-migrations.md`):
-  `AddColumn RegionId` (nullable, без бэкфилла данных в миграции).
-- Бэкфилл существующих строк — разовым полным ресинком через существующий
-  `KogdaIgraSyncService.ScheduleUpdateAllGames()` после деплоя (ручное действие).
-  До завершения ресинка игры с `RegionId = NULL` исключаются из фильтрованных
-  расписаний — отражаем в заметках к релизу. Маппинг по именам не используем.
+  `AddColumn RegionId` + бэкфилл из уже хранимого сырого ответа КогдаИгры
+  (`UPDATE … SET RegionId = TRY_CAST(JSON_VALUE(JsonGameData, '$.sub_region_id') AS int)`, по образцу
+  миграции `AddKogdaIgraGameStatus`). Ручной полный ресинк не нужен. NULL остаётся у записей без
+  `sub_region_id` в JSON (удалённые игры с `JsonGameData="{}"`, заглушки). Id вне справочника `Region`
+  бэкфилл записывает как есть — он не совпадёт ни с одним фильтром, а ближайшая синхронизация игры
+  приведёт его к NULL.
 - Синхронизация: `KogdaIgraSyncService` заполняет `RegionId` при каждом обновлении карточки.
 - Домен: `KogdaIgraGameData.RegionId` (`Region?`).
 - Обновить `docs/db-schema.md` (секция KogdaIgraGames; сверяется `DbSchemaDocumentationScenario`).

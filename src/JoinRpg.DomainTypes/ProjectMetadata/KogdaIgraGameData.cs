@@ -13,4 +13,5 @@ public record class KogdaIgraGameData(
     VkId? VkClub = null,
     LiveJournalId? LjComm = null,
     string? TelegramChannel = null,
-    KogdaIgraGameStatus? Status = null);
+    KogdaIgraGameStatus? Status = null,
+    Region? RegionId = null);
