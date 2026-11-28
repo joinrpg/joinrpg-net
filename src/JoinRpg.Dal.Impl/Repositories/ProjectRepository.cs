@@ -298,14 +298,20 @@ internal class ProjectRepository(MyDbContext ctx) : GameRepositoryImplBase(ctx),
     private static ProjectAdvertisementCandidate ToAdvertisementCandidate(int projectId, string projectName, int activeClaimsCount, int advertisementCount) =>
         new(new ProjectIdentification(projectId), new ProjectName(projectName), activeClaimsCount, advertisementCount);
 
-    async Task<IReadOnlyCollection<ProjectAdvertisementCandidate>> IProjectRepository.GetPublicProjectsOpenForHotRoleAdvertisement()
+    async Task<IReadOnlyCollection<ProjectAdvertisementCandidate>> IProjectRepository.GetPublicProjectsOpenForHotRoleAdvertisement(IReadOnlySet<Region>? regions)
     {
         var activeClaimPredicate = ClaimPredicates.GetClaimStatusPredicate(ClaimStatusSpec.Active);
         var staleThreshold = DateTime.UtcNow.AddDays(-AdvertisementStaleThresholdDays);
 
-        var query = from project in PublicOpenProjects
+        var projects = PublicOpenProjects
                         .Where(ProjectPredicates.HasFutureKogdaIgraGame())
-                        .Where(p => p.Characters.AsQueryable().Any(CharacterPredicates.Hot()))
+                        .Where(p => p.Characters.AsQueryable().Any(CharacterPredicates.Hot()));
+        if (regions is not null)
+        {
+            projects = projects.Where(ProjectPredicates.HasFutureOkKogdaIgraGameInRegions(regions));
+        }
+
+        var query = from project in projects
                     join update in GetProjectWithLastUpdateQuery() on project.ProjectId equals update.ProjectId
                     where update.LastUpdated >= staleThreshold
                     select new
@@ -322,7 +328,7 @@ internal class ProjectRepository(MyDbContext ctx) : GameRepositoryImplBase(ctx),
         return [.. result.Select(x => ToAdvertisementCandidate(x.ProjectId, x.ProjectName, x.ActiveClaimsCount, x.AdvertisementCount))];
     }
 
-    async Task<IReadOnlyCollection<ProjectAdvertisementCandidate>> IProjectRepository.GetPublicProjectsOpenedForClaimsInLastWeek()
+    async Task<IReadOnlyCollection<ProjectAdvertisementCandidate>> IProjectRepository.GetPublicProjectsOpenedForClaimsInLastWeek(IReadOnlySet<Region>? regions)
     {
         var weekAgo = DateTime.UtcNow.AddDays(-7);
         var activeClaimPredicate = ClaimPredicates.GetClaimStatusPredicate(ClaimStatusSpec.Active);
@@ -330,7 +336,13 @@ internal class ProjectRepository(MyDbContext ctx) : GameRepositoryImplBase(ctx),
 
         // Ранжирование между собой — вне репозитория, той же формулой, что и для горячих ролей
         // (AdvertisementGameRanking), поэтому здесь порядок не важен.
-        var query = from project in PublicOpenProjects.Where(p => p.ClaimsOpenedDate >= weekAgo)
+        var projects = PublicOpenProjects.Where(p => p.ClaimsOpenedDate >= weekAgo);
+        if (regions is not null)
+        {
+            projects = projects.Where(ProjectPredicates.HasFutureOkKogdaIgraGameInRegions(regions));
+        }
+
+        var query = from project in projects
                     join update in GetProjectWithLastUpdateQuery() on project.ProjectId equals update.ProjectId
                     where update.LastUpdated >= staleThreshold
                     select new

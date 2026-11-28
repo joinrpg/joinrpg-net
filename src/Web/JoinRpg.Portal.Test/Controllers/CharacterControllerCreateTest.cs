@@ -180,8 +180,8 @@ public class CharacterControllerCreateTest
 
         public Task<ProjectPersonalizedInfo[]> GetProjectsByIds(UserIdentification? userId, ProjectIdentification[] ids) => throw new NotSupportedException();
 
-        public Task<IReadOnlyCollection<ProjectAdvertisementCandidate>> GetPublicProjectsOpenForHotRoleAdvertisement() => throw new NotSupportedException();
+        public Task<IReadOnlyCollection<ProjectAdvertisementCandidate>> GetPublicProjectsOpenForHotRoleAdvertisement(IReadOnlySet<Region>? regions = null) => throw new NotSupportedException();
 
-        public Task<IReadOnlyCollection<ProjectAdvertisementCandidate>> GetPublicProjectsOpenedForClaimsInLastWeek() => throw new NotSupportedException();
+        public Task<IReadOnlyCollection<ProjectAdvertisementCandidate>> GetPublicProjectsOpenedForClaimsInLastWeek(IReadOnlySet<Region>? regions = null) => throw new NotSupportedException();
     }
 }

@@ -90,7 +90,11 @@ public interface IProjectRepository : IDisposable
     /// горячую роль и обновлявшиеся за последние две недели, с их
     /// <see cref="ProjectAdvertisementCandidate.ActiveClaimsCount"/> для взвешивания по ADR010 §4.
     /// </summary>
-    Task<IReadOnlyCollection<ProjectAdvertisementCandidate>> GetPublicProjectsOpenForHotRoleAdvertisement();
+    /// <param name="regions">
+    /// Фильтр по регионам: когда задан, кандидатами являются только проекты с будущей активной карточкой
+    /// КогдаИгры со статусом Ок в одном из этих регионов. null — без фильтра (все регионы).
+    /// </param>
+    Task<IReadOnlyCollection<ProjectAdvertisementCandidate>> GetPublicProjectsOpenForHotRoleAdvertisement(IReadOnlySet<Region>? regions = null);
 
     /// <summary>
     /// Публичные проекты, принимающие заявки, у которых дата первого открытия приёма заявок
@@ -98,7 +102,8 @@ public interface IProjectRepository : IDisposable
     /// за последние две недели. Проекты, заявки в которых ни разу не открывались (дата не задана),
     /// не считаются недавно открывшимися.
     /// </summary>
-    Task<IReadOnlyCollection<ProjectAdvertisementCandidate>> GetPublicProjectsOpenedForClaimsInLastWeek();
+    /// <param name="regions">Фильтр по регионам — см. <see cref="GetPublicProjectsOpenForHotRoleAdvertisement"/>.</param>
+    Task<IReadOnlyCollection<ProjectAdvertisementCandidate>> GetPublicProjectsOpenedForClaimsInLastWeek(IReadOnlySet<Region>? regions = null);
 }
 
 public record ProjectListSpecification(ProjectListCriteria Criteria, bool LoadArchived)

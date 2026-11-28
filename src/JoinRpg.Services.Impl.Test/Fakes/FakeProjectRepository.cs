@@ -30,6 +30,6 @@ internal sealed class FakeProjectRepository : IProjectRepository
     public Task<ProjectShortInfo[]> GetProjectsBySpecification(ProjectListSpecification projectListSpecification) => throw new NotSupportedException();
     public Task<bool> HasActiveProjects() => throw new NotSupportedException();
     public Task<ProjectPersonalizedInfo[]> GetProjectsByIds(UserIdentification? userId, ProjectIdentification[] ids) => throw new NotSupportedException();
-    public Task<IReadOnlyCollection<ProjectAdvertisementCandidate>> GetPublicProjectsOpenForHotRoleAdvertisement() => throw new NotSupportedException();
-    public Task<IReadOnlyCollection<ProjectAdvertisementCandidate>> GetPublicProjectsOpenedForClaimsInLastWeek() => throw new NotSupportedException();
+    public Task<IReadOnlyCollection<ProjectAdvertisementCandidate>> GetPublicProjectsOpenForHotRoleAdvertisement(IReadOnlySet<JoinRpg.Common.PrimitiveTypes.Region>? regions = null) => throw new NotSupportedException();
+    public Task<IReadOnlyCollection<ProjectAdvertisementCandidate>> GetPublicProjectsOpenedForClaimsInLastWeek(IReadOnlySet<JoinRpg.Common.PrimitiveTypes.Region>? regions = null) => throw new NotSupportedException();
 }

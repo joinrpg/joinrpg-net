@@ -63,7 +63,7 @@ public class HealthCheckLoadProjectsTest
         public Task<IReadOnlyCollection<FormerMasterCandidate>> GetFormerMasterCandidates() => throw new NotSupportedException();
         public Task<ProjectPersonalizedInfo[]> GetPersonalizedProjectsBySpecification(PersonalizedProjectListSpecification projectListSpecification) => throw new NotSupportedException();
         public Task<ProjectPersonalizedInfo[]> GetProjectsByIds(UserIdentification? userId, ProjectIdentification[] ids) => throw new NotSupportedException();
-        public Task<IReadOnlyCollection<ProjectAdvertisementCandidate>> GetPublicProjectsOpenForHotRoleAdvertisement() => throw new NotSupportedException();
-        public Task<IReadOnlyCollection<ProjectAdvertisementCandidate>> GetPublicProjectsOpenedForClaimsInLastWeek() => throw new NotSupportedException();
+        public Task<IReadOnlyCollection<ProjectAdvertisementCandidate>> GetPublicProjectsOpenForHotRoleAdvertisement(IReadOnlySet<Region>? regions = null) => throw new NotSupportedException();
+        public Task<IReadOnlyCollection<ProjectAdvertisementCandidate>> GetPublicProjectsOpenedForClaimsInLastWeek(IReadOnlySet<Region>? regions = null) => throw new NotSupportedException();
     }
 }

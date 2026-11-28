@@ -76,8 +76,8 @@ public class ProjectApiViewServiceTests
         public Task<ProjectShortInfo[]> GetProjectsBySpecification(ProjectListSpecification projectListSpecification) => throw new NotImplementedException();
         public Task<bool> HasActiveProjects() => throw new NotImplementedException();
         public Task<ProjectPersonalizedInfo[]> GetProjectsByIds(UserIdentification? userId, ProjectIdentification[] ids) => throw new NotImplementedException();
-        public Task<IReadOnlyCollection<ProjectAdvertisementCandidate>> GetPublicProjectsOpenForHotRoleAdvertisement() => throw new NotImplementedException();
-        public Task<IReadOnlyCollection<ProjectAdvertisementCandidate>> GetPublicProjectsOpenedForClaimsInLastWeek() => throw new NotImplementedException();
+        public Task<IReadOnlyCollection<ProjectAdvertisementCandidate>> GetPublicProjectsOpenForHotRoleAdvertisement(IReadOnlySet<JoinRpg.Common.PrimitiveTypes.Region>? regions = null) => throw new NotImplementedException();
+        public Task<IReadOnlyCollection<ProjectAdvertisementCandidate>> GetPublicProjectsOpenedForClaimsInLastWeek(IReadOnlySet<JoinRpg.Common.PrimitiveTypes.Region>? regions = null) => throw new NotImplementedException();
         public void Dispose() { }
     }
 }

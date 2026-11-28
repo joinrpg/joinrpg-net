@@ -92,4 +92,16 @@ internal static class ProjectPredicates
 
     internal static Expression<Func<Project, bool>> HasFutureKogdaIgraGame() =>
         p => p.KogdaIgraGames.Any(g => g.Active && g.Begin > DateTime.UtcNow);
+
+    /// <summary>
+    /// Есть будущая активная карточка КогдаИгры со статусом Ок в одном из заданных регионов.
+    /// Критерии совпадают с выбором рекламируемой карточки (<c>NearestFutureOkKogdaIgraCard</c>);
+    /// карточка без региона (RegionId = null) не подходит.
+    /// </summary>
+    internal static Expression<Func<Project, bool>> HasFutureOkKogdaIgraGameInRegions(IReadOnlyCollection<Region> regions) =>
+        p => p.KogdaIgraGames.Any(g => g.Active
+            && g.Status == (int)KogdaIgraGameStatus.Ok
+            && g.Begin > DateTime.UtcNow
+            && g.RegionId != null
+            && regions.Contains(g.RegionId.Value));
 }
