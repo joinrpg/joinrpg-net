@@ -15,7 +15,7 @@ public class PostingChannelViewServiceTest
     {
         var chats = PostingChannelViewService.FilterAvailable(BotChats, [CreateChannel(-100111, isActive: true)]);
 
-        chats.ShouldBe([new AvailableChatDto(-100222, "Канал Б")]);
+        chats.ShouldBe([new AvailableChatDto(new TelegramChatId(-100222), "Канал Б")]);
     }
 
     [Fact]
@@ -24,14 +24,14 @@ public class PostingChannelViewServiceTest
         // Неактивный канал тоже занимает chat id — иначе один чат можно завести дважды
         var chats = PostingChannelViewService.FilterAvailable(BotChats, [CreateChannel(-100111, isActive: false)]);
 
-        chats.ShouldBe([new AvailableChatDto(-100222, "Канал Б")]);
+        chats.ShouldBe([new AvailableChatDto(new TelegramChatId(-100222), "Канал Б")]);
     }
 
     [Fact]
     public void EnsureCanCreate_DisabledBot_Refuses()
     {
         var refusal = Should.Throw<PostingChannelActionRefusedException>(() =>
-            PostingChannelViewService.EnsureCanCreate(new CreateChannelRequest(-100111, "Канал"),
+            PostingChannelViewService.EnsureCanCreate(new CreateChannelRequest(new TelegramChatId(-100111), "Канал"),
                 TelegramBotChatsResult.Disabled, []));
 
         refusal.Message.ShouldBe("Telegram-бот не настроен");
@@ -43,7 +43,7 @@ public class PostingChannelViewServiceTest
     public void EnsureCanCreate_EmptyName_Refuses(string name)
     {
         var refusal = Should.Throw<PostingChannelActionRefusedException>(() =>
-            PostingChannelViewService.EnsureCanCreate(new CreateChannelRequest(-100111, name), BotChats, []));
+            PostingChannelViewService.EnsureCanCreate(new CreateChannelRequest(new TelegramChatId(-100111), name), BotChats, []));
 
         refusal.Message.ShouldBe("Название канала не указано");
     }
@@ -52,7 +52,7 @@ public class PostingChannelViewServiceTest
     public void EnsureCanCreate_ChatAlreadyUsed_Refuses()
     {
         var refusal = Should.Throw<PostingChannelActionRefusedException>(() =>
-            PostingChannelViewService.EnsureCanCreate(new CreateChannelRequest(-100111, "Канал"),
+            PostingChannelViewService.EnsureCanCreate(new CreateChannelRequest(new TelegramChatId(-100111), "Канал"),
                 BotChats, [CreateChannel(-100111, isActive: true)]));
 
         refusal.Message.ShouldBe("Этот чат уже занят каналом рекламы");
@@ -62,7 +62,7 @@ public class PostingChannelViewServiceTest
     public void EnsureCanCreate_ChatNotAvailableForBot_Refuses()
     {
         var refusal = Should.Throw<PostingChannelActionRefusedException>(() =>
-            PostingChannelViewService.EnsureCanCreate(new CreateChannelRequest(-100999, "Канал"), BotChats, []));
+            PostingChannelViewService.EnsureCanCreate(new CreateChannelRequest(new TelegramChatId(-100999), "Канал"), BotChats, []));
 
         refusal.Message.ShouldBe("Бот не состоит в этом чате или событие старше 24 часов — добавьте бота в чат и откройте диалог заново");
     }
@@ -70,7 +70,7 @@ public class PostingChannelViewServiceTest
     [Fact]
     public void EnsureCanCreate_ValidRequest_DoesNotThrow() =>
         Should.NotThrow(() =>
-            PostingChannelViewService.EnsureCanCreate(new CreateChannelRequest(-100111, "Канал"), BotChats, []));
+            PostingChannelViewService.EnsureCanCreate(new CreateChannelRequest(new TelegramChatId(-100111), "Канал"), BotChats, []));
 
     private static PostingChannelInfo CreateChannel(long chatId, bool isActive) =>
         new(

@@ -12,7 +12,7 @@ public class PostingChannelHttpClient(HttpClient httpClient, CsrfTokenProvider c
     {
         await csrfTokenProvider.SetCsrfToken(httpClient);
         var response = await httpClient.PostAsync(
-            $"webapi/PostingChannel/CreateChannel?chatId={request.ChatId}&name={Uri.EscapeDataString(request.Name)}",
+            $"webapi/PostingChannel/CreateChannel?chatId={request.ChatId.Value}&name={Uri.EscapeDataString(request.Name)}",
             content: null);
 
         // Отказ (чат занят, бот не в чате и т.п.) диалог показывает как есть

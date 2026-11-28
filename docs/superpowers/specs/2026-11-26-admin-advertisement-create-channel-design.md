@@ -102,7 +102,7 @@ Blazor-островам), и `GetUpdates` вызывался бы при каж�
   регистрация в `HttpClientRegistration.cs`; POST — с `CsrfTokenProvider`.
 - DTO (в `JoinRpg.Web.AdminTools` или общем контрактном проекте по соседним примерам):
   `AvailableChatsResponse(bool Enabled, string? BotName, IReadOnlyCollection<AvailableChatDto> Chats)`,
-  `AvailableChatDto(long ChatId, string Title)`, `CreateChannelRequest(long ChatId, string Name)`.
+  `AvailableChatDto(TelegramChatId ChatId, string Title)`, `CreateChannelRequest(TelegramChatId ChatId, string Name)`.
   Флаги `Enabled`/`BotName` нужны, чтобы диалог различал состояния «Telegram не настроен»
   (dev) и «нет доступных чатов» — пустой список их не различает, а `BotName` для подсказки
   живёт только на сервере (`TelegramLoginOptions`). *(решение исполнителя по builder-check)*

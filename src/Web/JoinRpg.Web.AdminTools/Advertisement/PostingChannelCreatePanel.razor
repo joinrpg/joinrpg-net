@@ -39,13 +39,11 @@
     else
     {
         <FormRowFor For="@(() => model.ChatId)">
-            <select class="form-control" @bind="model.ChatId" @bind:after="PrefillName">
-                <option value="">— выберите чат —</option>
-                @foreach (var chat in chats)
-                {
-                    <option value="@chat.ChatId">@chat.Title (@chat.ChatId)</option>
-                }
-            </select>
+            <TypedDropdownButton TKey="TelegramChatId" TItem="AvailableChatDto"
+                Label="@SelectedChatLabel"
+                Items="chats.ToArray()"
+                ToListItem="@(chat => TypedSelectList.CreateItem(chat.ChatId, $"{chat.Title} ({chat.ChatId.Value})"))"
+                OnClick="OnChatSelected" />
         </FormRowFor>
         <FormRowFor For="@(() => model.Name)">
             <JoinTextInput @bind-Value="model.Name" />
@@ -63,6 +61,11 @@
     private string? actionError;
 
     private string BotNameHint => botName is null ? "" : "@" + botName;
+
+    private string SelectedChatLabel =>
+        chats?.FirstOrDefault(chat => chat.ChatId == model.ChatId) is { } selected
+            ? $"{selected.Title} ({selected.ChatId.Value})"
+            : "Выберите чат";
 
     private async Task OpenDialogAsync(ButtonClickEventArgs args)
     {
@@ -89,7 +92,7 @@
             var result = await dialog.ShowModalAsync();
             if (result?.ChatId is not null)
             {
-                await CreateChannelAsync(result.ChatId.Value, result.Name);
+                await CreateChannelAsync(result.ChatId, result.Name);
             }
         }
         finally
@@ -98,15 +101,16 @@
         }
     }
 
-    private void PrefillName()
+    private void OnChatSelected(AvailableChatDto chat)
     {
-        if (string.IsNullOrWhiteSpace(model.Name) && model.ChatId is not null)
+        model.ChatId = chat.ChatId;
+        if (string.IsNullOrWhiteSpace(model.Name))
         {
-            model.Name = chats?.FirstOrDefault(chat => chat.ChatId == model.ChatId.Value)?.Title ?? "";
+            model.Name = chat.Title;
         }
     }
 
-    private async Task CreateChannelAsync(long chatId, string name)
+    private async Task CreateChannelAsync(TelegramChatId chatId, string name)
     {
         try
         {
@@ -130,7 +134,7 @@
     {
         [Required(ErrorMessage = "Выберите чат")]
         [Display(Name = "Чат")]
-        public long? ChatId { get; set; }
+        public TelegramChatId? ChatId { get; set; }
 
         [Required(ErrorMessage = "Название канала не указано")]
         [Display(Name = "Название")]

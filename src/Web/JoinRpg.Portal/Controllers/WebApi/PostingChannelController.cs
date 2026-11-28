@@ -13,7 +13,7 @@ public class PostingChannelController(IPostingChannelClient client) : Controller
         => Ok(await client.GetAvailableChats());
 
     [HttpPost]
-    public async Task<ActionResult> CreateChannel([FromQuery] long chatId, [FromQuery] string name)
+    public async Task<ActionResult> CreateChannel([FromQuery] TelegramChatId chatId, [FromQuery] string name)
     {
         await client.CreateChannel(new CreateChannelRequest(chatId, name));
         return Ok();

@@ -8,6 +8,6 @@ public interface IPostingChannelClient
 
 public record AvailableChatsResponse(bool Enabled, string? BotName, IReadOnlyCollection<AvailableChatDto> Chats);
 
-public record AvailableChatDto(long ChatId, string Title);
+public record AvailableChatDto(TelegramChatId ChatId, string Title);
 
-public record CreateChannelRequest(long ChatId, string Name);
+public record CreateChannelRequest(TelegramChatId ChatId, string Name);
