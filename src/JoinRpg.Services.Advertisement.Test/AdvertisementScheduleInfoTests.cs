@@ -9,23 +9,23 @@ public class AdvertisementScheduleInfoTests
         new(new AdvertisementScheduleIdentification(1), Channel(channelActive), AdvertisementMethod.SingleHotRole, Enum.GetValues<DayOfWeek>().ToHashSet(), IsActive: scheduleActive);
 
     [Fact]
-    public void RegionsFilter_NotSpecified_DefaultsToNull() =>
+    public void Regions_NotSpecified_DefaultsToNull() =>
         new AdvertisementScheduleInfo(
             new AdvertisementScheduleIdentification(1),
             Channel(isActive: true),
             AdvertisementMethod.SingleHotRole,
             new HashSet<DayOfWeek> { DayOfWeek.Monday })
-            .RegionsFilter.ShouldBeNull();
+            .Regions.ShouldBeNull();
 
     [Fact]
-    public void RegionsFilter_Specified_ReturnsProvidedValue() =>
+    public void Regions_Specified_ReturnsProvidedValue() =>
         new AdvertisementScheduleInfo(
             new AdvertisementScheduleIdentification(1),
             Channel(isActive: true),
             AdvertisementMethod.SingleHotRole,
             new HashSet<DayOfWeek> { DayOfWeek.Monday },
-            RegionsFilter: "Москва, СПб")
-            .RegionsFilter.ShouldBe("Москва, СПб");
+            Regions: new HashSet<Region> { Region.Moskva, Region.SanktPeterburg })
+            .Regions.ShouldBe([Region.Moskva, Region.SanktPeterburg]);
 
     [Fact]
     public void IsEffectivelyActive_ActiveScheduleAndActiveChannel_ReturnsTrue() =>

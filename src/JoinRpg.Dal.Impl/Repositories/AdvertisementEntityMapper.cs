@@ -24,7 +24,7 @@ internal static class AdvertisementEntityMapper
             entity.Method,
             MaskToDays(entity.DaysOfWeekMask),
             entity.IsActive,
-            entity.RegionsFilter);
+            AdvertisementRegionsFilter.Parse(entity.RegionsFilter));
 
     private static HashSet<DayOfWeek> MaskToDays(int mask) =>
         Enum.GetValues<DayOfWeek>()

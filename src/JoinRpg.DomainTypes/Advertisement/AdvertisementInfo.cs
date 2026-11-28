@@ -14,8 +14,9 @@ public enum AdvertisementMethod
     NewlyOpenedProjectsDigest = 2,
 }
 
-/// <param name="RegionsFilter">
-/// Фильтр по регионам (текст). Пока нигде не используется — задел под фильтрацию по <c>KogdaIgraGameData.RegionName</c>.
+/// <param name="Regions">
+/// Фильтр по регионам: субрегионы КогдаИгры, из которых рассматриваются игры-кандидаты.
+/// null — фильтра нет, все регионы. Пустое множество — фильтр задан, но ничему не соответствует.
 /// </param>
 public record AdvertisementScheduleInfo(
     AdvertisementScheduleIdentification ScheduleId,
@@ -23,7 +24,7 @@ public record AdvertisementScheduleInfo(
     AdvertisementMethod Method,
     IReadOnlySet<DayOfWeek> Days,
     bool IsActive = true,
-    string? RegionsFilter = null)
+    IReadOnlySet<Region>? Regions = null)
 {
     /// <summary>
     /// Расписание фактически активно, только если активно и оно само, и его канал.
