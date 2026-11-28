@@ -1,0 +1,11 @@
+/*
+ * Пояснение под полем или значением. Значения перенесены из Bootstrap 3 (.help-block)
+ * с поправкой на переопределение в site.css портала (margin: 0; padding-bottom: 2px; clear: both),
+ * чтобы пояснение выглядело так же, но без опоры на классы Bootstrap.
+ */
+.join-description {
+    margin: 0;
+    padding-bottom: 2px;
+    clear: both;
+    color: #737373;
+}

@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using Microsoft.AspNetCore.Components.Forms;
 
 namespace JoinRpg.Common.WebComponents.Test;
@@ -6,6 +7,13 @@ public class EnumRadioButtonGroupTest
 {
     private enum Choice
     {
+        First,
+        Second,
+    }
+
+    private enum ChoiceWithDescription
+    {
+        [Description("Пояснение к первому")]
         First,
         Second,
     }
@@ -60,5 +68,21 @@ public class EnumRadioButtonGroupTest
 
         model.Mode.ShouldBe(Choice.Second);
         changedFields.ShouldBe([nameof(FormModel.Mode)]);
+    }
+
+    /// <summary>
+    /// Описание значения оформляется через <see cref="JoinDescription"/>, а не классом
+    /// <c>help-block</c> из Bootstrap 3 — компонент должен работать без Bootstrap.
+    /// </summary>
+    [Fact]
+    public void Description_RendersWithJoinDescriptionNotBootstrapHelpBlock()
+    {
+        using var ctx = new BunitContext();
+
+        var cut = ctx.Render<EnumRadioButtonGroup<ChoiceWithDescription>>(p => p
+            .Add(x => x.SelectedValue, ChoiceWithDescription.First));
+
+        cut.Find(".join-description").TextContent.ShouldBe("Пояснение к первому");
+        cut.FindAll(".help-block").ShouldBeEmpty();
     }
 }

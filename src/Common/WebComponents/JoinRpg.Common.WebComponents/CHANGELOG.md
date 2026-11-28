@@ -8,6 +8,11 @@
 - `RegionBadge` — бейдж региона КогдаИгры (`Region` из PrimitiveTypes): короткое имя («СПб»),
   полное имя — в подсказке. Имена для показа отдельно — `RegionDisplay`: `GetName()` — полное имя
   региона или имя макрорегиона, `GetShortName()` — короткое имя региона.
+- `JoinDescription` — пояснение под полем или значением: единое оформление (собственный scoped CSS),
+  замена Bootstrap 3 класса `help-block`. ([#6142](https://github.com/joinrpg/joinrpg-net/issues/6142))
+
+### Изменено
+- `EnumRadioButtonGroup`, `FormRow`, `FormRowFor`, `JoinMarkdownTextArea`: пояснения больше не получают Bootstrap-класс `help-block` — рендерятся через `JoinDescription` (оформление — собственный scoped CSS, компоненты работают без Bootstrap). ([#6142](https://github.com/joinrpg/joinrpg-net/issues/6142))
 
 ## 2026.9.786 — 2026-11-25
 
